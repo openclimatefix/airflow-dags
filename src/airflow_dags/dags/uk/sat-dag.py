@@ -17,14 +17,14 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import ECSOperatorGen
 
 env = os.getenv("ENVIRONMENT", "development")
 
-default_dag_args = {
+default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "retries": 1,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 10,
-    "concurrency": 10,
-    "max_active_tasks": 10,
+    "max_active_runs": 2,
+    "concurrency": 2,
+    "max_active_tasks": 2,
     "execution_timeout": dt.timedelta(minutes=30),
 }
 
@@ -65,7 +65,7 @@ def update_operator(cadence_mins: int) -> BashOperator:
     schedule_interval="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
-    default_args=default_dag_args,
+    default_args=default_args,
 )
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
