@@ -108,7 +108,6 @@ class ECSOperatorGen:
             register_task_kwargs={
                 "cpu": str(self.container_cpu),
                 "memory": str(self.container_memory),
-                "environment": self.container_env,
                 "requiresCompatibilities": ["FARGATE"],
                 "tags": [
                     {"key": "name", "value": self.name},
