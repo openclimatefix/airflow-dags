@@ -16,7 +16,7 @@ jobs:
     secrets: inherit
     with:
       deploy_target: development
-      tag: ${{ merged-ci.outputs.tag }}
+      tag: ${{ needs.merged-ci.outputs.tag }}
 
   deploy-prod:
     needs: merged-ci
@@ -24,5 +24,5 @@ jobs:
     secrets: inherit
     with:
       deploy_target: production
-      tag: ${{ merged-ci.outputs.tag }}
+      tag: ${{ needs.merged-ci.outputs.tag }}
 
