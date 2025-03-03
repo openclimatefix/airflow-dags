@@ -157,7 +157,7 @@ class ECSOperatorGen:
             launch_type="FARGATE",
             network_configuration=networks_dict,
             awslogs_group=f"/aws/ecs/{self.name}",
-            awslogs_stream_prefix=f"streaming/{airflow_task_id}",
+            awslogs_stream_prefix=f"streaming/{self.name}",
             awslogs_region=region,
             trigger_rule=trigger_rule,
             on_failure_callback=on_failure_callback,

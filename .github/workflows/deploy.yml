@@ -45,5 +45,5 @@ jobs:
           cat src/airflow_dags/.airflowignore
 
       - name: Deploy to S3 dagbag
-        run: aws s3 sync src/airflow_dags s3://$BUCKET_NAME/dags/airflow_dags --delete
+        run: aws s3 sync src/airflow_dags s3://$BUCKET_NAME/dags/airflow_dags
 
