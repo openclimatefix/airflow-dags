@@ -10,19 +10,3 @@ jobs:
     uses: openclimatefix/.github/.github/workflows/default_branch_pr_merged_ci.yml@main
     secrets: inherit
 
-  deploy-dev:
-    needs: merged-ci
-    uses: openclimatefix/airflow-dags/.github/workflows/_dag_deploy.yml@main
-    secrets: inherit
-    with:
-      deploy_target: development
-      tag: ${{ needs.merged-ci.outputs.tag }}
-
-  deploy-prod:
-    needs: merged-ci
-    uses: openclimatefix/airflow-dags/.github/workflows/_dag_deploy.yml@main
-    secrets: inherit
-    with:
-      deploy_target: production
-      tag: ${{ needs.merged-ci.outputs.tag }}
-
