@@ -114,7 +114,7 @@ class ECSOperatorGen:
                 "logConfiguration": {
                     "logDriver": "awslogs",
                     "options": {
-                        "awslogs-group": f"aws/ecs/{self.name}",
+                        "awslogs-group": f"/aws/ecs/{self.name}",
                         "awslogs-region": region,
                         "awslogs-stream-prefix": f"streaming/{self.name}",
                     },
