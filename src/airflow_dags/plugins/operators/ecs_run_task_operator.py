@@ -125,6 +125,7 @@ class ECSOperatorGen:
                 "memory": str(self.container_memory),
                 "requiresCompatibilities": ["FARGATE"],
                 "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
+                "taskRoleArn": ECS_EXECUTION_ROLE_ARN,
                 "networkMode": "awsvpc",
                 "tags": [
                     {"key": "name", "value": self.name},
