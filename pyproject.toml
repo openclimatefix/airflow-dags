@@ -85,6 +85,7 @@ disallow_untyped_defs = true
 module = [
     "botocore.session",
     "botocore.client",
+    "boto3",
     "fsspec",
     "fsspec.implementations",
     "fsspec.implementations.local",
