@@ -2,7 +2,7 @@
 
 import dataclasses
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any, ClassVar
 
 import boto3
@@ -13,12 +13,15 @@ from airflow.providers.amazon.aws.operators.ecs import (
 )
 from airflow.utils.trigger_rule import TriggerRule
 
+# These should probably be templated instead of top-level, see
+# https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
 ENV: str = os.getenv("ENVIRONMENT", "development")
 SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
 ECS_SUBNET: str = os.getenv("ECS_SUBNET", "")
 ECS_SECURITY_GROUP: str = os.getenv("ECS_SECURITY_GROUP", "")
 ECS_EXECUTION_ROLE_ARN: str = os.getenv("ECS_EXECUTION_ROLE_ARN", "")
-AWS_REGION: str = os.getenv("AWS_REGION", "eu-west-1")
+AWS_REGION: str = os.getenv("AWS_DEFAULT_REGION", "eu-west-1")
+AWS_OWNER_ID: str = os.getenv("AWS_OWNER_ID", "")
 
 @dataclasses.dataclass
 class ECSOperatorGen:
@@ -89,7 +92,6 @@ class ECSOperatorGen:
         the task definition.
         """
         _, region = self.cluster_region_tuple
-        sc = boto3.client("secretsmanager", region_name=region)
 
         return EcsRegisterTaskDefinitionOperator(
             family=self.name,
@@ -104,9 +106,8 @@ class ECSOperatorGen:
                     for k, v in (self.container_env | self._default_env).items()
                 ],
                 "secrets": [
-                    {
-                        "name": key,
-                        "valueFrom": sc.get_secret_value(SecretId=secret)["ARN"],
+                    {"name": key, "valueFrom": "arn:aws:secretsmanager"\
+                            f":{region}:{AWS_OWNER_ID}:secret:{key}::",
                     } for secret, keys in self.container_secret_env.items()
                     for key in keys
                 ],
