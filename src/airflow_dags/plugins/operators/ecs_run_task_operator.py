@@ -93,9 +93,10 @@ class ECSOperatorGen:
                     for k, v in (self.container_env | self._default_env).items()
                 ],
                 "secrets": [
-                    {"name": k, "valueFrom": f"arn:aws:secretsmanager:"\
-                        f"{region}:{AWS_ACCOUNT_ID}:secret:{k}",
-                    } for k in self.container_secret_env
+                    {"name": key, "valueFrom": f"arn:aws:secretsmanager:"\
+                            f"{region}:{AWS_ACCOUNT_ID}:secret:{secret}:{key}::",
+                    } for secret, keys in self.container_secret_env.items()
+                    for key in keys
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
