@@ -17,6 +17,7 @@ SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
 AWS_ACCOUNT_ID: str = os.getenv("AWS_ACCOUNT_ID", "")
 ECS_SUBNET: str = os.getenv("ECS_SUBNET", "")
 ECS_SECURITY_GROUP: str = os.getenv("ECS_SECURITY_GROUP", "")
+ECS_EXECUTION_ROLE_ARN: str = os.getenv("ECS_EXECUTION_ROLE_ARN", "")
 AWS_REGION: str = os.getenv("AWS_REGION", "eu-west-1")
 
 @dataclasses.dataclass
@@ -109,6 +110,7 @@ class ECSOperatorGen:
                 "cpu": str(self.container_cpu),
                 "memory": str(self.container_memory),
                 "requiresCompatibilities": ["FARGATE"],
+                "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
                 "tags": [
                     {"key": "name", "value": self.name},
                     {"key": "environment", "value": ENV},
