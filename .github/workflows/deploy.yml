@@ -40,10 +40,11 @@ jobs:
 
       - name: Create domain .airflowignore file
         run: |
-          echo */ >> src/airflow_dags/.airflowignore
-          echo !airflow_dags/dags/${DOMAIN} >> src/airflow_dags/.airflowignore
-          cat src/airflow_dags/.airflowignore
+          echo */ >> .airflowignore
+          echo !airflow_dags/dags/${DOMAIN} >> .airflowignore
 
       - name: Deploy to S3 dagbag
-        run: aws s3 sync src/airflow_dags s3://$BUCKET_NAME/dags/airflow_dags
+        run: |
+          aws s3 sync .airflowignore s3://$BUCKET_NAME/dags/.airflowignore
+          aws s3 sync src/airflow_dags s3://$BUCKET_NAME/dags/airflow_dags
 
