@@ -107,7 +107,7 @@ class ECSOperatorGen:
                 ],
                 "secrets": [
                     {"name": key, "valueFrom": "arn:aws:secretsmanager"\
-                            f":{region}:{AWS_OWNER_ID}:secret:{key}",
+                            f":{region}:{AWS_OWNER_ID}:secret:{secret}:{key}::",
                     } for secret, keys in self.container_secret_env.items()
                     for key in keys
                 ],
