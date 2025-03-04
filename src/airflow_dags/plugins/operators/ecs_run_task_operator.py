@@ -91,7 +91,7 @@ class ECSOperatorGen:
         the `secrets` key in the container definition to prevent exposure in
         the task definition.
         """
-        _, region = self.cluster_region_tuple
+        cluster, region = self.cluster_region_tuple
 
         return EcsRegisterTaskDefinitionOperator(
             family=self.name,
@@ -114,9 +114,9 @@ class ECSOperatorGen:
                 "logConfiguration": {
                     "logDriver": "awslogs",
                     "options": {
-                        "awslogs-group": f"/aws/ecs/{self.name}",
+                        "awslogs-group": f"/aws/ecs/{cluster}",
                         "awslogs-region": region,
-                        "awslogs-stream-prefix": f"streaming/{self.name}",
+                        "awslogs-stream-prefix": f"airflow/{self.name}",
                     },
                 },
             }],
@@ -172,8 +172,8 @@ class ECSOperatorGen:
             overrides={"containerOverrides": [overrides_dict]},
             launch_type="FARGATE",
             network_configuration=networks_dict,
-            awslogs_group=f"/aws/ecs/{self.name}",
-            awslogs_stream_prefix=f"streaming/{self.name}",
+            awslogs_group=f"/aws/ecs/{cluster}",
+            awslogs_stream_prefix=f"airflow/{self.name}",
             awslogs_region=region,
             trigger_rule=trigger_rule,
             on_failure_callback=on_failure_callback,
