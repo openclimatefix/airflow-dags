@@ -72,8 +72,6 @@ def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
     latest_op = LatestOnlyOperator(task_id="determine_latest_run")
 
-    setup_op = sat_consumer.setup_operator()
-
     consume_rss_op = sat_consumer.run_task_operator(
         airflow_task_id="satellite-consumer-rss",
         env_overrides={
@@ -98,9 +96,8 @@ def sat_consumer_dag() -> None:
         ),
     )
 
-    teardown_op = sat_consumer.teardown_operator()
-
-    latest_op >> setup_op >> consume_rss_op >> consume_odegree_op >> teardown_op
+    with sat_consumer.setup_teardown_wrapper():
+        latest_op >> consume_rss_op >> consume_odegree_op
 
 sat_consumer_dag()
 

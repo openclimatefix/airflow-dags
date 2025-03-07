@@ -2,10 +2,12 @@
 
 import dataclasses
 import os
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, 
+from typing import ContextManager
 from typing import Any, ClassVar
 
-import boto3
+from airflow.decorators import setup, teardown
+from airflow.models import TaskInstance
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsDeregisterTaskDefinitionOperator,
     EcsRegisterTaskDefinitionOperator,
@@ -85,7 +87,8 @@ class ECSOperatorGen:
             return f"india-ecs-cluster-{ENV}", "ap-south-1"
         return f"Nowcasting-{ENV}", "eu-west-1"
 
-    def setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
+    @setup
+    def _setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
         """Create an Airflow operator to register an ECS task definition.
 
         Secrets are not passed through the environment directly but through
@@ -181,11 +184,25 @@ class ECSOperatorGen:
             on_failure_callback=on_failure_callback,
         )
 
-    def teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
+    @teardown
+    def _teardown_operator(self, ti: TaskInstance) -> EcsDeregisterTaskDefinitionOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
+        taskdef_arn: str = ti.xcom_pull(task_ids=f"register_{self.name}", key="task_definition_arn")
         return EcsDeregisterTaskDefinitionOperator(
             task_id=f"deregister_{self.name}",
-            task_definition=self.name,
-            trigger_rule=TriggerRule.ALL_DONE,
+            task_definition=taskdef_arn,
         )
+
+    def setup_teardown_wrapper(self) -> ContextManager[Callable]:
+        """Wrap the setup and teardown operators in a single generator.
+
+        To use in a DAG:
+
+        >>> with DAG("my_dag") as dag:
+        >>>     with setup_teardown_wrapper():
+        >>>         task1 >> task2
+
+        """
+        setup_op = self._setup_operator()
+        return self._teardown_operator(setup_op).as_teardown(setups=setup_op)
 
