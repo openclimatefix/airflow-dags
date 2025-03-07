@@ -70,33 +70,37 @@ def update_operator(cadence_mins: int) -> BashOperator:
 )
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
-    latest_op = LatestOnlyOperator(task_id="determine_latest_run")
+    setup_op = sat_consumer.setup_operator()
+    teardown_op = sat_consumer.teardown_operator()
 
-    consume_rss_op = sat_consumer.run_task_operator(
-        airflow_task_id="satellite-consumer-rss",
-        env_overrides={
-            "SATCONS_SATELLITE": "rss",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
-        },
-    )
+    with teardown_op.as_teardown(setups=setup_op):
+        latest_op = LatestOnlyOperator(task_id="determine_latest_run")
 
-    consume_odegree_op = sat_consumer.run_task_operator(
-        airflow_task_id="satellite-consumer-odegree",
-        trigger_rule=TriggerRule.ALL_FAILED,
-        env_overrides={
-            "SATCONS_SATELLITE": "odegree",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
-        },
-        on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
-            "The forecast will automatically move over to PVNET-ECMWF "
-            "which doesn't need satellite data. "
-            "Forecast quality may be impacted, but no out-of-hours support is required. "
-            "Please log in an incident log. ",
-        ),
-    )
+        consume_rss_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-rss",
+            env_overrides={
+                "SATCONS_SATELLITE": "rss",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
+            },
+        )
 
-    with sat_consumer.setup_teardown_wrapper():
+        consume_odegree_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-odegree",
+            trigger_rule=TriggerRule.ALL_FAILED,
+            env_overrides={
+                "SATCONS_SATELLITE": "odegree",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
+            },
+            on_failure_callback=slack_message_callback(
+                "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
+                "The forecast will automatically move over to PVNET-ECMWF "
+                "which doesn't need satellite data. "
+                "Forecast quality may be impacted, "
+                "but no out-of-hours support is required. "
+                "Please log in an incident log. ",
+            ),
+        )
+
         latest_op >> consume_rss_op >> consume_odegree_op
 
 sat_consumer_dag()

@@ -86,7 +86,7 @@ class ECSOperatorGen:
             return f"india-ecs-cluster-{ENV}", "ap-south-1"
         return f"Nowcasting-{ENV}", "eu-west-1"
 
-    def _setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
+    def setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
         """Create an Airflow operator to register an ECS task definition.
 
         Secrets are not passed through the environment directly but through
@@ -182,7 +182,7 @@ class ECSOperatorGen:
             on_failure_callback=on_failure_callback,
         )
 
-    def _teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
+    def teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
         # Since task_definition is a templateable field, we can do this
         td = f"{{{{ ti.xcom_pull(task_ids='register_{self.name}', key='task_definition_arn') }}}}"
@@ -190,17 +190,4 @@ class ECSOperatorGen:
             task_id=f"deregister_{self.name}",
             task_definition=td,
         )
-
-    def setup_teardown_wrapper(self) -> AbstractContextManager[Callable]:
-        """Wrap the setup and teardown operators in a single generator.
-
-        To use in a DAG:
-
-        >>> with DAG("my_dag") as dag:
-        >>>     with setup_teardown_wrapper():
-        >>>         task1 >> task2
-
-        """
-        setup_op = self._setup_operator()
-        return self._teardown_operator().as_teardown(setups=setup_op) #type:ignore
 
