@@ -3,7 +3,8 @@
 import dataclasses
 import os
 from collections.abc import Callable
-from typing import Any, ClassVar, ContextManager
+from contextlib import AbstractContextManager
+from typing import Any, ClassVar
 
 from airflow.decorators import setup, teardown
 from airflow.models import TaskInstance
@@ -192,7 +193,7 @@ class ECSOperatorGen:
             task_definition=taskdef_arn,
         )
 
-    def setup_teardown_wrapper(self) -> ContextManager[Callable]:
+    def setup_teardown_wrapper(self) -> AbstractContextManager[Callable]:
         """Wrap the setup and teardown operators in a single generator.
 
         To use in a DAG:
