@@ -3,10 +3,8 @@
 import dataclasses
 import os
 from collections.abc import Callable
-from contextlib import AbstractContextManager
 from typing import Any, ClassVar
 
-from airflow.models import TaskInstance
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsDeregisterTaskDefinitionOperator,
     EcsRegisterTaskDefinitionOperator,
