@@ -6,7 +6,6 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager
 from typing import Any, ClassVar
 
-from airflow.decorators import setup, teardown
 from airflow.models import TaskInstance
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsDeregisterTaskDefinitionOperator,
@@ -87,7 +86,6 @@ class ECSOperatorGen:
             return f"india-ecs-cluster-{ENV}", "ap-south-1"
         return f"Nowcasting-{ENV}", "eu-west-1"
 
-    @setup
     def _setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
         """Create an Airflow operator to register an ECS task definition.
 
@@ -184,7 +182,6 @@ class ECSOperatorGen:
             on_failure_callback=on_failure_callback,
         )
 
-    @teardown
     def _teardown_operator(self, ti: TaskInstance) -> EcsDeregisterTaskDefinitionOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
         taskdef_arn: str = ti.xcom_pull(task_ids=f"register_{self.name}", key="task_definition_arn")
