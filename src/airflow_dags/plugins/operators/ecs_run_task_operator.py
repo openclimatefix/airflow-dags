@@ -186,5 +186,6 @@ class ECSOperatorGen:
         return EcsDeregisterTaskDefinitionOperator(
             task_id=f"deregister_{self.name}",
             task_definition=self.name,
+            trigger_rule=TriggerRule.ALL_DONE,
         )
 
