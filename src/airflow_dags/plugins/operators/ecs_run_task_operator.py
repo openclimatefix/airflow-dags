@@ -182,12 +182,13 @@ class ECSOperatorGen:
             on_failure_callback=on_failure_callback,
         )
 
-    def _teardown_operator(self, ti: TaskInstance) -> EcsDeregisterTaskDefinitionOperator:
+    def _teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
-        taskdef_arn: str = ti.xcom_pull(task_ids=f"register_{self.name}", key="task_definition_arn")
+        # Since task_definition is a templateable field, we can do this
+        td: str = f"{{{{ ti.xcom_pull(task_ids=register_{self.name}, key=task_definition_arn) }}}}"
         return EcsDeregisterTaskDefinitionOperator(
             task_id=f"deregister_{self.name}",
-            task_definition=taskdef_arn,
+            task_definition=td,
         )
 
     def setup_teardown_wrapper(self) -> AbstractContextManager[Callable]:
@@ -201,5 +202,5 @@ class ECSOperatorGen:
 
         """
         setup_op = self._setup_operator()
-        return self._teardown_operator(setup_op).as_teardown(setups=setup_op)
+        return self._teardown_operator().as_teardown(setups=setup_op) #type:ignore
 
