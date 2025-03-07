@@ -2,9 +2,8 @@
 
 import dataclasses
 import os
-from collections.abc import Callable, 
-from typing import ContextManager
-from typing import Any, ClassVar
+from collections.abc import Callable
+from typing import Any, ClassVar, ContextManager
 
 from airflow.decorators import setup, teardown
 from airflow.models import TaskInstance
