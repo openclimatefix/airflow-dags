@@ -118,7 +118,7 @@ class ECSOperatorGen:
                     "options": {
                         "awslogs-group": f"/aws/ecs/{cluster}",
                         "awslogs-region": region,
-                        "awslogs-stream-prefix": f"airflow/{self.name}",
+                        "awslogs-stream-prefix": "airflow",
                     },
                 },
             }],
@@ -176,7 +176,7 @@ class ECSOperatorGen:
             launch_type="FARGATE",
             network_configuration=networks_dict,
             awslogs_group=f"/aws/ecs/{cluster}",
-            awslogs_stream_prefix=f"airflow/{self.name}",
+            awslogs_stream_prefix="airflow",
             awslogs_region=region,
             trigger_rule=trigger_rule,
             on_failure_callback=on_failure_callback,
@@ -185,7 +185,7 @@ class ECSOperatorGen:
     def _teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
         # Since task_definition is a templateable field, we can do this
-        td: str = f"{{{{ ti.xcom_pull(task_ids=register_{self.name}, key=task_definition_arn) }}}}"
+        td = f"{{{{ ti.xcom_pull(task_ids='register_{self.name}', key='task_definition_arn') }}}}"
         return EcsDeregisterTaskDefinitionOperator(
             task_id=f"deregister_{self.name}",
             task_definition=td,
