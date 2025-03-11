@@ -81,7 +81,7 @@ def sat_consumer_dag() -> None:
             airflow_task_id="satellite-consumer-rss",
             env_overrides={
                 "SATCONS_SATELLITE": "rss",
-                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
             },
         )
 
@@ -90,7 +90,7 @@ def sat_consumer_dag() -> None:
             trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
                 "SATCONS_SATELLITE": "odegree",
-                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
             },
             on_failure_callback=slack_message_callback(
                 "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
