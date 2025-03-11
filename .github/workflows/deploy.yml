@@ -12,6 +12,18 @@ on:
       tag:
         required: true
         description: The repo tag to deploy
+        type: string
+  workflow_call:
+    inputs:
+      deploy_target:
+        required: false
+        default: 'development'
+        description: 'The target environment to deploy to'
+        type: string
+      tag:
+        required: true
+        description: The repo tag to deploy
+        type: string
 
 jobs:
   deploy-dags:

@@ -10,3 +10,11 @@ jobs:
     uses: openclimatefix/.github/.github/workflows/default_branch_pr_merged_ci.yml@main
     secrets: inherit
 
+  deploy-dev:
+    needs: merged-ci
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag: ${{ needs.merged-ci.outputs.tag }}
+      environment: development
+
+
