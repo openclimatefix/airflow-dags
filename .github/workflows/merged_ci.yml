@@ -15,6 +15,6 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       tag: ${{ needs.merged-ci.outputs.tag }}
-      environment: development
+      deploy_target: development
 
 
