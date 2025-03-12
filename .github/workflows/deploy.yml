@@ -1,4 +1,4 @@
-name: Deploy DAGs
+name: Deploy DAGs (manual)
 run-name: Deploy ${{ inputs.tag }} to ${{ inputs.deploy_target }} by @${{ github.actor }}
 
 on:
@@ -9,6 +9,11 @@ on:
         description: 'The target environment to deploy to'
         type: choice
         options: ['development', 'production']
+      domain:
+        required: true
+        description: 'The domain to deploy to'
+        type: choice
+        options: ['uk', 'india']
       tag:
         required: true
         description: The repo tag to deploy
@@ -16,9 +21,12 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        required: false
-        default: 'development'
+        required: true
         description: 'The target environment to deploy to'
+        type: string
+      domain:
+        required: true
+        description: 'The domain to deploy to'
         type: string
       tag:
         required: true
@@ -28,14 +36,11 @@ on:
 jobs:
   deploy-dags:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.deploy_target }}
-    strategy:
-      matrix:
-        domain: [ "uk", "india" ]
+    environment: "${{ inputs.deploy_target }}-${{ inputs.domain }}"
     env:
-      BUCKET_NAME: "${{ matrix.domain }}-${{ inputs.deploy_target }}-eb-airflow"
-      DOMAIN: ${{ matrix.domain }}
-      REGION: "${{ matrix.domain == 'india' && 'ap-south-1' || 'eu-west-1' }}"
+      BUCKET_NAME: "${{ inputs.domain }}-${{ inputs.deploy_target }}-eb-airflow"
+      DOMAIN: ${{ inputs.domain }}
+      REGION: "${{ inputs.domain == 'india' && 'ap-south-1' || 'eu-west-1' }}"
 
     steps:
       - name: Checkout required tag
@@ -59,12 +64,3 @@ jobs:
       - name: Deploy to S3 dagbag
         run: aws s3 sync src/airflow_dags s3://$BUCKET_NAME/dags/airflow_dags --delete
 
-  # This job prevents GitHub from thinking that the matrix jobs outweigh each other
-  # in the overall deployment status
-  deployment-status:
-    needs: [deploy-dags]
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.deploy_target }}
-    steps:
-      - name: Deployment Completed
-        run: echo "Successfully deployed ${{ inputs.tag }} to ${{ inputs.deploy_target }} by @${{ github.actor }}"
