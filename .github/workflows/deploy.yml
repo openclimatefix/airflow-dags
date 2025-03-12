@@ -37,9 +37,7 @@ on:
 jobs:
   deploy-dags:
     runs-on: ubuntu-latest
-    environment:
-      name: "${{ inputs.deploy_target }}-${{ inputs.domain }}"
-      url: ${{ inputs.tag }}
+    environment: "${{ inputs.deploy_target }}-${{ inputs.domain }}"
     env:
       BUCKET_NAME: "${{ inputs.domain }}-${{ inputs.deploy_target }}-eb-airflow"
       DOMAIN: ${{ matrix.domain }}
