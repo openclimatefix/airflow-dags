@@ -7,10 +7,10 @@ on:
 
 jobs:
   deploy-dags-dev:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         domain: [ "uk", "india" ]
+
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_target: "development"
