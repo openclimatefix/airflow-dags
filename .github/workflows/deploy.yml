@@ -40,7 +40,7 @@ jobs:
     environment: "${{ inputs.deploy_target }}-${{ inputs.domain }}"
     env:
       BUCKET_NAME: "${{ inputs.domain }}-${{ inputs.deploy_target }}-eb-airflow"
-      DOMAIN: ${{ inputs.domain }}
+      DOMAIN: "${{ inputs.domain }}"
       REGION: "${{ inputs.domain == 'india' && 'ap-south-1' || 'eu-west-1' }}"
 
     steps:
