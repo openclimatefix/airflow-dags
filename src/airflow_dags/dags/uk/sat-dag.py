@@ -21,11 +21,11 @@ env = os.getenv("ENVIRONMENT", "development")
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "retries": 1,
+    "retries": 0,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 2,
-    "concurrency": 2,
-    "max_active_tasks": 2,
+    "max_active_runs": 4,
+    "concurrency": 4,
+    "max_active_tasks": 4,
     "execution_timeout": dt.timedelta(minutes=30),
 }
 
@@ -39,7 +39,7 @@ sat_consumer = ECSOperatorGen(
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
         "SATCONS_ZIP": "true",
-        "SATCONS_NUM_WORKERS": "2",
+        "SATCONS_NUM_WORKERS": "3",
     },
     container_secret_env={
         "development/data/satellite-consumer": [
