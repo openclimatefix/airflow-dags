@@ -39,6 +39,7 @@ sat_consumer = ECSOperatorGen(
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
         "SATCONS_ZIP": "true",
+        "SATCONS_NUM_WORKERS": "2",
     },
     container_secret_env={
         "development/data/satellite-consumer": [
