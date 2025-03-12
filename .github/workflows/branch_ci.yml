@@ -14,5 +14,5 @@ jobs:
       enable_typechecking: false
       tests_folder: "tests"
       tests_runner: "unittest"
-      tests_conda_deps: "xmlsec"
+      tests_conda_deps: "xmlsec=1.3.14"
 
