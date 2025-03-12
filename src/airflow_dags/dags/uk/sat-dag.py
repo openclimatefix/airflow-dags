@@ -26,7 +26,7 @@ default_args = {
     "max_active_runs": 4,
     "concurrency": 4,
     "max_active_tasks": 4,
-    "execution_timeout": dt.timedelta(minutes=30),
+    "execution_timeout": dt.timedelta(minutes=45),
 }
 
 sat_consumer = ECSOperatorGen(
