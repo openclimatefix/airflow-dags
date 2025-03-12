@@ -39,7 +39,7 @@ sat_consumer = ECSOperatorGen(
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
         "SATCONS_ZIP": "true",
-        "SATCONS_NUM_WORKERS": "3",
+        "SATCONS_NUM_WORKERS": "4",
     },
     container_secret_env={
         "development/data/satellite-consumer": [
@@ -47,6 +47,7 @@ sat_consumer = ECSOperatorGen(
         ],
     },
     domain="uk",
+    container_memory=4096,
 )
 
 def update_operator(cadence_mins: int) -> BashOperator:
