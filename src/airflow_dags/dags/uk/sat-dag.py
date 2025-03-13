@@ -32,14 +32,12 @@ default_args = {
 sat_consumer = ECSOperatorGen(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.0.10",
+    container_tag="0.0.11",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
-        "SATCONS_ZIP": "true",
-        "SATCONS_NUM_WORKERS": "8",
     },
     container_secret_env={
         "development/data/satellite-consumer": [
@@ -66,7 +64,7 @@ def update_operator(cadence_mins: int) -> BashOperator:
 @dag(
     dag_id="uk-satellite-consumer",
     description=__doc__,
-    schedule_interval="*/10 * * * *",
+    schedule_interval="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
