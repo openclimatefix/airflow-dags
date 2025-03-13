@@ -98,7 +98,7 @@ def sat_consumer_dag() -> None:
         )
 
         merge_rss_catchup_op = sat_consumer.run_task_operator(
-            airflow_task_id="satellite-consumer-merge-rss",
+            airflow_task_id="satellite-consumer-merge-rss-catchup",
             trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
                 "SATCONS_COMMAND": "merge",
@@ -110,7 +110,7 @@ def sat_consumer_dag() -> None:
         )
 
         consume_single_odegree_op = sat_consumer.run_task_operator(
-            airflow_task_id="satellite-consumer-0degree",
+            airflow_task_id="satellite-consumer-odegree",
             trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
                 "SATCONS_TIME": "{{ data_interval_start }}",
@@ -131,7 +131,7 @@ def sat_consumer_dag() -> None:
         )
 
         merge_odegree_catchup_op = sat_consumer.run_task_operator(
-            airflow_task_id="satellite-consumer-merge-odegree",
+            airflow_task_id="satellite-consumer-merge-odegree-catchup",
             trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
                 "SATCONS_COMMAND": "merge",
