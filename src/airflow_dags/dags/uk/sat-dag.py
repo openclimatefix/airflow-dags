@@ -23,16 +23,16 @@ default_args = {
     "depends_on_past": False,
     "retries": 0,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 4,
-    "concurrency": 4,
-    "max_active_tasks": 4,
+    "max_active_runs": 5,
+    "concurrency": 5,
+    "max_active_tasks": 10,
     "execution_timeout": dt.timedelta(minutes=45),
 }
 
 sat_consumer = ECSOperatorGen(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.0.11",
+    container_tag="0.1.0",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
@@ -77,20 +77,68 @@ def sat_consumer_dag() -> None:
     with teardown_op.as_teardown(setups=setup_op):
         latest_op = LatestOnlyOperator(task_id="determine_latest_run")
 
-        consume_rss_op = sat_consumer.run_task_operator(
+        consume_single_rss_op = sat_consumer.run_task_operator(
             airflow_task_id="satellite-consumer-rss",
             env_overrides={
+                "SATCONS_TIME": "{{ data_interval_start }}",
                 "SATCONS_SATELLITE": "rss",
                 "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
             },
         )
 
-        consume_odegree_op = sat_consumer.run_task_operator(
-            airflow_task_id="satellite-consumer-odegree",
+        merge_rss_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-merge-rss",
+            env_overrides={
+                "SATCONS_COMMAND": "merge",
+                "SATCONS_TIME": "{{ data_interval_start }}",
+                "SATCONS_SATELLITE": "rss",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+                "SATCONS_CONSUME_MISSING": "false",
+            },
+        )
+
+        merge_rss_catchup_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-merge-rss",
             trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
+                "SATCONS_COMMAND": "merge",
+                "SATCONS_TIME": "{{ data_interval_start }}",
+                "SATCONS_SATELLITE": "rss",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+                "SATCONS_CONSUME_MISSING": "true",
+            },
+        )
+
+        consume_single_odegree_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-0degree",
+            trigger_rule=TriggerRule.ALL_FAILED,
+            env_overrides={
+                "SATCONS_TIME": "{{ data_interval_start }}",
                 "SATCONS_SATELLITE": "odegree",
                 "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+            },
+        )
+
+        merge_odegree_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-merge-odegree",
+            env_overrides={
+                "SATCONS_COMMAND": "merge",
+                "SATCONS_TIME": "{{ data_interval_start }}",
+                "SATCONS_SATELLITE": "odegree",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+                "SATCONS_CONSUME_MISSING": "false",
+            },
+        )
+
+        merge_odegree_catchup_op = sat_consumer.run_task_operator(
+            airflow_task_id="satellite-consumer-merge-odegree",
+            trigger_rule=TriggerRule.ALL_FAILED,
+            env_overrides={
+                "SATCONS_COMMAND": "merge",
+                "SATCONS_TIME": "{{ data_interval_start }}",
+                "SATCONS_SATELLITE": "odegree",
+                "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+                "SATCONS_CONSUME_MISSING": "true",
             },
             on_failure_callback=slack_message_callback(
                 "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
@@ -102,7 +150,12 @@ def sat_consumer_dag() -> None:
             ),
         )
 
-        latest_op >> consume_rss_op >> consume_odegree_op
+
+        latest_op >> consume_single_rss_op
+        consume_single_rss_op >> merge_rss_op >> merge_rss_catchup_op
+
+        consume_single_rss_op >> consume_single_odegree_op
+        consume_single_odegree_op >> merge_odegree_op >> merge_odegree_catchup_op
 
 sat_consumer_dag()
 
