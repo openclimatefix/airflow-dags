@@ -32,7 +32,7 @@ default_args = {
 sat_consumer = ECSOperatorGen(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.1.3",
+    container_tag="0.1.5",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
