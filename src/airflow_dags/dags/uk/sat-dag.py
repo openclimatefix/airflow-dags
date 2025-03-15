@@ -46,6 +46,7 @@ sat_consumer = ECSOperatorGen(
     },
     domain="uk",
     container_memory=4096,
+    container_storage=30,
 )
 
 def update_operator(cadence_mins: int) -> BashOperator:
