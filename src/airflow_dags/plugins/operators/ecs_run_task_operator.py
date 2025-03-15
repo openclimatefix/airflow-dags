@@ -48,6 +48,8 @@ class ECSOperatorGen:
     """The command to run in the container."""
     domain: str = "uk"
     """The domain of the container."""
+    container_storage: int = 20
+    """The ephemeral storage size of the container in GB."""
 
     _default_env: ClassVar[dict[str, str]] = {
         "AWS_REGION": AWS_REGION,
@@ -75,6 +77,8 @@ class ECSOperatorGen:
             )
         if self.domain not in ["uk", "india"]:
             raise ValueError(f"Domain must be one of ['uk', 'india'], got {self.domain}")
+        if self.container_storage < 20:
+            raise ValueError(f"Storage must be at least 20GB. Got {self.container_storage}GB")
 
 
     @property
@@ -123,6 +127,7 @@ class ECSOperatorGen:
             register_task_kwargs={
                 "cpu": str(self.container_cpu),
                 "memory": str(self.container_memory),
+                "ephemeralStorage": {"sizeInGiB": self.container_storage},
                 "requiresCompatibilities": ["FARGATE"],
                 "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
                 "taskRoleArn": ECS_TASK_ROLE_ARN,
