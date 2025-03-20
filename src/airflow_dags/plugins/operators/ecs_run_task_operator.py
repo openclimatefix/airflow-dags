@@ -30,11 +30,30 @@ AWS_OWNER_ID: str = os.getenv("AWS_OWNER_ID", "")
 class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOperator):
     """Operator to conditionally register ECS tasks."""
 
+    def __init__(
+            self,
+            *,
+            family: str,
+            container_definitions: list[dict[str, Any]],
+            register_task_kwargs: dict[str, Any],
+            **kwargs: Any,
+        ) -> None:
+        """Create a new instance of the class."""
+        self.family = family
+        self.container_definitions = container_definitions
+        self.register_task_kwargs = register_task_kwargs
+        super().__init__(
+            family=family,
+            container_definitions=container_definitions,
+            register_task_kwargs=register_task_kwargs,
+            **kwargs,
+        )
+
     @override
     def pre_execute(self, context: Context) -> Any:
         try:
             existing_def = self.client.describe_task_definition(
-                taskDefinition=super().family, include=["TAGS"],
+                taskDefinition=self.family, include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
             existing_kwargs = existing_def["taskDefinition"] | { "tags": existing_def["tags"] }
@@ -42,13 +61,13 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
 
             # Only return the ECS operator if the task has changed
             for key in super().container_definitions[0]:
-                if existing_container_def.get(key) != super().container_definitions[0].get(key):
+                if existing_container_def.get(key) != self.container_definitions[0].get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
                     )
                     return super().execute(context=context)
-            for key in super().register_task_kwargs:
-                if existing_kwargs.get(key) != super().register_task_kwargs.get(key):
+            for key in self.register_task_kwargs:
+                if existing_kwargs.get(key) != self.register_task_kwargs.get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
                     )
