@@ -1,8 +1,8 @@
 """Preconfigured operator for running ECS tasks."""
 
 import dataclasses
+import logging
 import os
-import boto3
 from collections.abc import Callable
 from typing import Any, ClassVar
 
@@ -14,7 +14,6 @@ from airflow.providers.amazon.aws.operators.ecs import (
 )
 from airflow.utils.trigger_rule import TriggerRule
 from botocore.errorfactory import ClientError
-import logging
 
 # These should probably be templated instead of top-level, see
 # https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
@@ -159,8 +158,7 @@ class ECSOperatorGen:
         )
 
         try:
-            client = boto3.client("ecs", region_name=region)
-            existing_def = client.describe_task_definition(
+            existing_def = ecs_operator.client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
