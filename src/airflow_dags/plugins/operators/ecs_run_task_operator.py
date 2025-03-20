@@ -6,13 +6,14 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar
 
+import boto3
 from airflow.models import BaseOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.providers.amazon.aws.hooks.ecs import EcsHook
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsRegisterTaskDefinitionOperator,
     EcsRunTaskOperator,
 )
-from airflow.providers.amazon.aws.hooks.ecs import EcsHook
 from airflow.utils.trigger_rule import TriggerRule
 from botocore.errorfactory import ClientError
 
@@ -26,6 +27,10 @@ ECS_EXECUTION_ROLE_ARN: str = os.getenv("ECS_EXECUTION_ROLE_ARN", "")
 ECS_TASK_ROLE_ARN: str = os.getenv("ECS_TASK_ROLE_ARN", "")
 AWS_REGION: str = os.getenv("AWS_DEFAULT_REGION", "eu-west-1")
 AWS_OWNER_ID: str = os.getenv("AWS_OWNER_ID", "")
+
+def get_client(region: str) -> boto3.client:
+    """Get a client in a non-top level manner to keep airflow happy."""
+    return EcsHook().get_session(region_name=region).client("ecs")
 
 @dataclasses.dataclass
 class ECSOperatorGen:
@@ -159,7 +164,7 @@ class ECSOperatorGen:
         )
 
         try:
-            client = EcsHook().get_session(region_name=region).client("ecs")
+            client = get_client(region=region)
             existing_def = client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
