@@ -2,6 +2,7 @@
 
 import dataclasses
 import os
+import boto3
 from collections.abc import Callable
 from typing import Any, ClassVar
 
@@ -12,6 +13,7 @@ from airflow.providers.amazon.aws.operators.ecs import (
     EcsRunTaskOperator,
 )
 from airflow.utils.trigger_rule import TriggerRule
+from botocore.errorfactory import ClientError
 import logging
 
 # These should probably be templated instead of top-level, see
@@ -157,7 +159,8 @@ class ECSOperatorGen:
         )
 
         try:
-            existing_def = ecs_operator.client.describe_task_definition(
+            client = boto3.client("ecs")
+            existing_def = client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
@@ -177,8 +180,9 @@ class ECSOperatorGen:
                         f"Definition key '{key}' different, registering new task definition",
                     )
                     return ecs_operator
-        except Exception:
+        except ClientError as e:
             # ECS Task definition doesn't exist yet, create it
+            logging.info(f"Error getting task definition: {e}")
            return ecs_operator
 
         return EmptyOperator(task_id=f"register_{self.name}")
