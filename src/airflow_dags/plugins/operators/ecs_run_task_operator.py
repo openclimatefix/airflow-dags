@@ -1,10 +1,9 @@
 """Preconfigured operator for running ECS tasks."""
 
 import dataclasses
-import logging
 import os
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, override
 
 import boto3
 from airflow.models import BaseOperator
@@ -13,9 +12,13 @@ from airflow.providers.amazon.aws.hooks.ecs import EcsHook
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsRegisterTaskDefinitionOperator,
     EcsRunTaskOperator,
+    AwsBaseOperator,
 )
 from airflow.utils.trigger_rule import TriggerRule
 from botocore.errorfactory import ClientError
+
+from airflow.utils.context import Context
+from airflow.exceptions import AirflowSkipException
 
 # These should probably be templated instead of top-level, see
 # https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
@@ -28,9 +31,40 @@ ECS_TASK_ROLE_ARN: str = os.getenv("ECS_TASK_ROLE_ARN", "")
 AWS_REGION: str = os.getenv("AWS_DEFAULT_REGION", "eu-west-1")
 AWS_OWNER_ID: str = os.getenv("AWS_OWNER_ID", "")
 
-def get_client(region: str) -> boto3.client:
-    """Get a client in a non-top level manner to keep airflow happy."""
-    return EcsHook().get_session(region_name=region).client("ecs")
+class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOperator):
+    """Operator to conditionally register ECS tasks."""
+
+    @override
+    def pre_execute(self, context: Context) -> Any:
+        try:
+            existing_def = self.client.describe_task_definition(
+                taskDefinition=super().family, include=["TAGS"],
+            )
+            existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
+            existing_kwargs = existing_def["taskDefinition"] | { "tags": existing_def["tags"] }
+            existing_kwargs.pop("containerDefinitions")
+
+            # Only return the ECS operator if the task has changed
+            for key in super().container_definitions[0]:
+                if existing_container_def.get(key) != super().container_definitions[0].get(key):
+                    self.log.info(
+                        f"Definition key '{key}' different, registering new task definition",
+                    )
+                    return super().execute(context=context)
+            for key in super().register_task_kwargs:
+                if existing_kwargs.get(key) != super().register_task_kwargs.get(key):
+                    self.log.info(
+                        f"Definition key '{key}' different, registering new task definition",
+                    )
+                    return super().execute(context=context)
+
+        except ClientError as e:
+            # ECS Task definition doesn't exist yet, create it
+            self.log.info(f"Error getting task definition: {e}")
+            return super().execute(context=context)
+
+        self.log.info("Task definition already exists, skipping registry.")
+        raise AirflowSkipException
 
 @dataclasses.dataclass
 class ECSOperatorGen:
@@ -149,48 +183,16 @@ class ECSOperatorGen:
         Secrets are not passed through the environment directly but through
         the `secrets` key in the container definition to prevent exposure in
         the task definition.
-
-        Task definition is only registered if it doesn't already exist, or
-        the existing task definition is out of date.
         """
         cluster, region = self.cluster_region_tuple
 
-        ecs_operator = EcsRegisterTaskDefinitionOperator(
+        return EcsConditionalRegisterTaskDefinitionOperator(
             family=self.name,
             task_id=f"register_{self.name}",
             container_definitions=[self.as_container_definition()],
             register_task_kwargs=self.as_task_kwargs(),
             region=region,
         )
-
-        try:
-            client = get_client(region=region)
-            existing_def = client.describe_task_definition(
-                taskDefinition=self.name, include=["TAGS"],
-            )
-            existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
-            existing_kwargs = existing_def["taskDefinition"] | { "tags": existing_def["tags"] }
-            existing_kwargs.pop("containerDefinitions")
-
-            # Only return the ECS operator if the task has changed
-            for key in self.as_container_definition():
-                if existing_container_def.get(key) != self.as_container_definition().get(key):
-                    logging.info(
-                        f"Definition key '{key}' different, registering new task definition",
-                    )
-                    return ecs_operator
-            for key in self.as_task_kwargs():
-                if existing_kwargs.get(key) != self.as_task_kwargs().get(key):
-                    logging.info(
-                        f"Definition key '{key}' different, registering new task definition",
-                    )
-                    return ecs_operator
-        except ClientError as e:
-            # ECS Task definition doesn't exist yet, create it
-            logging.info(f"Error getting task definition: {e}")
-            return ecs_operator
-
-        return EmptyOperator(task_id=f"register_{self.name}")
 
     def run_task_operator(
         self,
