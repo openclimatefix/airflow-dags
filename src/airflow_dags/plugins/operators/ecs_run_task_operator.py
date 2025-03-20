@@ -60,7 +60,7 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
             existing_kwargs.pop("containerDefinitions")
 
             # Only return the ECS operator if the task has changed
-            for key in super().container_definitions[0]:
+            for key in self.container_definitions[0]:
                 if existing_container_def.get(key) != self.container_definitions[0].get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
