@@ -1,5 +1,5 @@
 name: Deploy DAGs
-run-name: Deploy ${{ inputs.tag }} to ${{ inputs.deploy_target }}-${{ inputs.domain }} by @${{ github.actor }}
+run-name: Deploy ${{ github.ref_name }} to ${{ inputs.deploy_target }}-${{ inputs.domain }} by @${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -14,10 +14,6 @@ on:
         description: 'The domain to deploy to'
         type: choice
         options: ['uk', 'india']
-      tag:
-        required: true
-        description: The repo tag to deploy
-        type: string
   workflow_call:
     inputs:
       deploy_target:
@@ -29,10 +25,6 @@ on:
         required: true
         description: 'The domain to deploy to'
         type: string
-      tag:
-        required: true
-        description: The repo tag to deploy
-        type: string
 
 jobs:
   deploy-dags:
@@ -42,15 +34,13 @@ jobs:
       BUCKET_NAME: "${{ inputs.domain }}-${{ inputs.deploy_target }}-eb-airflow"
       DOMAIN: "${{ inputs.domain }}"
       REGION: "${{ inputs.domain == 'india' && 'ap-south-1' || 'eu-west-1' }}"
+    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout required tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
-
-      - name: Echo ref
-        run: echo ${{ github.ref_name }}
+          ref: ${{ githubs.ref_name }}
 
       - name: Set AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

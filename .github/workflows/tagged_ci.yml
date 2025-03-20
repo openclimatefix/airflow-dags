@@ -15,6 +15,5 @@ jobs:
     with:
       deploy_target: "development"
       domain: ${{ matrix.domain }}
-      tag: ${{ github.ref_name }}
     secrets: inherit
 
