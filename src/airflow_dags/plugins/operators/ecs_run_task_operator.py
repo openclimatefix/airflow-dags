@@ -3,22 +3,18 @@
 import dataclasses
 import os
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, override
+from typing import Any, ClassVar, override
 
-import boto3
+from airflow.exceptions import AirflowSkipException
 from airflow.models import BaseOperator
 from airflow.operators.empty import EmptyOperator
-from airflow.providers.amazon.aws.hooks.ecs import EcsHook
 from airflow.providers.amazon.aws.operators.ecs import (
     EcsRegisterTaskDefinitionOperator,
     EcsRunTaskOperator,
-    AwsBaseOperator,
 )
+from airflow.utils.context import Context
 from airflow.utils.trigger_rule import TriggerRule
 from botocore.errorfactory import ClientError
-
-from airflow.utils.context import Context
-from airflow.exceptions import AirflowSkipException
 
 # These should probably be templated instead of top-level, see
 # https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
