@@ -91,7 +91,6 @@ def sat_consumer_dag() -> None:
 
         merge_rss_op = sat_consumer.run_task_operator(
             airflow_task_id="satellite-consumer-merge-rss-catchup",
-            trigger_rule=TriggerRule.ALL_FAILED,
             env_overrides={
                 "SATCONS_COMMAND": "merge",
                 "SATCONS_TIME": "{{ data_interval_start }}",
