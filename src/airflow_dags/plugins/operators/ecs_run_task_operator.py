@@ -5,12 +5,14 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar
 
+from airflow.models import BaseOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.operators.ecs import (
-    EcsDeregisterTaskDefinitionOperator,
     EcsRegisterTaskDefinitionOperator,
     EcsRunTaskOperator,
 )
 from airflow.utils.trigger_rule import TriggerRule
+import logging
 
 # These should probably be templated instead of top-level, see
 # https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
@@ -80,6 +82,52 @@ class ECSOperatorGen:
         if self.container_storage < 20:
             raise ValueError(f"Storage must be at least 20GB. Got {self.container_storage}GB")
 
+    def as_container_definition(self) -> dict[str, object]:
+        """Return an ECS container definition."""
+        cluster, region = self.cluster_region_tuple
+        return {
+            "name": self.name,
+            "image": f"{self.container_image}:{self.container_tag}",
+            "essential": True,
+            "command": self.container_command,
+            "environment": [
+                {"name": k, "value": v}
+                for k, v in (self.container_env | self._default_env).items()
+            ],
+            "secrets": [
+                {"name": key, "valueFrom": "arn:aws:secretsmanager"\
+                        f":{region}:{AWS_OWNER_ID}:secret:{secret}:{key}::",
+                } for secret, keys in self.container_secret_env.items()
+                for key in keys
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": f"/aws/ecs/{cluster}",
+                    "awslogs-region": region,
+                    "awslogs-stream-prefix": "airflow",
+                },
+            },
+        }
+
+    def as_task_kwargs(self) -> dict[str, object]:
+        """Return ECS task kwargs."""
+        return {
+            "cpu": str(self.container_cpu),
+            "memory": str(self.container_memory),
+            "ephemeralStorage": {"sizeInGiB": self.container_storage},
+            "requiresCompatibilities": ["FARGATE"],
+            "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
+            "taskRoleArn": ECS_TASK_ROLE_ARN,
+            "networkMode": "awsvpc",
+            "tags": [
+                {"key": "name", "value": self.name},
+                {"key": "environment", "value": ENV},
+                {"key": "type", "value": "ecs"},
+                {"key": "domain", "value": self.domain},
+            ],
+        }
+
 
     @property
     def cluster_region_tuple(self) -> tuple[str, str]:
@@ -88,60 +136,52 @@ class ECSOperatorGen:
             return f"india-ecs-cluster-{ENV}", "ap-south-1"
         return f"Nowcasting-{ENV}", "eu-west-1"
 
-    def setup_operator(self) -> EcsRegisterTaskDefinitionOperator:
+    def setup_operator(self) -> BaseOperator:
         """Create an Airflow operator to register an ECS task definition.
 
         Secrets are not passed through the environment directly but through
         the `secrets` key in the container definition to prevent exposure in
         the task definition.
+
+        Task definition is only registered if it doesn't already exist, or
+        the existing task definition is out of date.
         """
         cluster, region = self.cluster_region_tuple
 
-        return EcsRegisterTaskDefinitionOperator(
+        ecs_operator = EcsRegisterTaskDefinitionOperator(
             family=self.name,
             task_id=f"register_{self.name}",
-            container_definitions=[{
-                "name": self.name,
-                "image": f"{self.container_image}:{self.container_tag}",
-                "essential": True,
-                "command": self.container_command,
-                "environment": [
-                    {"name": k, "value": v}
-                    for k, v in (self.container_env | self._default_env).items()
-                ],
-                "secrets": [
-                    {"name": key, "valueFrom": "arn:aws:secretsmanager"\
-                            f":{region}:{AWS_OWNER_ID}:secret:{secret}:{key}::",
-                    } for secret, keys in self.container_secret_env.items()
-                    for key in keys
-                ],
-                "logConfiguration": {
-                    "logDriver": "awslogs",
-                    "options": {
-                        "awslogs-group": f"/aws/ecs/{cluster}",
-                        "awslogs-region": region,
-                        "awslogs-stream-prefix": "airflow",
-                    },
-                },
-            }],
-            register_task_kwargs={
-                "cpu": str(self.container_cpu),
-                "memory": str(self.container_memory),
-                "ephemeralStorage": {"sizeInGiB": self.container_storage},
-                "requiresCompatibilities": ["FARGATE"],
-                "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
-                "taskRoleArn": ECS_TASK_ROLE_ARN,
-                "networkMode": "awsvpc",
-                "tags": [
-                    {"key": "name", "value": self.name},
-                    {"key": "environment", "value": ENV},
-                    {"key": "type", "value": "ecs"},
-                    {"key": "domain", "value": self.domain},
-                ],
-            },
+            container_definitions=[self.as_container_definition()],
+            register_task_kwargs=self.as_task_kwargs(),
             region=region,
         )
 
+        try:
+            existing_def = ecs_operator.client.describe_task_definition(
+                taskDefinition=self.name, include=["TAGS"],
+            )
+            existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
+            existing_kwargs = existing_def["taskDefinition"] | existing_def["tags"]
+            existing_kwargs.pop("container_definitions")
+
+            # Only return the ECS operator if the task has changed
+            for key in self.as_container_definition():
+                if existing_container_def.get(key) != self.as_container_definition().get(key):
+                    logging.info(
+                        f"Definition key '{key}' different, registering new task definition",
+                    )
+                    return ecs_operator
+            for key in self.as_task_kwargs():
+                if existing_kwargs.get(key) != self.as_task_kwargs().get(key):
+                    logging.info(
+                        f"Definition key '{key}' different, registering new task definition",
+                    )
+                    return ecs_operator
+        except Exception:
+            # ECS Task definition doesn't exist yet, create it
+           return ecs_operator
+
+        return EmptyOperator(task_id=f"register_{self.name}")
 
     def run_task_operator(
         self,
@@ -185,12 +225,13 @@ class ECSOperatorGen:
             on_failure_callback=on_failure_callback,
         )
 
-    def teardown_operator(self) -> EcsDeregisterTaskDefinitionOperator:
+    def teardown_operator(self) -> BaseOperator:
         """Create an Airflow operator to deregister an ECS task definition."""
         # Since task_definition is a templateable field, we can do this
-        td = f"{{{{ ti.xcom_pull(task_ids='register_{self.name}', key='task_definition_arn') }}}}"
-        return EcsDeregisterTaskDefinitionOperator(
-            task_id=f"deregister_{self.name}",
-            task_definition=td,
-        )
+        # td = f"{{{{ ti.xcom_pull(task_ids='register_{self.name}', key='task_definition_arn') }}}}"
+        # return EcsDeregisterTaskDefinitionOperator(
+        #     task_id=f"deregister_{self.name}",
+        #     task_definition=td,
+        # )
+        return EmptyOperator(task_id=f"deregister_{self.name}")
 
