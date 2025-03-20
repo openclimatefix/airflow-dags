@@ -12,6 +12,7 @@ from airflow.providers.amazon.aws.operators.ecs import (
     EcsRegisterTaskDefinitionOperator,
     EcsRunTaskOperator,
 )
+from airflow.providers.amazon.aws.hooks.ecs import EcsHook
 from airflow.utils.trigger_rule import TriggerRule
 from botocore.errorfactory import ClientError
 
@@ -158,7 +159,8 @@ class ECSOperatorGen:
         )
 
         try:
-            existing_def = ecs_operator.client.describe_task_definition(
+            client = EcsHook().get_session(region_name=region).client("ecs")
+            existing_def = client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
