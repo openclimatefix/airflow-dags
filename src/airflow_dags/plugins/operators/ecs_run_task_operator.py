@@ -183,7 +183,7 @@ class ECSOperatorGen:
         except ClientError as e:
             # ECS Task definition doesn't exist yet, create it
             logging.info(f"Error getting task definition: {e}")
-           return ecs_operator
+            return ecs_operator
 
         return EmptyOperator(task_id=f"register_{self.name}")
 
