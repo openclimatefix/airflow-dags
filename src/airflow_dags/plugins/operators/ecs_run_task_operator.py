@@ -61,6 +61,16 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
 
             # Only return the ECS operator if the task has changed
             for key in self.container_definitions[0]:
+                if key == "environment":
+                    existing = {frozenset(d.items()) for d in existing_container_def["environment"]}
+                    new = {
+                        frozenset(d.items()) for d in self.container_definitions[0]["environment"]
+                    }
+                    if existing != new:
+                        self.log.info(
+                            "Definition key 'environment' different, registering new task "
+                            f"definition (current: '{existing}'; new: '{new}'",
+                        )
                 if existing_container_def.get(key) != self.container_definitions[0].get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
