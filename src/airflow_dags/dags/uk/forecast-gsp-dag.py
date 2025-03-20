@@ -25,11 +25,11 @@ cluster = f"Nowcasting-{env}"
 
 
 # Tasks can still be defined in terraform, or defined here
- forecast_pvnet_error_message = (
-     "❌ The task {{ ti.task_id }} failed. This means one or more of the critical PVNet models have "
-     "failed to run. We have about 6 hours before the blend services need this. "
-     "Please see run book for appropriate actions."
- )
+forecast_pvnet_error_message = (
+    "❌ The task {{ ti.task_id }} failed. This means one or more of the critical PVNet models have "
+    "failed to run. We have about 6 hours before the blend services need this. "
+    "Please see run book for appropriate actions."
+)
 
 
 forecast_pvnet_da_error_message = (
