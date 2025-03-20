@@ -159,7 +159,7 @@ class ECSOperatorGen:
         )
 
         try:
-            client = boto3.client("ecs")
+            client = boto3.client("ecs", region=region)
             existing_def = client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
