@@ -69,9 +69,9 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
                     if existing != new:
                         self.log.info(
                             "Definition key 'environment' different, registering new task "
-                            f"definition (current: '{existing}'; new: '{new}'",
+                            f"definition (current: '{existing}'; new: '{new}')",
                         )
-                if existing_container_def.get(key) != self.container_definitions[0].get(key):
+                elif existing_container_def.get(key) != self.container_definitions[0].get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
                     )
