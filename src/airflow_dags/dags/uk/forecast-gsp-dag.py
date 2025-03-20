@@ -25,12 +25,12 @@ cluster = f"Nowcasting-{env}"
 
 
 # Tasks can still be defined in terraform, or defined here
+ forecast_pvnet_error_message = (
+     "❌ The task {{ ti.task_id }} failed. This means one or more of the critical PVNet models have "
+     "failed to run. We have about 6 hours before the blend services need this. "
+     "Please see run book for appropriate actions."
+ )
 
-forecast_pvnet_error_message = (
-    "❌ The task {{ ti.task_id }} failed. This means all PVNet models including ECMWF-only have "
-    "failed to run. We have about 6 hours before the blend services need this. "
-    "Please see run book for appropriate actions."
-)
 
 forecast_pvnet_da_error_message = (
     "❌ The task {{ ti.task_id }} failed. "
@@ -92,7 +92,7 @@ with DAG(
         },
         task_concurrency=10,
         on_failure_callback=slack_message_callback(forecast_blend_error_message),
-        trigger_rule="one_success",
+        trigger_rule="always",
         awslogs_group="/aws/ecs/blend/forecast_blend",
         awslogs_stream_prefix="streaming/forecast_blend-blend",
         awslogs_region="eu-west-1",
