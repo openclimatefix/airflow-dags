@@ -159,13 +159,13 @@ class ECSOperatorGen:
         )
 
         try:
-            client = boto3.client("ecs")
+            client = boto3.client("ecs", region_name=region)
             existing_def = client.describe_task_definition(
                 taskDefinition=self.name, include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
-            existing_kwargs = existing_def["taskDefinition"] | existing_def["tags"]
-            existing_kwargs.pop("container_definitions")
+            existing_kwargs = existing_def["taskDefinition"] | { "tags": existing_def["tags"] }
+            existing_kwargs.pop("containerDefinitions")
 
             # Only return the ECS operator if the task has changed
             for key in self.as_container_definition():
