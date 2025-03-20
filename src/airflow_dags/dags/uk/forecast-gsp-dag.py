@@ -92,7 +92,7 @@ with DAG(
         },
         task_concurrency=10,
         on_failure_callback=slack_message_callback(forecast_blend_error_message),
-        trigger_rule="one_done",
+        trigger_rule="all_done",
         awslogs_group="/aws/ecs/blend/forecast_blend",
         awslogs_stream_prefix="streaming/forecast_blend-blend",
         awslogs_region="eu-west-1",
