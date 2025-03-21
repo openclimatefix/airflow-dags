@@ -50,7 +50,7 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
         )
 
     @override
-    def pre_execute(self, context: Context) -> Any:
+    def execute(self, context: Context) -> Any:
         try:
             existing_def = self.client.describe_task_definition(
                 taskDefinition=self.family, include=["TAGS"],
@@ -89,7 +89,7 @@ class EcsConditionalRegisterTaskDefinitionOperator(EcsRegisterTaskDefinitionOper
             return super().execute(context=context)
 
         self.log.info("Task definition already exists, skipping registry.")
-        raise AirflowSkipException
+        pass
 
 @dataclasses.dataclass
 class ECSOperatorGen:

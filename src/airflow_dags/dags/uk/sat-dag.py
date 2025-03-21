@@ -81,7 +81,6 @@ def sat_consumer_dag() -> None:
     with teardown_op.as_teardown(setups=setup_op):
         consume_single_rss_op = sat_consumer.run_task_operator(
             airflow_task_id="satellite-consumer-rss",
-            trigger_rule=TriggerRule.NONE_FAILED,
             env_overrides={
                 "SATCONS_TIME": "{{ data_interval_start }}",
                 "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
