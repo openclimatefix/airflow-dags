@@ -5,7 +5,6 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar, override
 
-from airflow.exceptions import AirflowSkipException
 from airflow.models import BaseOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.operators.ecs import (
@@ -193,7 +192,7 @@ class ECSOperatorGen:
             ],
         }
         if self.container_storage > 20:
-            output["ephemeralStorage"] = {"sizeInGiB": self.container_storage},
+            output["ephemeralStorage"] = {"sizeInGiB": self.container_storage}
 
         return output
 
