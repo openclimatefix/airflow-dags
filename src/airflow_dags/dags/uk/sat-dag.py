@@ -79,8 +79,6 @@ def sat_consumer_dag() -> None:
     teardown_op = sat_consumer.teardown_operator()
 
     with teardown_op.as_teardown(setups=setup_op):
-        latest_op = LatestOnlyOperator(task_id="determine_latest_run")
-
         consume_single_rss_op = sat_consumer.run_task_operator(
             airflow_task_id="satellite-consumer-rss",
             trigger_rule=TriggerRule.NONE_FAILED,
