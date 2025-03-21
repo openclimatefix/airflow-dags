@@ -178,10 +178,9 @@ class ECSOperatorGen:
 
     def as_task_kwargs(self) -> dict[str, object]:
         """Return ECS task kwargs."""
-        return {
+        output: dict[str, object] = {
             "cpu": str(self.container_cpu),
             "memory": str(self.container_memory),
-            "ephemeralStorage": {"sizeInGiB": self.container_storage},
             "requiresCompatibilities": ["FARGATE"],
             "executionRoleArn": ECS_EXECUTION_ROLE_ARN,
             "taskRoleArn": ECS_TASK_ROLE_ARN,
@@ -193,6 +192,10 @@ class ECSOperatorGen:
                 {"key": "domain", "value": self.domain},
             ],
         }
+        if self.container_storage > 20:
+            output["ephemeralStorage"] = {"sizeInGiB": self.container_storage},
+
+        return output
 
 
     @property
