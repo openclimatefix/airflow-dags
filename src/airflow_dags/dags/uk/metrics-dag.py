@@ -7,7 +7,10 @@ from datetime import timedelta
 from airflow.decorators import dag
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
-from airflow_dags.plugins.operators.ecs_run_task_operator import ECSOperatorGen
+from airflow_dags.plugins.operators.ecs_run_task_operator import (
+    ContainerHander,
+    EcsAutoRegisterRunTaskOperator,
+)
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -21,7 +24,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-metrics_calculator = ECSOperatorGen(
+metrics_calculator = ContainerHander(
     name="metrics",
     container_image="docker.io/openclimatefix/nowcasting_metrics",
     container_tag="1.2.21",
@@ -46,23 +49,19 @@ metrics_calculator = ECSOperatorGen(
     default_args=default_args,
 )
 def metrics_dag() -> None:
-    """Dag to download pvlive intraday data."""
-    setup_op = metrics_calculator.setup_operator()
-    teardown_op = metrics_calculator.teardown_operator()
-
+    """Dag to calculate metrics for the day before's forecasts."""
     error_message: str = (
         "⚠️ The task {{ ti.task_id }} failed,"
         " but its ok. This task is not critical for live services. "
         "No out of hours support is required."
     )
+ 
+    calculate_metrics_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="calculate-metrics",
+        container_def=metrics_calculator,
+        on_failure_callback=slack_message_callback(error_message),
+    )
 
-    with teardown_op.as_teardown(setups=setup_op):
-
-        calculate_metrics_op = metrics_calculator.run_task_operator(
-            airflow_task_id="calculate-metrics",
-            on_failure_callback=slack_message_callback(error_message),
-        )
-
-        calculate_metrics_op
+    calculate_metrics_op
 
 metrics_dag()

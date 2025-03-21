@@ -7,10 +7,12 @@ import datetime as dt
 import os
 
 from airflow.decorators import dag
-from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
-from airflow_dags.plugins.operators.ecs_run_task_operator import ECSOperatorGen
+from airflow_dags.plugins.operators.ecs_run_task_operator import (
+    ContainerHander,
+    EcsAutoRegisterRunTaskOperator,
+)
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -25,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-cloudcasting_app = ECSOperatorGen(
+cloudcasting_app = ContainerHander(
     name="cloudcasting-forecast",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
     container_tag="0.0.7",
@@ -48,21 +50,17 @@ cloudcasting_app = ECSOperatorGen(
 )
 def cloudcasting_dag() -> None:
     """Dag to forecast upcoming cloud patterns."""
-    setup_op = cloudcasting_app.setup_operator()
-    teardown_op = cloudcasting_app.teardown_operator()
+    cloudcasting_forecast = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="run_cloudcasting_app",
+        container_def=cloudcasting_app,
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed,"
+            " but its ok. The cloudcasting is currently not critical. "
+            "No out of hours support is required.",
+        ),
+    )
 
-    with teardown_op.as_teardown(setups=setup_op):
-
-        cloudcasting_forecast = cloudcasting_app.run_task_operator(
-            airflow_task_id="run_cloudcasting_app",
-            on_failure_callback=slack_message_callback(
-                "⚠️ The task {{ ti.task_id }} failed,"
-                " but its ok. The cloudcasting is currently not critical. "
-                "No out of hours support is required.",
-            ),
-        )
-
-        cloudcasting_forecast
+    cloudcasting_forecast
 
 cloudcasting_dag()
 

@@ -13,7 +13,10 @@ from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
-from airflow_dags.plugins.operators.ecs_run_task_operator import ECSOperatorGen
+from airflow_dags.plugins.operators.ecs_run_task_operator import (
+    ContainerDefinition,
+    EcsAutoRegisterRunTaskOperator,
+)
 
 env = os.getenv("ENVIRONMENT", "development")
 url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
@@ -28,7 +31,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-pvlive_consumer = ECSOperatorGen(
+pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",
     container_tag="1.2.5",
@@ -53,31 +56,28 @@ pvlive_consumer = ECSOperatorGen(
 )
 def pvlive_intraday_consumer_dag() -> None:
     """Dag to download pvlive intraday data."""
-    setup_op = pvlive_consumer.setup_operator()
-    teardown_op = pvlive_consumer.teardown_operator()
+    consume_pvlive_gsps = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="pvlive-intraday-consumer-gsps",
+        container_def=pvlive_consumer,
+        env_overrides={
+            "N_GSPS": "317",
+            "REGIME": "in-day",
+        },
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed. "
+            "This is needed for the adjuster in the Forecast."
+            "No out of office hours support needed."
+            "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
+            "to see if its working. ",
+        ),
+    )
 
-    with teardown_op.as_teardown(setups=setup_op):
-        consume_pvlive_gsps = pvlive_consumer.run_task_operator(
-            airflow_task_id="pvlive-intraday-consumer-gsps",
-            env_overrides={
-                "N_GSPS": "317",
-                "REGIME": "in-day",
-            },
-            on_failure_callback=slack_message_callback(
-                "⚠️ The task {{ ti.task_id }} failed. "
-                "This is needed for the adjuster in the Forecast."
-                "No out of office hours support needed."
-                "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
-                "to see if its working. ",
-            ),
-        )
+    update_api_last_gsp_data = BashOperator(
+        task_id="uk-gsp-lastdownloaded-api-update",
+        bash_command=f"curl -X GET {url}/v0/solar/GB/update_last_data?component=gsp",
+    )
 
-        update_api_last_gsp_data = BashOperator(
-            task_id="uk-gsp-lastdownloaded-api-update",
-            bash_command=f"curl -X GET {url}/v0/solar/GB/update_last_data?component=gsp",
-        )
-
-        consume_pvlive_gsps >> update_api_last_gsp_data
+    consume_pvlive_gsps >> update_api_last_gsp_data
 
 @dag(
     dag_id="uk-pvlive-dayafter-consumer",
@@ -89,36 +89,34 @@ def pvlive_intraday_consumer_dag() -> None:
 )
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""
-    setup_op = pvlive_consumer.setup_operator()
-    teardown_op = pvlive_consumer.teardown_operator()
-
     error_message: str = (
         "⚠️ The task {{ ti.task_id }} failed,"
         " but its ok. This task is not critical for live services. "
         "No out of hours support is required."
     )
 
-    with teardown_op.as_teardown(setups=setup_op):
-        consume_pvlive_national = pvlive_consumer.run_task_operator(
-            airflow_task_id="consume-pvlive-dayafter-national",
-            env_overrides={
-                "N_GSPS": "0",
-                "INCLUDE_NATIONAL": "True",
-                "REGIME": "day-after",
-            },
-            on_failure_callback=slack_message_callback(error_message),
-        )
+    consume_pvlive_national = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-pvlive-dayafter-national",
+        container_def=pvlive_consumer,
+        env_overrides={
+            "N_GSPS": "0",
+            "INCLUDE_NATIONAL": "True",
+            "REGIME": "day-after",
+        },
+        on_failure_callback=slack_message_callback(error_message),
+    )
 
-        consume_pvlive_gsps = pvlive_consumer.run_task_operator(
-            airflow_task_id="consume-pvlive-dayafter-gsps",
-            env_overrides={
-                "N_GSPS": "317",
-                "REGIME": "day-after",
-            },
-            on_failure_callback=slack_message_callback(error_message),
-        )
+    consume_pvlive_gsps = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-pvlive-dayafter-gsps",
+        container_def=pvlive_consumer,
+        env_overrides={
+            "N_GSPS": "317",
+            "REGIME": "day-after",
+        },
+        on_failure_callback=slack_message_callback(error_message),
+    )
 
-        consume_pvlive_national >> consume_pvlive_gsps
+    consume_pvlive_national >> consume_pvlive_gsps
 
 pvlive_intraday_consumer_dag()
 pvlive_dayafter_consumer_dag()
