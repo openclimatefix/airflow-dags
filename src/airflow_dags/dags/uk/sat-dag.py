@@ -42,7 +42,7 @@ sat_consumer = ECSOperatorGen(
         "SATCONS_CONSUME_MISSING": "true",
     },
     container_secret_env={
-        "development/data/satellite-consumer": [
+        f"{env}/data/satellite-consumer": [
             "EUMETSAT_CONSUMER_KEY", "EUMETSAT_CONSUMER_SECRET",
         ],
     },

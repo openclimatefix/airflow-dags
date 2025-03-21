@@ -30,8 +30,8 @@ cloudcasting_app = ECSOperatorGen(
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
     container_tag="0.0.7",
     container_env={
-        "OUTPUT_PREDICTION_DIRECTORY": "s3://nowcasting-sat-development/cloudcasting_forecast",
-        "SATELLITE_ZARR_PATH": "s3://nowcasting-sat-development/data/latest/latest.zarr.zip",
+        "OUTPUT_PREDICTION_DIRECTORY": f"s3://nowcasting-sat-{env}/cloudcasting_forecast",
+        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
         "LOGLEVEL": "INFO",
     },
     domain="uk",
