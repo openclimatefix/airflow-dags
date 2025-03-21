@@ -54,7 +54,7 @@ def cloudcasting_dag() -> None:
     with teardown_op.as_teardown(setups=setup_op):
 
         cloudcasting_forecast = cloudcasting_app.run_task_operator(
-            airflow_task_id="uk-cloudcasting",
+            airflow_task_id="run_cloudcasting_app",
             on_failure_callback=slack_message_callback(
                 "⚠️ The task {{ ti.task_id }} failed,"
                 " but its ok. The cloudcasting is currently not critical. "
