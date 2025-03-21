@@ -128,7 +128,7 @@ with DAG(
         },
         task_concurrency=10,
         on_failure_callback=slack_message_callback(neso_forecast_consumer_error_message),
-        awslogs_group="/aws/ecs/consume/neso-forecast",
+        awslogs_group="/aws/ecs/consumer/neso-forecast",
         awslogs_stream_prefix="streaming/neso-forecast-consumer",
         awslogs_region="eu-west-1",
     )
