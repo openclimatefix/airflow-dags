@@ -1,20 +1,22 @@
-"""Dags to rotate ec2 machine in elastic beanstalk"""
-import os
-from datetime import UTC, datetime, timedelta
+"""DAG to rotate the ec2 machine in elastic beanstalk instances."""
 
-from airflow import DAG
+import datetime as dt
+import os
+
+from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.elastic_beanstalk import scale_elastic_beanstalk_instance
 
+env = os.getenv("ENVIRONMENT", "development")
+
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.now(tz=UTC) - timedelta(days=60),
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
     "max_active_tasks": 10,
@@ -27,7 +29,6 @@ elb_error_message = (
 )
 
 region = "uk"
-env = os.getenv("ENVIRONMENT", "development")
 names = [
     f"uk-{env}-airflow",
     f"uk-{env}-internal-ui",
@@ -35,15 +36,16 @@ names = [
     f"uk-{env}-sites-api",
 ]
 
-with DAG(
-    f"{region}-reset-elb",
+@dag(
+    dag_id="uk-reset-elb",
+    description=__doc__,
     schedule_interval="0 0 1 * *",
+    start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Reset the elastic beanstalk instance"
-
+)
+def elb_reset_dag() -> None:
+    """Reset elastic beanstalk instances on a cadence."""
     latest_only = LatestOnlyOperator(task_id="latest_only")
 
     for name in names:
@@ -65,3 +67,5 @@ with DAG(
         )
 
         latest_only >> elb_2 >> elb_1
+
+elb_reset_dag()
