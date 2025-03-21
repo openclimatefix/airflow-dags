@@ -22,8 +22,8 @@ default_args = {
     "depends_on_past": False,
     "retries": 0,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 5,
-    "concurrency": 5,
+    "max_active_runs": 10,
+    "concurrency": 10,
     "max_active_tasks": 10,
     "execution_timeout": dt.timedelta(minutes=45),
 }
