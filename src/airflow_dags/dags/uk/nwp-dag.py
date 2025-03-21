@@ -105,7 +105,7 @@ with DAG(
         task_id="determine_latest_zarr_ecmwf",
     )(bucket=f"nowcasting-nwp-{env}", prefix="ecmwf/data")
 
-    rename_zarr_ecmwf = determine_latest_zarr.override(
+    rename_zarr_ukv = determine_latest_zarr.override(
         task_id="determine_latest_zarr_ukv",
     )(bucket=f"nowcasting-nwp-{env}", prefix="data-metoffice")
 
@@ -123,5 +123,5 @@ with DAG(
         bash_command=command,
     )
 
-    latest_only >> nwp_national_consumer >> nwp_update_ukv
+    latest_only >> nwp_national_consumer >> rename_zarr_ukv >> nwp_update_ukv
     latest_only >> nwp_ecmwf_consumer >> rename_zarr_ecmwf >> nwp_update_ecmwf
