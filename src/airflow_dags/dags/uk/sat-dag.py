@@ -126,9 +126,7 @@ def sat_consumer_dag() -> None:
         )
 
 
-        latest_op >> consume_single_rss_op
-        consume_single_rss_op >> merge_rss_op 
-
+        consume_single_rss_op >> merge_rss_op
         consume_single_rss_op >> consume_single_odegree_op
         consume_single_odegree_op >> merge_odegree_op
 
