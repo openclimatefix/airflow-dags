@@ -10,7 +10,7 @@ from airflow.decorators import dag
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
-    ContainerHander,
+    ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
 
@@ -27,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-cloudcasting_app = ContainerHander(
+cloudcasting_app = ContainerDefinition(
     name="cloudcasting-forecast",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
     container_tag="0.0.7",
