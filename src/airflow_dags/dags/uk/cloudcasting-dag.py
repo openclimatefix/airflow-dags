@@ -1,16 +1,22 @@
+"""DAG to produce forecasts of cloud movement.
+
+Uses data from the satellite consumer to predict future cloud patterns.
+"""
+
 import datetime as dt
 import os
 
-from airflow import DAG
-from airflow.operators.latest_only import LatestOnlyOperator
+from airflow.decorators import dag
 from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.operators.ecs_run_task_operator import ECSOperatorGen
+
+env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    # the start_date needs to be less than the last cron run
     "start_date": dt.datetime(2025, 2, 1, tzinfo=dt.UTC),
     "retries": 2,
     "retry_delay": dt.timedelta(minutes=1),
@@ -19,51 +25,44 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-env = os.getenv("ENVIRONMENT", "development")
-subnet = os.getenv("ECS_SUBNET")
-security_group = os.getenv("ECS_SECURITY_GROUP")
-cluster = f"Nowcasting-{env}"
-
-cloudcasting_error_message = (
-    "⚠️ The task {{ ti.task_id }} failed,"
-    " but its ok. The cloudcasting is currently not critical. "
-    "No out of hours support is required."
+cloudcasting_app = ECSOperatorGen(
+    name="cloudcasting-forecast",
+    container_image="ghcr.io/openclimatefix/cloudcasting-app",
+    container_tag="0.0.7",
+    container_env={
+        "OUTPUT_PREDICTION_DIRECTORY": "s3://nowcasting-sat-development/cloudcasting_forecast",
+        "SATELLITE_ZARR_PATH": "s3://nowcasting-sat-development/data/latest/latest.zarr.zip",
+        "LOGLEVEL": "INFO",
+    },
+    domain="uk",
+    container_memory=4096,
+    container_cpu=1024,
 )
 
-# Tasks can still be defined in terraform, or defined here
-
-region = "uk"
-
-with DAG(
-    f"{region}-cloudcasting",
+@dag(
+    dag_id="uk-cloudcasting",
+    description=__doc__,
     schedule_interval="20,50 * * * *",
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Run Cloudcasting app"
+    catchup=False,
+)
+def cloudcasting_dag() -> None:
+    """Dag to forecast upcoming cloud patterns."""
+    setup_op = cloudcasting_app.setup_operator()
+    teardown_op = cloudcasting_app.teardown_operator()
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
+    with teardown_op.as_teardown(setups=setup_op):
 
-    cloudcasting_forecast = EcsRunTaskOperator(
-        task_id=f"{region}-cloudcasting",
-        task_definition="cloudcasting",
-        cluster=cluster,
-        overrides={},
-        launch_type="FARGATE",
-        network_configuration={
-            "awsvpcConfiguration": {
-                "subnets": [subnet],
-                "securityGroups": [security_group],
-                "assignPublicIp": "ENABLED",
-            },
-        },
-        task_concurrency=10,
-        on_failure_callback=slack_message_callback(cloudcasting_error_message),
-        awslogs_group="/aws/ecs/forecast/cloudcasting",
-        awslogs_stream_prefix="streaming/cloudcasting-forecast",
-        awslogs_region="eu-west-1",
-    )
+        cloudcasting_forecast = cloudcasting_app.run_task_operator(
+            airflow_task_id="uk-cloudcasting",
+            on_failure_callback=slack_message_callback(
+                "⚠️ The task {{ ti.task_id }} failed,"
+                " but its ok. The cloudcasting is currently not critical. "
+                "No out of hours support is required.",
+            ),
+        )
 
-    latest_only >> cloudcasting_forecast
+        cloudcasting_forecast
+
+cloudcasting_dag()
 

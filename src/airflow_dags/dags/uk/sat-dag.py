@@ -10,7 +10,6 @@ import os
 
 from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
-from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
