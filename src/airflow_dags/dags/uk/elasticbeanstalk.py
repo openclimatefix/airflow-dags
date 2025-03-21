@@ -68,3 +68,4 @@ def elb_reset_dag() -> None:
 
         latest_only >> elb_2 >> elb_1
 
+elb_reset_dag()
