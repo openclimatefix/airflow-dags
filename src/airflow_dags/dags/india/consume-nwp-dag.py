@@ -93,6 +93,7 @@ def nwp_consumer_dag() -> None:
             "<https://www.nco.ncep.noaa.gov/pmb/nwprod/prodstat/|here>. "
             "Please see run book for appropriate actions.",
         ),
+        task_concurrency=10,
     )
 
     consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
@@ -110,6 +111,7 @@ def nwp_consumer_dag() -> None:
             "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
             "Please see run book for appropriate actions.",
         ),
+        task_concurrency=10,
     )
 
     rename_zarr_metoffice = determine_latest_zarr.override(

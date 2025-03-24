@@ -44,9 +44,6 @@ satellite_consumer = ContainerDefinition(
     container_memory=5120,
 )
 
-satellite_error_message = (
-)
-
 @dag(
     dag_id="india-satellite-consumer",
     description=__doc__,
