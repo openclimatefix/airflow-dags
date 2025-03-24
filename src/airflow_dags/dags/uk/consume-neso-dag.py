@@ -1,4 +1,3 @@
-
 """Dag to download forecasts produced by NESO."""
 
 import datetime as dt
