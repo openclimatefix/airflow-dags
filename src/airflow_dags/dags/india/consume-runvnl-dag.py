@@ -35,6 +35,8 @@ ruvnl_consumer = ContainerDefinition(
     container_secret_env={
         "{env}/rds/indiadb": ["DB_URL"],
     },
+    container_cpu=256,
+    container_memory=512,
 )
 
 
