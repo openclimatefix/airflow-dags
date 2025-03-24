@@ -55,7 +55,7 @@ else:
 
 with DAG(
     f"{region}-national-satellite-consumer",
-    schedule_interval="*/5 * * * *",
+    schedule="*/5 * * * *",
     default_args=default_args,
     concurrency=10,
     max_active_tasks=10,
@@ -79,7 +79,7 @@ with DAG(
                 "assignPublicIp": "ENABLED",
             },
         },
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(satellite_error_message),
         awslogs_group="/aws/ecs/consumer/sat",
         awslogs_stream_prefix="streaming/sat-consumer",
@@ -114,7 +114,7 @@ with DAG(
 
 with DAG(
     f"{region}-national-satellite-cleanup",
-    schedule_interval="0 0,6,12,18 * * *",
+    schedule="0 0,6,12,18 * * *",
     default_args=default_args,
     concurrency=10,
     max_active_tasks=10,
@@ -138,7 +138,7 @@ with DAG(
                 "assignPublicIp": "ENABLED",
             },
         },
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(satellite_clean_up_error_message),
         awslogs_group="/aws/ecs/consumer/sat-clean-up",
         awslogs_stream_prefix="streaming/sat-clean-up-consumer",

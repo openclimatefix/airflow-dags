@@ -70,7 +70,7 @@ def update_operator(cadence_mins: int) -> BashOperator:
 @dag(
     dag_id="uk-satellite-consumer",
     description=__doc__,
-    schedule_interval="*/5 * * * *",
+    schedule="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,

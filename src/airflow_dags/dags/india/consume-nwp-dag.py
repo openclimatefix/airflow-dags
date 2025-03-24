@@ -51,7 +51,7 @@ nwp_consumer = ContainerDefinition(
 @dag(
     dag_id="india-nwp-consumer",
     description=__doc__,
-    schedule_interval="0 * * * *",
+    schedule="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -70,7 +70,7 @@ def nwp_consumer_dag() -> None:
             "ECMWF_REALTIME_S3_REGION": "eu-west-1",
             "ZARRDIR": f"s3://india-nwp-{env}/ecmwf/data",
         },
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The forecast will continue running until it runs out of data. "
@@ -82,7 +82,7 @@ def nwp_consumer_dag() -> None:
     consume_gfs_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-gfs-nwp",
         container_def=nwp_consumer,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         env_overrides={
             "MODEL_REPOSITORY": "gfs",
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
@@ -99,7 +99,7 @@ def nwp_consumer_dag() -> None:
     consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-metoffice-nwp",
         container_def=nwp_consumer,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         env_overrides={
             "MODEL_REPOSITORY": "metoffice-datahub",
             "METOFFICE_ORDER_ID": "india-11params-54steps",

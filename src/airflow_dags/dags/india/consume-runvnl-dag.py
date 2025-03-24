@@ -44,7 +44,7 @@ ruvnl_consumer = ContainerDefinition(
 @dag(
     dag_id="india-ruvnl-consumer",
     description=__doc__,
-    schedule_interval="*/3 * * * *",
+    schedule="*/3 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -57,7 +57,7 @@ def ruvnl_consumer_dag() -> None:
         airflow_task_id="consume-runvl",
         container_def=ruvnl_consumer,
         on_failure_callback=slack_message_callback_no_action_required,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
     )
 
     latest_only_op >> consume_ruvnl_op

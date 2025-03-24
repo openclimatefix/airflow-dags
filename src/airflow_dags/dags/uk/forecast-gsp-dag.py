@@ -79,7 +79,7 @@ forecast_blender = ContainerDefinition(
 @dag(
     dag_id="uk-gsp-forecast",
     description=__doc__,
-    schedule_interval="15,45 * * * *",
+    schedule="15,45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -119,7 +119,7 @@ def gsp_forecast_pvnet_dag() -> None:
 @dag(
     dag_id="uk-gsp-forecast-day-ahead",
     description=__doc__,
-    schedule_interval="45 * * * *",
+    schedule="45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -131,7 +131,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
     forecast_pvnet_day_ahead_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-dayahead-gsps",
         container_def=gsp_forecaster,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "❌ the task {{ ti.task_id }} failed. "
             "This would ideally be fixed for da actions at 09.00. "
@@ -146,7 +146,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
@@ -160,7 +160,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
 @dag(
     dag_id="uk-national-forecast",
     description=__doc__,
-    schedule_interval="12 */2 * * *",
+    schedule="12 */2 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -172,7 +172,7 @@ def national_forecast_dayahead_dag() -> None:
     forecast_national_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-national",
         container_def=national_forecaster,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But its ok, this forecast is only a backup. "
@@ -183,7 +183,7 @@ def national_forecast_dayahead_dag() -> None:
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "

@@ -47,7 +47,7 @@ hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
 @dag(
     dag_id="india-ruvnl-forecast",
     description=__doc__,
-    schedule_interval=f"0 {hours} * * *",
+    schedule=f"0 {hours} * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -59,7 +59,7 @@ def ruvnl_forecast_dag() -> None:
     forecast_ruvnl_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-ruvnl",
         container_def=india_forecaster,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         env_overrides={
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/RUVNL",
             "USE_SATELLITE": "False",
@@ -76,7 +76,7 @@ def ruvnl_forecast_dag() -> None:
 @dag(
     dag_id="india-ad-forecast",
     description=__doc__,
-    schedule_interval="*/15 * * * *",
+    schedule="*/15 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -98,7 +98,7 @@ def ad_forecast_dag() -> None:
             "❌ The task {{ ti.task_id }} failed.  "
             "Please see run book for appropriate actions. "
         ),
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
     )
 
     latest_only_op >> forecast_ad_op

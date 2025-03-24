@@ -62,7 +62,7 @@ def update_operator(provider: str) -> BashOperator:
 @dag(
     dag_id="uk-nwp-consumer",
     description=__doc__,
-    schedule_interval="10,25,40,55 * * * *",
+    schedule="10,25,40,55 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,

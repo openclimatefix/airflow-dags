@@ -44,7 +44,7 @@ cloudcasting_app = ContainerDefinition(
 @dag(
     dag_id="uk-cloudcasting",
     description=__doc__,
-    schedule_interval="20,50 * * * *",
+    schedule="20,50 * * * *",
     default_args=default_args,
     catchup=False,
 )

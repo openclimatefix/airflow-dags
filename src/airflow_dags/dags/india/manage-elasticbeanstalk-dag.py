@@ -37,7 +37,7 @@ names = [
 @dag(
     dag_id="india-reset-elb",
     description=__doc__,
-    schedule_interval="0 0 1 * *",
+    schedule="0 0 1 * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -52,7 +52,7 @@ def elb_reset_dag() -> None:
             task_id=f"scale_elb_2_{name}",
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 2, "sleep_seconds": 60 * 5},
-            task_concurrency=2,
+            max_active_tis_per_dag=2,
             on_failure_callback=slack_message_callback(elb_error_message),
         )
 
@@ -60,7 +60,7 @@ def elb_reset_dag() -> None:
             task_id=f"scale_elb_1_{name}",
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 1},
-            task_concurrency=2,
+            max_active_tis_per_dag=2,
             on_failure_callback=slack_message_callback(elb_error_message),
         )
 

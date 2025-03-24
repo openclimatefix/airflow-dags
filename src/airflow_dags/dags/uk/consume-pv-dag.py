@@ -44,7 +44,7 @@ pv_consumer = ContainerDefinition(
 @dag(
     dag_id="uk-pv-consumer",
     description=__doc__,
-    schedule_interval="*/5 * * * *",
+    schedule="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -56,7 +56,7 @@ def pv_consumer_dag() -> None:
     consume_pv_passiv_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-passiv-pv-data",
         container_def=pv_consumer,
-        task_concurrency=10,
+        max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But its ok, this isnt needed for any production services. "

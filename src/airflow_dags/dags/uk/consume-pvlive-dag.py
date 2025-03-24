@@ -49,7 +49,7 @@ pvlive_consumer = ContainerDefinition(
 @dag(
     dag_id="uk-pvlive-intraday-consumer",
     description=__doc__,
-    schedule_interval="6,9,12,14,20,36,39,42,44,50 * * * *",
+    schedule="6,9,12,14,20,36,39,42,44,50 * * * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
@@ -82,7 +82,7 @@ def pvlive_intraday_consumer_dag() -> None:
 @dag(
     dag_id="uk-pvlive-dayafter-consumer",
     description=__doc__,
-    schedule_interval="0 11 * * *",
+    schedule="0 11 * * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
