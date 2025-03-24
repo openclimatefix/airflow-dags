@@ -33,7 +33,7 @@ ruvnl_consumer = ContainerDefinition(
     container_tag="0.1.20",
     container_command=["--write-to-db"],
     container_secret_env={
-        "{env}/rds/indiadb": ["DB_URL"],
+        f"{env}/rds/indiadb": ["DB_URL"],
     },
     container_cpu=256,
     container_memory=512,

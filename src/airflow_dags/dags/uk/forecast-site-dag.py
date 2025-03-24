@@ -31,7 +31,7 @@ site_forecaster = ContainerDefinition(
     container_tag="1.0.29",
     container_env={
         "LOGLEVEL": "DEBUG",
-        "NWP_ZARR_PATH": "s3://nowcasting-nwp-development/data-metoffice/latest.zarr",
+        "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
@@ -46,7 +46,7 @@ sitedb_cleaner = ContainerDefinition(
     container_image="docker.io/openclimatefix/pvsite_database_cleanup",
     container_tag="1.0.21",
     container_env={
-        "SAVE_DIR": "s3://uk-site-forecaster-models-development/database",
+        "SAVE_DIR": f"s3://uk-site-forecaster-models-{env}/database",
         "LOGLEVEL": "INFO",
         "OCF_ENVIRONMENT": env,
     },
