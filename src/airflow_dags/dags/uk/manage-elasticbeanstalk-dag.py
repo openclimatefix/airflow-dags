@@ -42,6 +42,7 @@ names = [
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["management"],
 )
 def elb_reset_dag() -> None:
     """Reset elastic beanstalk instances on a cadence."""

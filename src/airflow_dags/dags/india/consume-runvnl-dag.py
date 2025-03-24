@@ -48,6 +48,7 @@ ruvnl_consumer = ContainerDefinition(
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["consumer"],
 )
 def ruvnl_consumer_dag() -> None:
     """DAG to download data from RUVNL."""

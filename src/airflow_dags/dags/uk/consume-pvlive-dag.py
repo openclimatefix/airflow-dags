@@ -53,6 +53,7 @@ pvlive_consumer = ContainerDefinition(
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["consumer"],
 )
 def pvlive_intraday_consumer_dag() -> None:
     """Dag to download pvlive intraday data."""
@@ -86,6 +87,7 @@ def pvlive_intraday_consumer_dag() -> None:
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["consumer"],
 )
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""

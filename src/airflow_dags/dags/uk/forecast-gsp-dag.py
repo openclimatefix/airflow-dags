@@ -83,6 +83,7 @@ forecast_blender = ContainerDefinition(
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def gsp_forecast_pvnet_dag() -> None:
     """Dag to forecast GSP generations using PVNet."""
@@ -123,6 +124,7 @@ def gsp_forecast_pvnet_dag() -> None:
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def gsp_forecast_pvnet_dayahead_dag() -> None:
     """DAG to forecast GSPs using PVNet."""
@@ -164,6 +166,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def national_forecast_dayahead_dag() -> None:
     """DAG to forecast Nationally using XGBoost."""

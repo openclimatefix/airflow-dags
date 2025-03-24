@@ -47,6 +47,7 @@ metrics_calculator = ContainerDefinition(
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["analysis"]
 )
 def metrics_dag() -> None:
     """Dag to calculate metrics for the day before's forecasts."""

@@ -51,6 +51,7 @@ hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def ruvnl_forecast_dag() -> None:
     """Create RUVNL forecasts."""
@@ -80,6 +81,7 @@ def ruvnl_forecast_dag() -> None:
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def ad_forecast_dag() -> None:
     """Create AD forecasts."""

@@ -64,6 +64,7 @@ sitedb_cleaner = ContainerDefinition(
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["forecast"],
 )
 def site_forecast_dag() -> None:
     """DAG to forecast site level generation data."""
@@ -87,6 +88,7 @@ def site_forecast_dag() -> None:
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    tags=["management"],
 )
 def clean_site_db_dag() -> None:
     """Clean the sites database."""

@@ -47,6 +47,7 @@ cloudcasting_app = ContainerDefinition(
     schedule="20,50 * * * *",
     default_args=default_args,
     catchup=False,
+    tags=["forecast"],
 )
 def cloudcasting_dag() -> None:
     """Dag to forecast upcoming cloud patterns."""
