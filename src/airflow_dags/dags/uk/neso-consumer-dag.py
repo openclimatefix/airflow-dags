@@ -38,7 +38,7 @@ neso_consumer = ContainerDefinition(
 )
 
 @dag(
-    dag_id="neso-consumer-dag",
+    dag_id="uk-neso-consumer",
     description="Get NESO's solar forecast.",
     schedule_interval="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),

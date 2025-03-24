@@ -1,100 +1,107 @@
+"""DAGs to forecast site generation using pvsite forecaster."""
+
+import datetime as dt
 import os
-from datetime import UTC, datetime, timedelta
 
-from airflow import DAG
+from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
-from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 
-from airflow_dags.plugins.callbacks.slack import (
-    slack_message_callback,
-    slack_message_callback_no_action_required,
+from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.operators.ecs_run_task_operator import (
+    ContainerDefinition,
+    EcsAutoRegisterRunTaskOperator,
 )
+
+env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.now(tz=UTC) - timedelta(hours=25),
+    "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
     "max_active_tasks": 10,
 }
 
-env = os.getenv("ENVIRONMENT", "development")
-subnet = os.getenv("ECS_SUBNET")
-security_group = os.getenv("ECS_SECURITY_GROUP")
-cluster = f"Nowcasting-{env}"
-
-# Tasks can still be defined in terraform, or defined here
-
-site_forecast_error_message = (
-    "❌ The task {{ ti.task_id }} failed. "
-    "Please see run book for appropriate actions. "
+site_forecaster = ContainerDefinition(
+    name="forecast-site",
+    container_image="docker.io/openclimatefix/pvsite_forecast",
+    container_tag="1.0.29",
+    container_env={
+        "LOGLEVEL": "DEBUG",
+        "NWP_ZARR_PATH": "s3://nowcasting-nwp-development/data-metoffice/latest.zarr",
+    },
+    container_secret_env={
+        f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
+    },
+    domain="uk",
+    container_cpu=1024,
+    container_memory=4096,
 )
 
-region = "uk"
+sitedb_cleaner = ContainerDefinition(
+    name="clean-pvsitedb",
+    container_image="docker.io/openclimatefix/pvsite_database_cleanup",
+    container_tag="1.0.21",
+    container_env={
+        "SAVE_DIR": "s3://uk-site-forecaster-models-development/database",
+        "LOGLEVEL": "INFO",
+        "OCF_ENVIRONMENT": env,
+    },
+    container_secret_env={
+        f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
+    },
+    container_cpu=256,
+    container_memory=512,
+)
 
-with DAG(
-    f"{region}-site-forecast",
+@dag(
+    dag_id="uk-site-forecast",
+    description=__doc__,
     schedule_interval="*/15 * * * *",
+    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Run the site forecast"
+)
+def site_forecast_dag() -> None:
+    """DAG to forecast site level generation data."""
+    latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
-
-    forecast = EcsRunTaskOperator(
-        task_id=f"{region}-site-forecast",
-        task_definition="pvsite_forecast",
-        cluster=cluster,
-        overrides={},
-        launch_type="FARGATE",
-        network_configuration={
-            "awsvpcConfiguration": {
-                "subnets": [subnet],
-                "securityGroups": [security_group],
-                "assignPublicIp": "ENABLED",
-            },
-        },
-        on_failure_callback=slack_message_callback(site_forecast_error_message),
-        task_concurrency=10,
-        awslogs_group="/aws/ecs/forecast/pvsite_forecast",
-        awslogs_stream_prefix="streaming/pvsite_forecast-forecast",
-        awslogs_region="eu-west-1",
+    forecast_sites_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-sites",
+        container_def=site_forecaster,
+        on_failure_callback=slack_message_callback(
+            "❌ The task {{ ti.task_id }} failed. "
+            "Please see run book for appropriate actions. "
+        ),
     )
 
-with DAG(
-    f"{region}-site-forecast-db-clean",
+    latest_only_op >> forecast_sites_op
+
+@dag(
+    dag_id="uk-clean-sitedb",
+    description=__doc__,
     schedule_interval="0 0 * * *",
+    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Clean up the forecast db"
+)
+def clean_site_db_dag() -> None:
+    """Clean the sites database."""
+    latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
-
-    database_clean_up = EcsRunTaskOperator(
-        task_id=f"{region}-site-forecast-db-clean",
-        task_definition="database_clean_up",
-        cluster=cluster,
-        overrides={},
-        launch_type="FARGATE",
-        network_configuration={
-            "awsvpcConfiguration": {
-                "subnets": [subnet],
-                "securityGroups": [security_group],
-                "assignPublicIp": "ENABLED",
-            },
-        },
-        task_concurrency=10,
-        on_failure_callback=slack_message_callback_no_action_required,
-        awslogs_group="/aws/ecs/clean/database_clean_up",
-        awslogs_stream_prefix="streaming/database_clean_up-clean",
-        awslogs_region="eu-west-1",
+    database_clean_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="uk-clean-sitedb",
+        container_def=sitedb_cleaner,
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed, but it is non-critical. "
+            "No out of hours support is required.",
+        ),
     )
 
-    latest_only >> database_clean_up
+    latest_only_op >> database_clean_op
+
+site_forecast_dag()
+clean_site_db_dag()
