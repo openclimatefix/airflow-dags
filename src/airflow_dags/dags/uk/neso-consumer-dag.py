@@ -45,7 +45,7 @@ neso_consumer = ContainerDefinition(
     catchup=False,
     default_args=default_args,
 )
-def sat_consumer_dag() -> None:
+def neso_consumer_dag() -> None:
     """DAG to download data from NESO's solar forecast."""
     consume_neso_forecast = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-neso-forecast",
@@ -59,5 +59,5 @@ def sat_consumer_dag() -> None:
 
     consume_neso_forecast
 
-sat_consumer_dag()
+neso_consumer_dag()
 
