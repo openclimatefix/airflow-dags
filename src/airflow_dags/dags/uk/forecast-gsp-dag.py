@@ -38,7 +38,7 @@ gsp_forecaster = ContainerDefinition(
         "RAISE_MODEL_FAILURE": "critical",
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
-        "USE_OCF_DATA_SAMPLER": "true",
+        "USE_OCF_DATA_SAMPLER": str(env == "development").lower(),
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -91,12 +91,11 @@ def gsp_forecast_pvnet_dag() -> None:
         airflow_task_id="forecast-gsps",
         container_def=gsp_forecaster,
         env_overrides={
-            "RUN_CRITICAL_MODELS_ONLY": "false",
+            "RUN_CRITICAL_MODELS_ONLY": str(env == "production").lower(),
             "ALLOW_SAVE_GSP_SUM": "true",
             "DAY_AHEAD_MODEL": "false",
             "FILTER_BAD_FORECASTS": "false",
         },
-
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed. "
             "This means one or more of the critical PVNet models have failed to run. "
