@@ -61,6 +61,7 @@ with DAG(
     max_active_tasks=10,
     start_date=datetime.now(tz=UTC) - timedelta(hours=0.5),
     catchup=False,
+    tags=["consumer"],
 ) as dag:
     dag.doc_md = "Get Satellite data"
 
