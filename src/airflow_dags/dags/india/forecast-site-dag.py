@@ -1,106 +1,106 @@
+"""DAGs to forecast generation for sites."""
+import datetime as dt
 import os
-from datetime import UTC, datetime, timedelta
 
-from airflow import DAG
+from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
-from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.operators.ecs_run_task_operator import (
+    ContainerDefinition,
+    EcsAutoRegisterRunTaskOperator,
+)
+
+env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.now(tz=UTC) - timedelta(hours=3),
+    "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
     "max_active_tasks": 10,
 }
 
-env = os.getenv("ENVIRONMENT", "development")
-subnet = os.getenv("ECS_SUBNET")
-security_group = os.getenv("ECS_SECURITY_GROUP")
-cluster = f"india-ecs-cluster-{env}"
-
-region = "india"
-
-forecast_ruvnl_error_message = (
-    "❌ The task {{ ti.task_id }} failed. "
-    "This would ideally be fixed before for DA actions at 09.00 IST"
-    "Please see run book for appropriate actions."
-)
-
-forecast_ad_error_message = (
-    "❌ The task {{ ti.task_id }} failed.  "
-    "Please see run book for appropriate actions. "
+india_forecaster = ContainerDefinition(
+    name="forecast",
+    container_image="docker.io/openclimatefix/india_forecast_app",
+    container_tag="1.1.34",
+    container_env={
+        "NWP_GFS_ZARR_PATH": f"s3://india-nwp-{env}/gfs/data/latest.zarr",
+        "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
+        "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
+    },
+    container_secret_env={
+        f"{env}/rds/indiadb": ["DB_URL"],
+    },
+    container_cpu=1024,
+    container_memory=3072,
 )
 
 # hour the forecast can run, not include 7,8,19,20
 hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
-
-with DAG(
-    f"{region}-runvl-forecast",
+@dag(
+    dag_id="india-ruvnl-forecast",
+    description=__doc__,
     schedule_interval=f"0 {hours} * * *",
+    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Run the forecast"
+)
+def ruvnl_forecast_dag() -> None:
+    """Create RUVNL forecasts."""
+    latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
-
-    forecast = EcsRunTaskOperator(
-        task_id=f"{region}-forecast-ruvnl",
-        task_definition="forecast",
-        cluster=cluster,
-        overrides={},
-        launch_type="FARGATE",
-        network_configuration={
-            "awsvpcConfiguration": {
-                "subnets": [subnet],
-                "securityGroups": [security_group],
-                "assignPublicIp": "ENABLED",
-            },
+    forecast_ruvnl_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ruvnl",
+        container_def=india_forecaster,
+        env_overrides={
+            "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/RUVNL",
+            "USE_SATELLITE": "False",
         },
-        on_failure_callback=slack_message_callback(forecast_ruvnl_error_message),
+        on_failure_callback=slack_message_callback(
+            "❌ The task {{ ti.task_id }} failed. "
+            "This would ideally be fixed before for DA actions at 09.00 IST"
+            "Please see run book for appropriate actions.",
+        ),
         task_concurrency=10,
-        awslogs_group="/aws/ecs/forecast/forecast",
-        awslogs_stream_prefix="streaming/forecast-forecast",
-        awslogs_region="ap-south-1",
     )
 
-    latest_only >> [forecast]
+    latest_only_op >> forecast_ruvnl_op
 
-with DAG(
-    f"{region}-ad-forecast",
-    schedule_interval="0,15,30,45 * * * *",
+@dag(
+    dag_id="india-ad-forecast",
+    description=__doc__,
+    schedule_interval="*/15 * * * *",
+    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Run the forecast for client AD"
+)
+def ad_forecast_dag() -> None:
+    """Create AD forecasts."""
+    latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
-
-    forecast = EcsRunTaskOperator(
-        task_id=f"{region}-forecast-ad",
-        task_definition="forecast-ad",
-        cluster=cluster,
-        overrides={},
-        launch_type="FARGATE",
-        network_configuration={
-            "awsvpcConfiguration": {
-                "subnets": [subnet],
-                "securityGroups": [security_group],
-                "assignPublicIp": "ENABLED",
-            },
+    forecast_ad_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ad",
+        container_def=india_forecaster,
+        env_overrides={
+            "CLIENT_NAME": "ad",
+            "USE_SATELLITE": "True",
+            "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/data/latest/iodc_latest.zarr.zip",
+            "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
-        on_failure_callback=slack_message_callback(forecast_ad_error_message),
+        on_failure_callback=slack_message_callback(
+            "❌ The task {{ ti.task_id }} failed.  "
+            "Please see run book for appropriate actions. "
+        ),
         task_concurrency=10,
-        awslogs_group="/aws/ecs/forecast/forecast-ad",
-        awslogs_stream_prefix="streaming/forecast-ad-forecast",
-        awslogs_region="ap-south-1",
     )
 
-    latest_only >> [forecast]
+    latest_only_op >> forecast_ad_op
+
+ruvnl_forecast_dag()
+ad_forecast_dag()
+
