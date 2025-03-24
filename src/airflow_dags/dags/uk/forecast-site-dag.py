@@ -51,7 +51,7 @@ sitedb_cleaner = ContainerDefinition(
         "OCF_ENVIRONMENT": env,
     },
     container_secret_env={
-        f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
+        f"{env}/rds/pvsite": ["DB_URL"],
     },
     container_cpu=256,
     container_memory=512,
