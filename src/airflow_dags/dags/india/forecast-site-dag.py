@@ -35,6 +35,7 @@ india_forecaster = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/rds/indiadb": ["DB_URL"],
+        f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
     container_cpu=1024,
     container_memory=3072,
@@ -58,6 +59,7 @@ def ruvnl_forecast_dag() -> None:
     forecast_ruvnl_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-ruvnl",
         container_def=india_forecaster,
+        task_concurrency=10,
         env_overrides={
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/RUVNL",
             "USE_SATELLITE": "False",
@@ -67,7 +69,6 @@ def ruvnl_forecast_dag() -> None:
             "This would ideally be fixed before for DA actions at 09.00 IST"
             "Please see run book for appropriate actions.",
         ),
-        task_concurrency=10,
     )
 
     latest_only_op >> forecast_ruvnl_op
