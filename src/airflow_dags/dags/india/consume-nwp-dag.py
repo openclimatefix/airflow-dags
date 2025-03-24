@@ -93,12 +93,12 @@ def nwp_consumer_dag() -> None:
             "<https://www.nco.ncep.noaa.gov/pmb/nwprod/prodstat/|here>. "
             "Please see run book for appropriate actions.",
         ),
-        task_concurrency=10,
     )
 
     consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-metoffice-nwp",
         container_def=nwp_consumer,
+        task_concurrency=10,
         env_overrides={
             "MODEL_REPOSITORY": "metoffice-datahub",
             "METOFFICE_ORDER_ID": "india-11params-54steps",
@@ -111,7 +111,6 @@ def nwp_consumer_dag() -> None:
             "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
             "Please see run book for appropriate actions.",
         ),
-        task_concurrency=10,
     )
 
     rename_zarr_metoffice = determine_latest_zarr.override(
