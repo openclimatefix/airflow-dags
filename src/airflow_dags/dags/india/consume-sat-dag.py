@@ -42,6 +42,7 @@ satellite_consumer = ContainerDefinition(
     },
     container_cpu=1024,
     container_memory=5120,
+    domain="india",
 )
 
 @dag(

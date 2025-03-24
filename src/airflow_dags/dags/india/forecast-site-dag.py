@@ -38,6 +38,7 @@ india_forecaster = ContainerDefinition(
     },
     container_cpu=1024,
     container_memory=3072,
+    domain="india",
 )
 
 # hour the forecast can run, not include 7,8,19,20

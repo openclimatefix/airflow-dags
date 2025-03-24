@@ -37,6 +37,7 @@ ruvnl_consumer = ContainerDefinition(
     },
     container_cpu=256,
     container_memory=512,
+    domain="india",
 )
 
 
