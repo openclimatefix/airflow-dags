@@ -120,6 +120,7 @@ with DAG(
     max_active_tasks=10,
     start_date=datetime.now(tz=UTC) - timedelta(hours=7),
     catchup=False,
+    tags=["consumer"],
 ) as dag_cleanup:
     dag_cleanup.doc_md = "Satellite data clean up"
 
