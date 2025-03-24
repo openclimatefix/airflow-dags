@@ -32,15 +32,12 @@ gsp_forecaster = ContainerDefinition(
     container_env={
         "LOGLEVEL": "INFO",
         "ALLOW_ADJUSTER": "true",
-        "RUN_CRITICAL_MODELS_ONLY": "false",
-        "ALLOW_SAVE_GSP_SUM": "true",
         "DAY_AHEAD_MODEL": "false",
         "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/pvnet_batches",
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf/data/latest.zarr",
         "RAISE_MODEL_FAILURE": "critical",
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
-        "FILTER_BAD_FORECASTS": "false",
         "USE_OCF_DATA_SAMPLER": "true",
     },
     container_secret_env={
@@ -93,6 +90,13 @@ def gsp_forecast_pvnet_dag() -> None:
     forecast_gsps_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-gsps",
         container_def=gsp_forecaster,
+        env_overrides={
+            "RUN_CRITICAL_MODELS_ONLY": "false",
+            "ALLOW_SAVE_GSP_SUM": "true",
+            "DAY_AHEAD_MODEL": "false",
+            "FILTER_BAD_FORECASTS": "false",
+        },
+
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed. "
             "This means one or more of the critical PVNet models have failed to run. "
