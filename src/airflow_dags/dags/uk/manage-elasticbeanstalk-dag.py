@@ -28,7 +28,6 @@ elb_error_message = (
     "No out of hours support is required."
 )
 
-region = "uk"
 names = [
     f"uk-{env}-airflow",
     f"uk-{env}-internal-ui",

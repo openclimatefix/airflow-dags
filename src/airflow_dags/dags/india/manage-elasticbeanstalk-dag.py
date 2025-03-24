@@ -1,42 +1,49 @@
-"""Dags to rotate ec2 machine in elastic beanstalk"""
-import os
-from datetime import UTC, datetime, timedelta
+"""DAG to rotate the ec2 machine in elastic beanstalk instances."""
 
-from airflow import DAG
+import datetime as dt
+import os
+
+from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback_no_action_required
+from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.elastic_beanstalk import scale_elastic_beanstalk_instance
+
+env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.now(tz=UTC) - timedelta(days=60),
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
     "max_active_tasks": 10,
 }
 
-region = "india"
-env = os.getenv("ENVIRONMENT", "development")
+elb_error_message = (
+    "⚠️ The task {{ ti.task_id }} failed,"
+    " but its ok. This task tried to reset the Elastic Beanstalk instances. "
+    "No out of hours support is required."
+)
+
 names = [
-    f"{region}-{env}-airflow",
-    f"{region}-{env}-analysis-dashboard",
-    f"{region}-{env}-india-api",
+    f"india-{env}-airflow",
+    f"india-{env}-analysis-dashboard",
+    f"india-{env}-india-api",
 ]
 
-with DAG(
-    f"{region}-reset-elb",
+@dag(
+    dag_id="india-reset-elb",
+    description=__doc__,
     schedule_interval="0 0 1 * *",
+    start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
+    catchup=False,
     default_args=default_args,
-    concurrency=10,
-    max_active_tasks=10,
-) as dag:
-    dag.doc_md = "Reset the elastic beanstalk instance"
-
+)
+def elb_reset_dag() -> None:
+    """Reset elastic beanstalk instances on a cadence."""
     latest_only = LatestOnlyOperator(task_id="latest_only")
 
     for name in names:
@@ -46,7 +53,7 @@ with DAG(
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 2, "sleep_seconds": 60 * 5},
             task_concurrency=2,
-            on_failure_callback=slack_message_callback_no_action_required,
+            on_failure_callback=slack_message_callback(elb_error_message),
         )
 
         elb_1 = PythonOperator(
@@ -54,7 +61,9 @@ with DAG(
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 1},
             task_concurrency=2,
-            on_failure_callback=slack_message_callback_no_action_required,
+            on_failure_callback=slack_message_callback(elb_error_message),
         )
 
         latest_only >> elb_2 >> elb_1
+
+elb_reset_dag()
