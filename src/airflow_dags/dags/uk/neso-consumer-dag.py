@@ -38,7 +38,7 @@ neso_consumer = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-satellite-consumer",
+    dag_id="neso-consumer-dag",
     description="Get NESO's solar forecast.",
     schedule_interval="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
@@ -46,7 +46,7 @@ neso_consumer = ContainerDefinition(
     default_args=default_args,
 )
 def sat_consumer_dag() -> None:
-    """Dag to download and process satellite data from EUMETSAT."""
+    """DAG to download data from NESO's solar forecast."""
     consume_neso_forecast = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-neso-forecast",
         container_def=neso_consumer,

@@ -25,7 +25,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-pvnet_forecaster = ContainerDefinition(
+gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="2.5.7",
@@ -80,7 +80,7 @@ forecast_blender = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-gsp-forecast-pvnet-2",
+    dag_id="uk-gsp-forecast",
     description=__doc__,
     schedule_interval="15,45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
@@ -92,7 +92,7 @@ def gsp_forecast_pvnet_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
     forecast_gsps_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-gsps",
-        container_def=pvnet_forecaster,
+        container_def=gsp_forecaster,
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed. "
             "This means one or more of the critical PVNet models have failed to run. "
@@ -114,7 +114,7 @@ def gsp_forecast_pvnet_dag() -> None:
     latest_only_op >> forecast_gsps_op >> blend_forecasts_op
 
 @dag(
-    dag_id="uk-gsp-forecast-pvnet-day-ahead",
+    dag_id="uk-gsp-forecast-day-ahead",
     description=__doc__,
     schedule_interval="45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
@@ -127,7 +127,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
 
     forecast_pvnet_day_ahead_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-dayahead-gsps",
-        container_def=pvnet_forecaster,
+        container_def=gsp_forecaster,
         task_concurrency=10,
         on_failure_callback=slack_message_callback(
             "❌ the task {{ ti.task_id }} failed. "
