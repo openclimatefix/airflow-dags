@@ -187,7 +187,7 @@ def sat_cleanup_dag() -> None:
     clean_datatailor = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="clean-datatailor",
         container_def=satip,
-        env_overrides={"CLEANUP": 1},
+        env_overrides={"CLEANUP": "1"},
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
