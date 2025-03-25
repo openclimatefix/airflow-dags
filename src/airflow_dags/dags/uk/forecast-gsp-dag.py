@@ -76,9 +76,6 @@ forecast_blender = ContainerDefinition(
     container_memory=1024,
 )
 
-forecast_blender_national = forecast_blender
-forecast_blender_national.container_env["N_GSPS"] = "1"
-
 @dag(
     dag_id="uk-gsp-forecast",
     description=__doc__,
@@ -188,8 +185,9 @@ def national_forecast_dayahead_dag() -> None:
 
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
-        container_def=forecast_blender_national,
+        container_def=forecast_blender,
         max_active_tis_per_dag=10,
+        env_overrides={"N_GSPS": "1"},
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
