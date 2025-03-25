@@ -10,6 +10,7 @@ import os
 
 from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
+from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
@@ -77,6 +78,8 @@ def update_operator(cadence_mins: int) -> BashOperator:
 )
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
+    latest_only_op = LatestOnlyOperator(task_id="latest-only")
+
     consume_single_rss_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="satellite-consumer-rss",
         container_def=sat_consumer,
@@ -127,7 +130,7 @@ def sat_consumer_dag() -> None:
     )
 
 
-    consume_single_rss_op >> merge_rss_op
+    latest_only_op >> consume_single_rss_op >> merge_rss_op
     consume_single_rss_op >> consume_single_odegree_op
     consume_single_odegree_op >> merge_odegree_op
 
