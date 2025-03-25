@@ -51,7 +51,7 @@ gsp_forecaster = ContainerDefinition(
 national_forecaster = ContainerDefinition(
     name="forecast-national",
     container_image="docker.io/openclimatefix/gradboost_pv",
-    container_tag="1.0.40",
+    container_tag="1.0.41",
     container_env={
         "LOGLEVEL": "INFO",
         "ML_MODEL_BUCKET": f"uk-national-forecaster-models-{env}",
