@@ -41,13 +41,12 @@ metrics_calculator = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-metrics",
+    dag_id="uk-analysis-metrics",
     description=__doc__,
     schedule="0 21 * * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["analysis"]
 )
 def metrics_dag() -> None:
     """Dag to calculate metrics for the day before's forecasts."""

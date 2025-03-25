@@ -42,17 +42,16 @@ cloudcasting_app = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-cloudcasting",
+    dag_id="uk-forecast-clouds",
     description=__doc__,
     schedule="20,50 * * * *",
     default_args=default_args,
     catchup=False,
-    tags=["forecast"],
 )
 def cloudcasting_dag() -> None:
     """Dag to forecast upcoming cloud patterns."""
     cloudcasting_forecast = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="run_cloudcasting_app",
+        airflow_task_id="run-cloudcasting-app",
         container_def=cloudcasting_app,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed,"

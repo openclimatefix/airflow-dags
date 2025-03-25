@@ -30,7 +30,7 @@ env = os.getenv("ENVIRONMENT", "development")
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.8",
+    container_tag="1.1.9",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
@@ -60,13 +60,12 @@ def update_operator(provider: str) -> BashOperator:
     )
 
 @dag(
-    dag_id="uk-nwp-consumer",
+    dag_id="uk-consume-nwp",
     description=__doc__,
     schedule="10,25,40,55 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def nwp_consumer_dag() -> None:
     """DAG to download and process NWP data."""

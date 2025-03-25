@@ -77,13 +77,12 @@ forecast_blender = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-gsp-forecast",
+    dag_id="uk-forecast-gsp",
     description=__doc__,
     schedule="15,45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def gsp_forecast_pvnet_dag() -> None:
     """Dag to forecast GSP generations using PVNet."""
@@ -118,13 +117,12 @@ def gsp_forecast_pvnet_dag() -> None:
     latest_only_op >> forecast_gsps_op >> blend_forecasts_op
 
 @dag(
-    dag_id="uk-gsp-forecast-day-ahead",
+    dag_id="uk-forecast-gsp-dayahead",
     description=__doc__,
     schedule="45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def gsp_forecast_pvnet_dayahead_dag() -> None:
     """DAG to forecast GSPs using PVNet."""
@@ -160,13 +158,12 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
 
 
 @dag(
-    dag_id="uk-national-forecast",
+    dag_id="uk-forecast-national",
     description=__doc__,
     schedule="12 */2 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def national_forecast_dayahead_dag() -> None:
     """DAG to forecast Nationally using XGBoost."""

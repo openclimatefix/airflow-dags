@@ -68,13 +68,12 @@ def update_operator(cadence_mins: int) -> BashOperator:
     )
 
 @dag(
-    dag_id="uk-satellite-consumer",
+    dag_id="uk-consume-sat",
     description=__doc__,
     schedule="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""

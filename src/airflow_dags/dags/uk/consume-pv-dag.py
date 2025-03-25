@@ -42,13 +42,12 @@ pv_consumer = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-pv-consumer",
+    dag_id="uk-consume-pv",
     description=__doc__,
     schedule="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def pv_consumer_dag() -> None:
     """Fetch PV generation data."""

@@ -47,13 +47,12 @@ pvlive_consumer = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-pvlive-intraday-consumer",
+    dag_id="uk-consume-pvlive-intraday",
     description=__doc__,
     schedule="6,9,12,14,20,36,39,42,44,50 * * * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def pvlive_intraday_consumer_dag() -> None:
     """Dag to download pvlive intraday data."""
@@ -81,13 +80,12 @@ def pvlive_intraday_consumer_dag() -> None:
     consume_pvlive_gsps >> update_api_last_gsp_data
 
 @dag(
-    dag_id="uk-pvlive-dayafter-consumer",
+    dag_id="uk-consume-pvlive-dayafter",
     description=__doc__,
     schedule="0 11 * * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""

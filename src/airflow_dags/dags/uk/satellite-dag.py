@@ -46,7 +46,7 @@ satellite_clean_up_error_message = (
     "No out-of-hours support is required."
 )
 
-region = "uk"
+region = 'uk'
 
 if env == "development":
     url = "http://api-dev.quartz.solar"
@@ -54,14 +54,13 @@ else:
     url = "http://api.quartz.solar"
 
 with DAG(
-    f"{region}-national-satellite-consumer",
+    f"uk-consume-satellite",
     schedule="*/5 * * * *",
     default_args=default_args,
     concurrency=10,
     max_active_tasks=10,
     start_date=datetime.now(tz=UTC) - timedelta(hours=0.5),
     catchup=False,
-    tags=["consumer"],
 ) as dag:
     dag.doc_md = "Get Satellite data"
 
@@ -114,14 +113,13 @@ with DAG(
     latest_only >> sat_consumer >> satellite_update_5min >> satellite_update_15min
 
 with DAG(
-    f"{region}-national-satellite-cleanup",
+    f"{region}-manage-satellite-cleanup",
     schedule="0 0,6,12,18 * * *",
     default_args=default_args,
     concurrency=10,
     max_active_tasks=10,
     start_date=datetime.now(tz=UTC) - timedelta(hours=7),
     catchup=False,
-    tags=["consumer"],
 ) as dag_cleanup:
     dag_cleanup.doc_md = "Satellite data clean up"
 

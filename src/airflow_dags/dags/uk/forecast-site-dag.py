@@ -32,6 +32,7 @@ site_forecaster = ContainerDefinition(
     container_env={
         "LOGLEVEL": "DEBUG",
         "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
+        "OCF_ENVIRONMENT": env,
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
@@ -58,13 +59,12 @@ sitedb_cleaner = ContainerDefinition(
 )
 
 @dag(
-    dag_id="uk-site-forecast",
+    dag_id="uk-forecast-site",
     description=__doc__,
     schedule="*/15 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def site_forecast_dag() -> None:
     """DAG to forecast site level generation data."""
@@ -82,13 +82,12 @@ def site_forecast_dag() -> None:
     latest_only_op >> forecast_sites_op
 
 @dag(
-    dag_id="uk-clean-sitedb",
+    dag_id="uk-manage-sitedb-cleanup",
     description=__doc__,
     schedule="0 0 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["management"],
 )
 def clean_site_db_dag() -> None:
     """Clean the sites database."""
