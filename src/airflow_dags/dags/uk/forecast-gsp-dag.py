@@ -67,7 +67,7 @@ national_forecaster = ContainerDefinition(
 forecast_blender = ContainerDefinition(
     name="forecast-blend",
     container_image="docker.io/openclimatefix/uk_pv_forecast_blend",
-    container_tag="1.0.7",
+    container_tag="1.0.8",
     container_env={"LOGLEVEL": "INFO"},
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -184,6 +184,7 @@ def national_forecast_dayahead_dag() -> None:
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
+        env_overrides={"N_GSPS": "1"},
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
