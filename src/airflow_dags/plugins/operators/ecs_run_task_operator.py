@@ -8,7 +8,6 @@ from airflow.providers.amazon.aws.operators.ecs import (
     EcsRunTaskOperator,
 )
 from airflow.utils.context import Context
-from airflow.notifications.basenotifier import BaseNotifier
 from botocore.errorfactory import ClientError
 
 # These should probably be templated instead of top-level, see
