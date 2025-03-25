@@ -46,13 +46,12 @@ satellite_consumer = ContainerDefinition(
 )
 
 @dag(
-    dag_id="india-satellite-consumer",
+    dag_id="india-consume-satellite",
     description=__doc__,
     schedule="*/5 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["consumer"],
 )
 def sat_consumer_dag() -> None:
     """DAG to consume satellite data."""

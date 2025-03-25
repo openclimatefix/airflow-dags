@@ -21,6 +21,8 @@ class TestImport(unittest.TestCase):
 
         # Additional project-specific checks can be added here, e.g. to enforce each DAG has a tag
         for dag_id, dag in dag_bag.dags.items():
-            error_msg = f"{dag_id} in {dag.full_filepath} has no tags"
-            self.assertTrue(len(dag.tags) > 0, msg=error_msg)
+            self.assertTrue(len(dag.tags) == 0, msg=f"{dag_id} in {dag.full_filepath} has tags")
+            domain, function = dag_id.split("-")[0], dag_id.split("-")[1]
+            self.assertIn(domain, ["uk", "india"])
+            self.assertIn(function, ["consume", "forecast", "analysis", "manage"])
 

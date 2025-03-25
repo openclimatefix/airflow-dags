@@ -45,13 +45,12 @@ india_forecaster = ContainerDefinition(
 # hour the forecast can run, not include 7,8,19,20
 hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
 @dag(
-    dag_id="india-ruvnl-forecast",
+    dag_id="india-forecast-ruvnl",
     description=__doc__,
     schedule=f"0 {hours} * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def ruvnl_forecast_dag() -> None:
     """Create RUVNL forecasts."""
@@ -75,13 +74,12 @@ def ruvnl_forecast_dag() -> None:
     latest_only_op >> forecast_ruvnl_op
 
 @dag(
-    dag_id="india-ad-forecast",
+    dag_id="india-forecast-ad",
     description=__doc__,
     schedule="*/15 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
-    tags=["forecast"],
 )
 def ad_forecast_dag() -> None:
     """Create AD forecasts."""
