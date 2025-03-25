@@ -29,7 +29,7 @@ default_args = {
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.8",
+    container_tag="1.1.10",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
