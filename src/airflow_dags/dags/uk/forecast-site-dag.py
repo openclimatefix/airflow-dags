@@ -32,6 +32,7 @@ site_forecaster = ContainerDefinition(
     container_env={
         "LOGLEVEL": "DEBUG",
         "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
+        "OCF_ENVIRONMENT": env,
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["OCF_PV_DB_URL"],
