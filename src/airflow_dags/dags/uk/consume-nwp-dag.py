@@ -118,7 +118,9 @@ def nwp_consumer_dag() -> None:
     call_api_update_metoffice_op = update_operator(provider="metoffice")
     call_api_update_ecmwf_op = update_operator(provider="ecmwf")
 
-    latest_only_op >> consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
-    latest_only_op >> consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
+    latest_only_op >> consume_metoffice_op
+    consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
+    latest_only_op >> consume_ecmwf_op
+    consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
 
 nwp_consumer_dag()

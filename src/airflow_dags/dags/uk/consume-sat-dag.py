@@ -63,7 +63,7 @@ satip = ContainerDefinition(
         "SAVE_DIR": f"s3://nowcasting-sat-{env}/data",
         "SAVE_DIR_NATIVE": f"s3://nowcasting-sat-{env}/raw",
         "LOGLEVEL": "DEBUG",
-        "LOGLEVEL": "180 minutes",
+        "HISTORY": "180 minutes",
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": ["API_KEY", "API_SECRET"],
@@ -107,8 +107,9 @@ def sat_consumer_dag() -> None:
             "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
             "which doesn't need satellite data. "
             "EUMETSAT status links are <https://uns.eumetsat.int/uns/|here> "
-            "and <https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_rss_hr.html&ossi_level2_filename=seviri_rss.html|here>. "
-            "No out-of-hours support is required, but please log in an incident log."
+            "and <https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
+            "=seviri_rss_hr.html&ossi_level2_filename=seviri_rss.html|here>. "
+            "No out-of-hours support is required, but please log in an incident log.",
         ),
         max_active_tis_per_dag=10,
     )

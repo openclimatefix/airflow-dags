@@ -50,18 +50,14 @@ metrics_calculator = ContainerDefinition(
 )
 def metrics_dag() -> None:
     """Dag to calculate metrics for the day before's forecasts."""
-    error_message: str = (
-        "⚠️ The task {{ ti.task_id }} failed,"
-        " but its ok. This task is not critical for live services. "
-        "No out of hours support is required."
-    )
-
-    calculate_metrics_op = EcsAutoRegisterRunTaskOperator(
+    EcsAutoRegisterRunTaskOperator(
         airflow_task_id="calculate-metrics",
         container_def=metrics_calculator,
-        on_failure_callback=slack_message_callback(error_message),
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed,"
+            " but its ok. This task is not critical for live services. "
+            "No out of hours support is required.",
+        ),
     )
-
-    calculate_metrics_op
 
 metrics_dag()

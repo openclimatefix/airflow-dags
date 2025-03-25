@@ -1,13 +1,16 @@
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+"""Helper functions that handle S3 files."""
 from airflow.decorators import task
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
 
 @task(task_id="determine_latest_zarr")
-def determine_latest_zarr(bucket: str, prefix: str):
+def determine_latest_zarr(bucket: str, prefix: str) -> None:
+    """Determins the zarr folder in a bucket that was most recently created."""
     s3hook = S3Hook(aws_conn_id=None)  # Use Boto3 default connection strategy
     # Get a list of all the non-latest zarrs in the bucket prefix
-    prefixes = s3hook.list_prefixes(bucket_name=bucket, prefix=prefix + "/", delimiter='/') 
+    prefixes = s3hook.list_prefixes(bucket_name=bucket, prefix=prefix + "/", delimiter="/")
     zarrs = sorted([
-        p for p in prefixes if p.endswith('.zarr/') and "latest" not in p
+        p for p in prefixes if p.endswith(".zarr/") and "latest" not in p
     ], reverse=True)
     # Get the size of the most recent zarr and the latest.zarr zarr
     s3bucket = s3hook.get_bucket(bucket_name=bucket)

@@ -50,7 +50,7 @@ cloudcasting_app = ContainerDefinition(
 )
 def cloudcasting_dag() -> None:
     """Dag to forecast upcoming cloud patterns."""
-    cloudcasting_forecast = EcsAutoRegisterRunTaskOperator(
+    EcsAutoRegisterRunTaskOperator(
         airflow_task_id="run-cloudcasting-app",
         container_def=cloudcasting_app,
         on_failure_callback=slack_message_callback(
@@ -59,8 +59,6 @@ def cloudcasting_dag() -> None:
             "No out of hours support is required.",
         ),
     )
-
-    cloudcasting_forecast
 
 cloudcasting_dag()
 

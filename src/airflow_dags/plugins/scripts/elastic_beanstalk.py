@@ -1,17 +1,18 @@
-""" Functions for elastic beanstalk environment. """
-import boto3
+"""Functions for elastic beanstalk environment."""
 import logging
 import time
 
+import boto3
 
 logger = logging.getLogger(__name__)
 
 
-def scale_elastic_beanstalk_instance(name, number_of_instances, sleep_seconds=0):
-    """
-    Scale elastic beanstalk instance.
-    """
-
+def scale_elastic_beanstalk_instance(
+        name: str,
+        number_of_instances: int,
+        sleep_seconds: int=0,
+    ) -> None:
+    """Scale elastic beanstalk instance."""
     # get the environment
     eb = boto3.client("elasticbeanstalk")
 
@@ -37,5 +38,4 @@ def scale_elastic_beanstalk_instance(name, number_of_instances, sleep_seconds=0)
     if sleep_seconds > 0:
         logger.info(f"Sleeping for {sleep_seconds} seconds")
         time.sleep(sleep_seconds)
-
 

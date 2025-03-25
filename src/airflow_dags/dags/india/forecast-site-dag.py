@@ -96,7 +96,7 @@ def ad_forecast_dag() -> None:
         },
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed.  "
-            "Please see run book for appropriate actions. "
+            "Please see run book for appropriate actions. ",
         ),
         max_active_tis_per_dag=10,
     )

@@ -64,7 +64,8 @@ def sat_consumer_dag() -> None:
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "EUMETSAT status links are <https://uns.eumetsat.int/uns/|here> "
-            "and <https://masif.eumetsat.int/ossi/webpages/level2.html?ossi_level2_filename=seviri_iodc.html|here>. "
+            "and <https://masif.eumetsat.int/ossi/webpages/level2.html?"
+            "ossi_level2_filename=seviri_iodc.html|here>. "
             "Please see run book for appropriate actions.",
         ),
     )

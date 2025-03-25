@@ -8,6 +8,7 @@ from airflow.providers.amazon.aws.operators.ecs import (
     EcsRunTaskOperator,
 )
 from airflow.utils.context import Context
+from airflow.notifications.basenotifier import BaseNotifier
 from botocore.errorfactory import ClientError
 
 # These should probably be templated instead of top-level, see
@@ -29,7 +30,7 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
             container_def: "ContainerDefinition",
             env_overrides: dict[str, str] | None = None,
             command_override: list[str] | None = None,
-            **kwargs,
+            **kwargs: int | bool | str | dict[str, str] | list[str],
         ) -> None:
         """Create a new instance of the class."""
         self.container_def = container_def

@@ -4,7 +4,6 @@ import datetime as dt
 import os
 
 from airflow.decorators import dag
-from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
@@ -75,7 +74,7 @@ def nwp_consumer_dag() -> None:
             "❌ The task {{ ti.task_id }} failed."
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here> "
-            "Please see run book for appropriate actions. "
+            "Please see run book for appropriate actions. ",
         ),
     )
 

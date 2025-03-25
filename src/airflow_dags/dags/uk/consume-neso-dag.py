@@ -46,7 +46,7 @@ neso_consumer = ContainerDefinition(
 )
 def neso_consumer_dag() -> None:
     """DAG to download data from NESO's solar forecast."""
-    consume_neso_forecast = EcsAutoRegisterRunTaskOperator(
+    EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-neso-forecast",
         container_def=neso_consumer,
         on_failure_callback=slack_message_callback(
@@ -55,8 +55,6 @@ def neso_consumer_dag() -> None:
             "No out of office hours support is required.",
         ),
     )
-
-    consume_neso_forecast
 
 neso_consumer_dag()
 

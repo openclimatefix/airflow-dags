@@ -151,7 +151,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
             "Please see run book for appropriate actions. ",
-        )
+        ),
     )
 
     latest_only_op >> forecast_pvnet_day_ahead_op >> blend_forecasts_op
@@ -176,7 +176,7 @@ def national_forecast_dayahead_dag() -> None:
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But its ok, this forecast is only a backup. "
-            "No out of office hours support is required, unless other forecasts are failing"
+            "No out of office hours support is required, unless other forecasts are failing",
         ),
     )
 
@@ -189,7 +189,7 @@ def national_forecast_dayahead_dag() -> None:
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
             "Please see run book for appropriate actions. ",
-        )
+        ),
     )
 
     latest_only_op >> forecast_national_op >> blend_forecasts_op

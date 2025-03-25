@@ -1,3 +1,4 @@
+"""Helper functions for sending notifications via slack."""
 import os
 
 from airflow.notifications.basenotifier import BaseNotifier
