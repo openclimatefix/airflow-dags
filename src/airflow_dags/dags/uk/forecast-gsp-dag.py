@@ -28,7 +28,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.5.7",
+    container_tag="2.5.8",
     container_env={
         "LOGLEVEL": "INFO",
         "ALLOW_ADJUSTER": "true",
@@ -184,7 +184,7 @@ def national_forecast_dayahead_dag() -> None:
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
-        env_overrides={"N_GSPS": "1"},
+        env_overrides={"N_GSP": "1"},
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
