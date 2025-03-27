@@ -150,6 +150,7 @@ def sat_consumer_dag() -> None:
     merge_odegree_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="satellite-consumer-merge-odegree-catchup",
         container_def=sat_consumer,
+        max_active_tis_per_dag=1,
         env_overrides={
             "SATCONS_COMMAND": "merge",
             "SATCONS_SATELLITE": "odegree",
