@@ -45,7 +45,7 @@ gsp_forecaster = ContainerDefinition(
     },
     domain="uk",
     container_cpu=2048,
-    container_memory=12288,
+    container_memory=10240,
 )
 
 national_forecaster = ContainerDefinition(
