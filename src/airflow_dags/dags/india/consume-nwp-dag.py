@@ -71,10 +71,11 @@ def nwp_consumer_dag() -> None:
         },
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed."
+            "⚠️ The task {{ ti.task_id }} failed. "
             "The forecast will continue running until it runs out of data. "
-            "ECMWF status link is <https://status.ecmwf.int/|here> "
-            "Please see run book for appropriate actions. ",
+            "ECMWF status link is <https://status.ecmwf.int/|here>. "
+            "No out-of-hours support is required at the moment. "
+            "Please see run book for appropriate actions.",
         ),
     )
 
@@ -87,10 +88,11 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
         },
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. "
             "The forecast will continue running until it runs out of data. "
             "GFS status link is "
             "<https://www.nco.ncep.noaa.gov/pmb/nwprod/prodstat/|here>. "
+            "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
     )
@@ -105,10 +107,11 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://india-nwp-{env}/metoffice/data",
         },
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. "
             "The forecast will continue running until it runs out of data. "
             "Metoffice status link is "
             "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
+            "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
     )
@@ -130,4 +133,3 @@ def nwp_consumer_dag() -> None:
     latest_only_op >> consume_metoffice_op >> rename_zarr_metoffice
 
 nwp_consumer_dag()
-
