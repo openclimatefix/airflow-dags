@@ -140,6 +140,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         env_overrides={
             "DAY_AHEAD_MODEL": "true",
             "RUN_EXTRA_MODELS": "false",
+            "USE_OCF_DATA_SAMPLER": "true",
         },
     )
 
