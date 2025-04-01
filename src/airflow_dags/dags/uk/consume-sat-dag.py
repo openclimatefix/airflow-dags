@@ -58,7 +58,7 @@ sat_consumer = ContainerDefinition(
 satip = ContainerDefinition(
     name="satip",
     container_image="docker.io/openclimatefix/satip",
-    container_tag="2.12.28",
+    container_tag="2.12.39",
     container_env={
         "SAVE_DIR": f"s3://nowcasting-sat-{env}/data",
         "SAVE_DIR_NATIVE": f"s3://nowcasting-sat-{env}/raw",
