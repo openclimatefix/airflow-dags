@@ -74,6 +74,7 @@ def nwp_consumer_dag() -> None:
     consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-metoffice-nwp",
         container_def=nwp_consumer,
+        max_active_tis_per_dag=1,
         env_overrides={
             "MODEL_REPOSITORY": "metoffice-datahub",
             "MODEL": "um-ukv-2km",
@@ -93,6 +94,7 @@ def nwp_consumer_dag() -> None:
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-ecmwf-nwp",
         container_def=nwp_consumer,
+        max_active_tis_per_dag=1,
         env_overrides={
             "MODEL_REPOSITORY": "ecmwf-realtime",
             "ECMWF_REALTIME_S3_BUCKET": "ocf-ecmwf-production",
