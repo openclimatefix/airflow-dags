@@ -117,61 +117,63 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    consume_single_rss_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="satellite-consumer-rss",
-        container_def=sat_consumer,
-        env_overrides={
-            "SATCONS_TIME": "{{ data_interval_start }}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-        },
-    )
+    # consume_single_rss_op = EcsAutoRegisterRunTaskOperator(
+    #     airflow_task_id="satellite-consumer-rss",
+    #     container_def=sat_consumer,
+    #     env_overrides={
+    #         "SATCONS_TIME": "{{ data_interval_start }}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+    #     },
+    # )
+    #
+    # merge_rss_op = EcsAutoRegisterRunTaskOperator(
+    #     airflow_task_id="satellite-consumer-merge-rss-catchup",
+    #     container_def=sat_consumer,
+    #     env_overrides={
+    #         "SATCONS_COMMAND": "merge",
+    #         "SATCONS_TIME": "{{ data_interval_start }}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+    #     },
+    # )
+    #
+    # consume_single_odegree_op = EcsAutoRegisterRunTaskOperator(
+    #     airflow_task_id="satellite-consumer-odegree",
+    #     container_def=sat_consumer,
+    #     trigger_rule=TriggerRule.ALL_FAILED, # Only run if rss fails
+    #     env_overrides={
+    #         "SATCONS_SATELLITE": "odegree",
+    #         "SATCONS_TIME": "{{ data_interval_start }}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+    #     },
+    # )
+    #
+    # merge_odegree_op = EcsAutoRegisterRunTaskOperator(
+    #     airflow_task_id="satellite-consumer-merge-odegree-catchup",
+    #     container_def=sat_consumer,
+    #     max_active_tis_per_dag=1,
+    #     env_overrides={
+    #         "SATCONS_COMMAND": "merge",
+    #         "SATCONS_SATELLITE": "odegree",
+    #         "SATCONS_TIME": "{{ data_interval_start }}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+    #     },
+    #     on_failure_callback=slack_message_callback(
+    #         "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
+    #         "The forecast will automatically move over to PVNET-ECMWF "
+    #         "which doesn't need satellite data. "
+    #         "Forecast quality may be impacted, "
+    #         "but no out-of-hours support is required. "
+    #         "Please log in an incident log. ",
+    #     ),
+    # )
 
-    merge_rss_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="satellite-consumer-merge-rss-catchup",
-        container_def=sat_consumer,
-        env_overrides={
-            "SATCONS_COMMAND": "merge",
-            "SATCONS_TIME": "{{ data_interval_start }}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-        },
-    )
-
-    consume_single_odegree_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="satellite-consumer-odegree",
-        container_def=sat_consumer,
-        trigger_rule=TriggerRule.ALL_FAILED, # Only run if rss fails
-        env_overrides={
-            "SATCONS_SATELLITE": "odegree",
-            "SATCONS_TIME": "{{ data_interval_start }}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
-        },
-    )
-
-    merge_odegree_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="satellite-consumer-merge-odegree-catchup",
-        container_def=sat_consumer,
-        max_active_tis_per_dag=1,
-        env_overrides={
-            "SATCONS_COMMAND": "merge",
-            "SATCONS_SATELLITE": "odegree",
-            "SATCONS_TIME": "{{ data_interval_start }}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
-        },
-        on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
-            "The forecast will automatically move over to PVNET-ECMWF "
-            "which doesn't need satellite data. "
-            "Forecast quality may be impacted, "
-            "but no out-of-hours support is required. "
-            "Please log in an incident log. ",
-        ),
-    )
-
-
+    # This is for satip
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-    latest_only_op >> consume_single_rss_op >> merge_rss_op
-    consume_single_rss_op >> consume_single_odegree_op
-    consume_single_odegree_op >> merge_odegree_op
+
+    # This will is for the satellite consumer, coming soon .....
+    # latest_only_op >> consume_single_rss_op >> merge_rss_op
+    # consume_single_rss_op >> consume_single_odegree_op
+    # consume_single_odegree_op >> merge_odegree_op
 
 
 @dag(
