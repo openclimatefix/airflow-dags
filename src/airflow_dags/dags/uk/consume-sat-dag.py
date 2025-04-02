@@ -11,6 +11,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
+
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
@@ -167,10 +168,9 @@ def sat_consumer_dag() -> None:
     #     ),
     # )
 
-    # This is for satip
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
 
-    # This will is for the satellite consumer, coming soon .....
+    # TODO: Use new sat consumer
     # latest_only_op >> consume_single_rss_op >> merge_rss_op
     # consume_single_rss_op >> consume_single_odegree_op
     # consume_single_odegree_op >> merge_odegree_op
