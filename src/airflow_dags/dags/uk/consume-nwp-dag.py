@@ -44,7 +44,7 @@ nwp_consumer = ContainerDefinition(
     },
     container_command=["consume"],
     container_cpu=1024,
-    container_memory=5120,
+    container_memory=10240,
 )
 
 def update_operator(provider: str) -> BashOperator:
