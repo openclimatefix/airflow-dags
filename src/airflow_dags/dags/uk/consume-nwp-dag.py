@@ -92,7 +92,7 @@ def nwp_consumer_dag() -> None:
     )
 
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-ecmwf-nwp",
+        airflow_task_id="1.1.14",
         container_def=nwp_consumer,
         max_active_tis_per_dag=1,
         env_overrides={

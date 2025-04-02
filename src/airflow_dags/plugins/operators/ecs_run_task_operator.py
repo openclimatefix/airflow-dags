@@ -99,7 +99,7 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
                     )
-                    return False
+                    return True
 
         except ClientError as e:
             self.log.info(
