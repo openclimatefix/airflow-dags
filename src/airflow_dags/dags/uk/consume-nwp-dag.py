@@ -30,7 +30,7 @@ env = os.getenv("ENVIRONMENT", "development")
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="devsjc-delete-on-fail",
+    container_tag="1.1.14",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
@@ -92,7 +92,7 @@ def nwp_consumer_dag() -> None:
     )
 
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="1.1.14",
+        airflow_task_id="consume-ecmwf-nwp",
         container_def=nwp_consumer,
         max_active_tis_per_dag=1,
         env_overrides={
