@@ -43,7 +43,7 @@ nwp_consumer = ContainerDefinition(
         ],
     },
     container_command=["consume"],
-    container_cpu=512,
+    container_cpu=1024,
     container_memory=5120,
 )
 
