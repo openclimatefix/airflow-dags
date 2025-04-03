@@ -44,7 +44,7 @@ cloudcasting_app = ContainerDefinition(
 @dag(
     dag_id="uk-forecast-clouds",
     description=__doc__,
-    schedule="20,50 * * * *",
+    schedule="12,42 * * * *",
     default_args=default_args,
     catchup=False,
 )
