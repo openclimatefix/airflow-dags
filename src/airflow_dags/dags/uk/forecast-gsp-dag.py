@@ -77,13 +77,12 @@ forecast_blender = ContainerDefinition(
 )
 
 
-def on_failure_callback_pvnet_intraday(context):
+def on_failure_callback_pvnet_intraday(context: dict) -> None:
     """Callback for PVNet intraday failures.
 
-    By default, a error message is sent to slack.
+    By default, an error message is sent to slack.
     If PVNET_ECMWF only model has run, a warning message is sent to slack.
     """
-
     message = (
         "❌ The task {{ ti.task_id }} failed. "
         "This means one or more of the critical PVNet models have failed to run. "
@@ -96,7 +95,7 @@ def on_failure_callback_pvnet_intraday(context):
         # Completed forecasts: ['pvnet_ecmwf', 'pvnet-ukv-only']"
         #
         # we want to extract the model names from the exception message
-        failed_models = str(exception).split(":")[1].strip("Completed forecasts")
+        failed_models = str(exception).split(":")[1].replace("Completed forecasts", "")
         successful_models = str(exception).split(":")[2]
 
         if "pvnet_ecmwf " in successful_models:
