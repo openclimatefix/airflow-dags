@@ -76,6 +76,48 @@ forecast_blender = ContainerDefinition(
     container_memory=1024,
 )
 
+
+def on_failure_callback_pvnet_intraday(context):
+    """Callback for PVNet intraday failures.
+
+    By default, a error message is sent to slack.
+    If PVNET_ECMWF only model has run, a warning message is sent to slack.
+    """
+
+    message = (
+        "❌ The task {{ ti.task_id }} failed. "
+        "This means one or more of the critical PVNet models have failed to run. "
+        "Please see run book for appropriate actions."
+    )
+    exception = context.get("exception")
+    if exception is not None:
+        # the exception looks something like this:
+        # "The following critical models failed to run: {'pvnet_v2'}.
+        # Completed forecasts: ['pvnet_ecmwf', 'pvnet-ukv-only']"
+        #
+        # we want to extract the model names from the exception message
+        failed_models = str(exception).split(":")[1].strip("Completed forecasts")
+        successful_models = str(exception).split(":")[2]
+
+        if "pvnet_ecmwf " in successful_models:
+            message = (
+                "⚠️ The task {{ ti.task_id }} failed. "
+                "But its ok, the model 'PVNet ECMWF only' did run."
+                "Please see run book for appropriate actions, "
+                "no out of hours support is required."
+            )
+        else:
+            message = (
+                "❌ The task {{ ti.task_id }} failed. "
+                "This means one or more of the critical PVNet models have failed to run. "
+                "Note: The model 'PVNet ECMWF only' did NOT run. "
+                f" The failed models are: {failed_models}"
+                "Please see run book for appropriate actions."
+            )
+
+    slack_message_callback(message)(context=context)
+
+
 @dag(
     dag_id="uk-forecast-gsp",
     description=__doc__,
@@ -96,12 +138,7 @@ def gsp_forecast_pvnet_dag() -> None:
             "DAY_AHEAD_MODEL": "false",
             "FILTER_BAD_FORECASTS": "false",
         },
-        on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
-            "This means one or more of the critical PVNet models have failed to run. "
-            "We have about 6 hours before the blend services need this. "
-            "Please see run book for appropriate actions.",
-        ),
+        on_failure_callback=on_failure_callback_pvnet_intraday,
     )
 
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
@@ -115,6 +152,7 @@ def gsp_forecast_pvnet_dag() -> None:
     )
 
     latest_only_op >> forecast_gsps_op >> blend_forecasts_op
+
 
 @dag(
     dag_id="uk-forecast-gsp-dayahead",
@@ -194,6 +232,7 @@ def national_forecast_dayahead_dag() -> None:
     )
 
     latest_only_op >> forecast_national_op >> blend_forecasts_op
+
 
 gsp_forecast_pvnet_dag()
 gsp_forecast_pvnet_dayahead_dag()
