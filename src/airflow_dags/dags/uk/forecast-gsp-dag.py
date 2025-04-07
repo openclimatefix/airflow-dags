@@ -114,7 +114,7 @@ def on_failure_callback_pvnet_intraday(context: dict) -> None:
                 "Please see run book for appropriate actions."
             )
 
-    slack_message_callback(message)(context=context)
+    slack_message_callback(message)
 
 
 @dag(
