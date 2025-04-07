@@ -107,6 +107,7 @@ def gsp_forecast_pvnet_dag() -> None:
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
+        trigger_rule="all_done",
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
