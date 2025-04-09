@@ -122,9 +122,9 @@ def sat_consumer_dag() -> None:
        airflow_task_id="consume-rss",
         container_def=sat_consumer,
         env_overrides={
-            "SATCONS_TIME": "{{str(" \
-            + "dt.datetime.fromisoformat(data_interval_start) - dt.timedelta(minutes=210)" \
-            + ")}}",
+            "SATCONS_TIME": "{{" \
+            + "(data_interval_start - macros.timedelta(minutes=210)).strftime('%Y-%m-%dT%H:%M')" \
+            + "}}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
         },
     )
@@ -134,9 +134,9 @@ def sat_consumer_dag() -> None:
         trigger_rule=TriggerRule.ALL_FAILED, # Only run if rss fails
         env_overrides={
             "SATCONS_SATELLITE": "odegree",
-            "SATCONS_TIME": "{{str(" \
-                + "dt.datetime.fromisoformat(data_interval_start) - dt.timedelta(minutes=210)" \
-                + ")}}",
+            "SATCONS_TIME": "{{" \
+                + "(data_interval_start - macros.timedelta(minutes=210)).strftime('%Y-%m-%dT%H:%M')" \
+                + "}}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/iodc",
         },
         on_failure_callback=slack_message_callback(
