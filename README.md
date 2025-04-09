@@ -18,6 +18,20 @@ Many of OCF's production services run as batch pipelines managed by an Airflow d
 This repo defines those airflow DAGs that configure, version control, and test these pipelines,
 and handles the deployment process.
 
+## Releases
+
+### 1.1.0
+
+- Update PVLive consumer to use on prem server - from `1.2.5` to `1.2.6`. 
+- Trigger blend service, even if PVnet fails
+- Tidy PVnet App docs -`2.5.15` to `2.5.16`
+- India forecast app to save probabilistic values - `1.1.34` to `1.1.39`
+- Upgrade Cloudcasting app - `0.0.7` to `0.0.8`
+
+### 1.0
+
+Initial release
+
 
 ## Installation
 

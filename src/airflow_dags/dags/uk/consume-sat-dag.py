@@ -152,7 +152,7 @@ def sat_consumer_dag() -> None:
     )
 
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-    latest_only_op >> consume_rss_op >> consume_iodc_op
+    # latest_only_op >> consume_rss_op >> consume_iodc_op
 
 @dag(
     dag_id="uk-manage-clean-sat",
