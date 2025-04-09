@@ -52,7 +52,7 @@ sat_consumer = ContainerDefinition(
     },
     domain="uk",
     container_cpu=1024,
-    container_memory=6114,
+    container_memory=6144,
     container_storage=30,
 )
 
