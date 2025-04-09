@@ -43,7 +43,7 @@ sat_consumer = ContainerDefinition(
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
         "SATCONS_WINDOW_MINS": "210",
-        "SATCONS_NUM_WORKERS": "8",
+        "SATCONS_NUM_WORKERS": "4",
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
