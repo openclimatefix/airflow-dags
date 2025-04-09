@@ -118,7 +118,7 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    consume_rss_op = EcsAutoRegisterRunTaskOperator(
+    consume_rss_op = EcsAutoRegisterRunTaskOperator( # noqa
        airflow_task_id="consume-rss",
         container_def=sat_consumer,
         env_overrides={
@@ -129,7 +129,7 @@ def sat_consumer_dag() -> None:
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
         },
     )
-    consume_iodc_op = EcsAutoRegisterRunTaskOperator(
+    consume_iodc_op = EcsAutoRegisterRunTaskOperator( # noqa
        airflow_task_id="consume-odegree",
         container_def=sat_consumer,
         trigger_rule=TriggerRule.ALL_FAILED, # Only run if rss fails
