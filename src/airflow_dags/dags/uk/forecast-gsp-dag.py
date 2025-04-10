@@ -67,7 +67,7 @@ national_forecaster = ContainerDefinition(
 forecast_blender = ContainerDefinition(
     name="forecast-blend",
     container_image="docker.io/openclimatefix/uk_pv_forecast_blend",
-    container_tag="1.1.1",
+    container_tag="1.0.8",
     container_env={"LOGLEVEL": "INFO"},
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -107,6 +107,7 @@ def gsp_forecast_pvnet_dag() -> None:
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
+        trigger_rule="all_done",
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "

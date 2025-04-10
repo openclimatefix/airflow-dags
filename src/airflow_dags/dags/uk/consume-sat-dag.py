@@ -18,8 +18,6 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     EcsAutoRegisterRunTaskOperator,
 )
 
-# from airflow.utils.trigger_rule import TriggerRule
-
 env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
@@ -36,7 +34,7 @@ default_args = {
 sat_consumer = ContainerDefinition(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.1.7",
+    container_tag="0.2.0",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
@@ -44,7 +42,7 @@ sat_consumer = ContainerDefinition(
         "SATCONS_VALIDATE": "true",
         "SATCONS_RESCALE": "true",
         "SATCONS_WINDOW_MINS": "210",
-        "SATCONS_CONSUME_MISSING": "true",
+        "SATCONS_NUM_WORKERS": "4",
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
@@ -52,7 +50,8 @@ sat_consumer = ContainerDefinition(
         ],
     },
     domain="uk",
-    container_memory=4096,
+    container_cpu=1024,
+    container_memory=6144,
     container_storage=30,
 )
 
@@ -118,45 +117,28 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    # consume_single_rss_op = EcsAutoRegisterRunTaskOperator(
-    #     airflow_task_id="satellite-consumer-rss",
+    # consume_rss_op = EcsAutoRegisterRunTaskOperator(
+    #    airflow_task_id="consume-rss",
     #     container_def=sat_consumer,
     #     env_overrides={
-    #         "SATCONS_TIME": "{{ data_interval_start }}",
+    #         "SATCONS_TIME": "{{" \
+    #         + "(data_interval_start - macros.timedelta(minutes=210))" \
+    #         + ".strftime('%Y-%m-%dT%H:%M')" \
+    #         + "}}",
     #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
     #     },
     # )
-    #
-    # merge_rss_op = EcsAutoRegisterRunTaskOperator(
-    #     airflow_task_id="satellite-consumer-merge-rss-catchup",
-    #     container_def=sat_consumer,
-    #     env_overrides={
-    #         "SATCONS_COMMAND": "merge",
-    #         "SATCONS_TIME": "{{ data_interval_start }}",
-    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-    #     },
-    # )
-    #
-    # consume_single_odegree_op = EcsAutoRegisterRunTaskOperator(
-    #     airflow_task_id="satellite-consumer-odegree",
+    # consume_iodc_op = EcsAutoRegisterRunTaskOperator(
+    #    airflow_task_id="consume-odegree",
     #     container_def=sat_consumer,
     #     trigger_rule=TriggerRule.ALL_FAILED, # Only run if rss fails
     #     env_overrides={
     #         "SATCONS_SATELLITE": "odegree",
-    #         "SATCONS_TIME": "{{ data_interval_start }}",
-    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
-    #     },
-    # )
-    #
-    # merge_odegree_op = EcsAutoRegisterRunTaskOperator(
-    #     airflow_task_id="satellite-consumer-merge-odegree-catchup",
-    #     container_def=sat_consumer,
-    #     max_active_tis_per_dag=1,
-    #     env_overrides={
-    #         "SATCONS_COMMAND": "merge",
-    #         "SATCONS_SATELLITE": "odegree",
-    #         "SATCONS_TIME": "{{ data_interval_start }}",
-    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/odegree",
+    #         "SATCONS_TIME": "{{" \
+    #             + "(data_interval_start - macros.timedelta(minutes=210))" \
+    #             + ".strftime('%Y-%m-%dT%H:%M')" \
+    #             + "}}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/iodc",
     #     },
     #     on_failure_callback=slack_message_callback(
     #         "⚠️ The task {{ ti.task_id }} failed to collect odegree satellite data. "
@@ -169,12 +151,7 @@ def sat_consumer_dag() -> None:
     # )
 
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-
-    # TODO: Use new sat consumer
-    # latest_only_op >> consume_single_rss_op >> merge_rss_op
-    # consume_single_rss_op >> consume_single_odegree_op
-    # consume_single_odegree_op >> merge_odegree_op
-
+    # latest_only_op >> consume_rss_op >> consume_iodc_op
 
 @dag(
     dag_id="uk-manage-clean-sat",

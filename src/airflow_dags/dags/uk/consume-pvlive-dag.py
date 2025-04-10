@@ -34,9 +34,10 @@ default_args = {
 pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",
-    container_tag="1.2.5",
+    container_tag="1.2.6",
     container_env={
         "LOGLEVEL": "DEBUG",
+        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk", # api.pvlive.uk" is the new one
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
