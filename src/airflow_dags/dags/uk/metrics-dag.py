@@ -54,7 +54,7 @@ def metrics_dag() -> None:
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="calculate-metrics",
         container_def=metrics_calculator,
-        container_env={
+        env_overrides={
             "USE_PVNET_GSP_SUM": "true",
             "RUN_METRICS": "true",  # Explicitly enable metrics
             "RUN_ME": "false",  # Disable ME calculations
@@ -82,7 +82,7 @@ def me_dag() -> None:
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="calculate-me",
         container_def=metrics_calculator,
-        container_env={
+        env_overrides={
             "USE_PVNET_GSP_SUM": "true",
             "RUN_METRICS": "false",  # Disable metrics
             "RUN_ME": "true",  # Enable ME calculations
