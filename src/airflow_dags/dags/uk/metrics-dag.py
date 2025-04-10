@@ -40,7 +40,6 @@ metrics_calculator = ContainerDefinition(
     container_memory=512,
 )
 
-# Original Metrics DAG (unchanged except for env vars)
 @dag(
     dag_id="uk-analysis-metrics",
     description="DAG to calculate metrics from the forecast.",
@@ -68,9 +67,8 @@ def metrics_dag() -> None:
     )
 
 
-# New ME Calculations DAG
 @dag(
-    dag_id="uk-analysis-me",
+    dag_id="uk-analysis-metrics-me",
     description="DAG to run ME calculations for the adjuster.",
     schedule="0 20 * * *",  # 20:00 UTC (1 hour earlier)
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
@@ -80,7 +78,7 @@ def metrics_dag() -> None:
 def me_dag() -> None:
     """Run the ME DAG, used by the adjuster."""
     EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="calculate-me",
+        airflow_task_id="calculate-metrics-me",
         container_def=metrics_calculator,
         env_overrides={
             "USE_PVNET_GSP_SUM": "true",
