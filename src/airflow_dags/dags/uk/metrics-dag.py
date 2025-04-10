@@ -13,29 +13,6 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     EcsAutoRegisterRunTaskOperator,
 )
 
-# Add this function to handle Windows compatibility
-def test_dag_on_windows():
-    """
-    For Windows testing only - allows dag testing to bypass SIGALRM issues
-    This is NOT recommended for production use
-    """
-    if platform.system() == 'Windows':
-        import signal
-        if not hasattr(signal, 'SIGALRM'):
-            # Add a dummy SIGALRM for Windows testing
-            signal.SIGALRM = 14  # Standard SIGALRM value on POSIX systems
-            
-            # Override the signal.signal function to handle Windows
-            original_signal = signal.signal
-            def windows_signal_handler(sig, handler):
-                if sig == signal.SIGALRM:
-                    return None
-                return original_signal(sig, handler)
-            signal.signal = windows_signal_handler
-
-# Call the function to enable Windows testing
-test_dag_on_windows()
-
 env = os.getenv("ENVIRONMENT", "development")
 
 default_args = {
