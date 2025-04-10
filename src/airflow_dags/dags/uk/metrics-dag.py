@@ -50,7 +50,7 @@ metrics_calculator = ContainerDefinition(
     default_args=default_args,
 )
 def metrics_dag() -> None:
-    """Run the metrics DAG"""
+    """Run the metrics DAG."""
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="calculate-metrics",
         container_def=metrics_calculator,
@@ -78,7 +78,7 @@ def metrics_dag() -> None:
     default_args=default_args,
 )
 def me_dag() -> None:
-    """Run the ME DAG, used by the adjuster"""
+    """Run the ME DAG, used by the adjuster."""
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="calculate-me",
         container_def=metrics_calculator,
