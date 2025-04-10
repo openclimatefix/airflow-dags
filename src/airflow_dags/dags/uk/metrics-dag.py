@@ -60,7 +60,11 @@ def metrics_dag() -> None:
             "RUN_ME": "false",      # Disable ME calculations
             "LOGLEVEL": "DEBUG",
         },
-        on_failure_callback=slack_message_callback(...),
+        on_failure_callback=slack_message_callback( 
+            "⚠️ The task {{ ti.task_id }} failed,"
+            " but its ok. This task is not critical for live services. "
+            "No out of hours support is required.",
+        ),
     )
 
 # New ME Calculations DAG
