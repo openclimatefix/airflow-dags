@@ -48,6 +48,32 @@ gsp_forecaster = ContainerDefinition(
     container_memory=12288,
 )
 
+# This version should only be used on dev for the time-being
+dev_gsp_intraday_forecaster = ContainerDefinition(
+    name="forecast-pvnet",
+    container_image="ghcr.io/openclimatefix/uk-pvnet-app",
+    container_tag="cloudcasting_inputs",
+    container_env={
+        "LOGLEVEL": "INFO",
+        "RAISE_MODEL_FAILURE": "critical",
+        "ALLOW_ADJUSTER": "true",
+        "DAY_AHEAD_MODEL": "false",
+        "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/pvnet_batches",
+        "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf/data/latest.zarr",
+        "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
+        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
+        "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
+},
+    container_secret_env={
+        f"{env}/rds/forecast/": ["DB_URL"],
+    },
+    domain="uk",
+    container_cpu=2048,
+    container_memory=12288,
+)
+
+gsp_intraday_forecaster = dev_gsp_intraday_forecaster if env == "development" else gsp_forecaster
+
 national_forecaster = ContainerDefinition(
     name="forecast-national",
     container_image="docker.io/openclimatefix/gradboost_pv",
@@ -89,7 +115,7 @@ def gsp_forecast_pvnet_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
     forecast_gsps_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-gsps",
-        container_def=gsp_forecaster,
+        container_def=gsp_intraday_forecaster,
         env_overrides={
             "RUN_CRITICAL_MODELS_ONLY": str(env == "production").lower(),
             "ALLOW_SAVE_GSP_SUM": "true",
