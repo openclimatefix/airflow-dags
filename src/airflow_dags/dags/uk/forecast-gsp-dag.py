@@ -72,7 +72,7 @@ dev_gsp_intraday_forecaster = ContainerDefinition(
     container_memory=12288,
 )
 
-gsp_intraday_forecaster = gsp_forecaster
+gsp_intraday_forecaster = dev_gsp_intraday_forecaster if env == "development" else gsp_forecaster
 
 national_forecaster = ContainerDefinition(
     name="forecast-national",
