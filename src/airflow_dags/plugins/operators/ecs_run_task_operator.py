@@ -186,8 +186,8 @@ class ContainerDefinition:
                 f"Memory must be one of {allowed_sizes[self.container_cpu]}"
                 f", got {self.container_memory}",
             )
-        if self.domain not in ["uk", "india"]:
-            raise ValueError(f"Domain must be one of ['uk', 'india'], got {self.domain}")
+        if self.domain not in ["uk", "india", "nl"]:
+            raise ValueError(f"Domain must be one of ['uk', 'india', 'nl'], got {self.domain}")
         if self.container_storage < 20:
             raise ValueError(f"Storage must be at least 20GB. Got {self.container_storage}GB")
 
