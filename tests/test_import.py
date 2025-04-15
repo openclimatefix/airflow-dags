@@ -23,6 +23,6 @@ class TestImport(unittest.TestCase):
         for dag_id, dag in dag_bag.dags.items():
             self.assertTrue(len(dag.tags) == 0, msg=f"{dag_id} in {dag.full_filepath} has tags")
             domain, function = dag_id.split("-")[0], dag_id.split("-")[1]
-            self.assertIn(domain, ["uk", "india"])
+            self.assertIn(domain, ["uk", "india", "nl"])
             self.assertIn(function, ["consume", "forecast", "analysis", "manage"])
 
