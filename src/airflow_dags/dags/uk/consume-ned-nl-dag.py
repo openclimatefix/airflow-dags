@@ -30,7 +30,7 @@ neso_consumer = ContainerDefinition(
     container_tag="1.1.0",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
-        f"{env}/consumer/nednl": ["APIKEY_NEDNL"]
+        f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
     },
     container_env={
         "COUNTRY": "nl",
