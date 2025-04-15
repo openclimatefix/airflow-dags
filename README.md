@@ -20,6 +20,13 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.2.0
+
+- Cloudcasting inputs on the intraday forecaster in dev
+- Update forecast_blend `1.0.8` -> `1.1.1`
+- Update metrics `1.2.22` -> `1.2.23`
+- Add DAG to calculate ME
+
 ### 1.1.0
 
 - Update PVLive consumer to use on prem server - from `1.2.5` to `1.2.6`. 
