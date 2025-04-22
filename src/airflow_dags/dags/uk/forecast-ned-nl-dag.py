@@ -26,31 +26,35 @@ default_args = {
 
 neso_consumer = ContainerDefinition(
     name="neso-consumer",
-    container_image="docker.io/openclimatefix/neso_solar_consumer_api",
-    container_tag="1.0.3",
+    container_image="docker.io/openclimatefix/solar_consumer",
+    container_tag="1.1.4",
     container_secret_env={
-        f"{env}/rds/forecast/": ["DATABASE_URL"],
+        f"{env}/rds/pvsite": ["DB_URL"],
+        f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
     },
     container_env={
+        "COUNTRY": "nl",
+        "SAVE_METHOD": "site-db",
+        "ENVIRONMENT": env,
         "HISTORIC_OR_FORECAST": "forecast",
     },
-    domain="uk",
+    domain="nl",
     container_cpu=256,
     container_memory=512,
 )
 
 @dag(
-    dag_id="uk-consume-neso",
-    description="Get NESO's solar forecast.",
+    dag_id="nl-forecast-ned-nl",
+    description="Get Ned NL's solar forecast.",
     schedule="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
 )
-def neso_consumer_dag() -> None:
-    """DAG to download data from NESO's solar forecast."""
+def ned_nl_forecast_dag() -> None:
+    """DAG to download data from Ned NL's solar forecast."""
     EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-neso-forecast",
+        airflow_task_id="nl-forecast-ned-nl",
         container_def=neso_consumer,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
@@ -59,5 +63,5 @@ def neso_consumer_dag() -> None:
         ),
     )
 
-neso_consumer_dag()
 
+ned_nl_forecast_dag()
