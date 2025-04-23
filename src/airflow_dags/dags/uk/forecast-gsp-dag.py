@@ -112,20 +112,22 @@ def check_forecast_status() -> str:
 
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     response_pvnet = requests.get(
-        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_v2", timeout=10,
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_v2",
+        timeout=10,
     )
     response_pvnet_ecmwf = requests.get(
-        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_ecmwf", timeout=10,
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_ecmwf",
+        timeout=10,
     )
 
-    pvnet_last_run = dt.datetime.strptime(response_pvnet.json(), "%Y-%m-%dT%H:%M:%S.%fZ")
+    pvnet_last_run = dt.datetime.strptime(
+        response_pvnet.json(),
+        "%Y-%m-%dT%H:%M:%S.%fZ"
+    ).replace(tzinfo=dt.UTC)
     pvnet_ecmwf_last_run = dt.datetime.strptime(
-        response_pvnet_ecmwf.json(), "%Y-%m-%dT%H:%M:%S.%fZ",
-    )
-
-    # add timezone
-    pvnet_last_run = pvnet_last_run.replace(tzinfo=dt.UTC)
-    pvnet_ecmwf_last_run = pvnet_ecmwf_last_run.replace(tzinfo=dt.UTC)
+        response_pvnet_ecmwf.json(),
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+    ).replace(tzinfo=dt.UTC)
 
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
@@ -205,7 +207,7 @@ def gsp_forecast_pvnet_dag() -> None:
         provide_context=False,
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
-        on_sucess_callback=slack_message_callback(f"{{ ti.output }} "),
+        on_sucess_callback=slack_message_callback("{{ ti.output }} "),
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed."
             "This was trying to check when PVNet and PVNet ECMWF only last ran",
