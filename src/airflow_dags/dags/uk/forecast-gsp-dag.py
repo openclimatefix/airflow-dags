@@ -105,29 +105,28 @@ forecast_blender = ContainerDefinition(
 )
 
 
+def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
+    """Get last forecast run"""
+    url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
+    response_pvnet = requests.get(
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name={model_name}",
+        timeout=10,
+    )
+
+    pvnet_last_run = dt.datetime.strptime(response_pvnet.json(), "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+        tzinfo=dt.UTC
+    )
+
+    return pvnet_last_run
+
+
 def check_forecast_status() -> str:
     """Check the status of the forecast models."""
     # check api for forecast models pvnet_v2 and pvnet_ecmwf
     now = dt.datetime.now(tz=dt.UTC)
 
-    url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
-    response_pvnet = requests.get(
-        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_v2",
-        timeout=10,
-    )
-    response_pvnet_ecmwf = requests.get(
-        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_ecmwf",
-        timeout=10,
-    )
-
-    pvnet_last_run = dt.datetime.strptime(
-        response_pvnet.json(),
-        "%Y-%m-%dT%H:%M:%S.%fZ"
-    ).replace(tzinfo=dt.UTC)
-    pvnet_ecmwf_last_run = dt.datetime.strptime(
-        response_pvnet_ecmwf.json(),
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-    ).replace(tzinfo=dt.UTC)
+    pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
+    pvnet_ecmwf_last_run = get_forecast_last_run_from_api("pvnet_ecmwf")
 
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
