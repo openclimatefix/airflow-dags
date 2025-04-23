@@ -106,7 +106,7 @@ forecast_blender = ContainerDefinition(
 
 
 def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
-    """Get last forecast run. """
+    """Get last forecast run."""
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     response_pvnet = requests.get(
         f"{url}/v0/solar/GB/check_last_forecast_run?model_name={model_name}",
