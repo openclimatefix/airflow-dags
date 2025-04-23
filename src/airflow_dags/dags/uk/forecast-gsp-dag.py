@@ -107,20 +107,26 @@ forecast_blender = ContainerDefinition(
 
 def check_forecast_status() -> str:
     """Check the status of the forecast models."""
-
     # check api for forecast models pvnet_v2 and pvnet_ecmwf
-    now = dt.datetime.utcnow()
+    now = dt.datetime.now(tz=dt.timezone.utc)
 
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
-    response_pvnet = requests.get(f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_v2")
+    response_pvnet = requests.get(
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_v2", timeout=10
+    )
     response_pvnet_ecmwf = requests.get(
-        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_ecmwf"
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name=pvnet_ecmwf", timeout=10
     )
 
     pvnet_last_run = dt.datetime.strptime(response_pvnet.json(), "%Y-%m-%dT%H:%M:%S.%fZ")
     pvnet_ecmwf_last_run = dt.datetime.strptime(
         response_pvnet_ecmwf.json(), "%Y-%m-%dT%H:%M:%S.%fZ"
     )
+
+    # add timezone
+    pvnet_last_run = pvnet_last_run.replace(tzinfo=dt.timezone.utc)
+    pvnet_ecmwf_last_run = pvnet_ecmwf_last_run.replace(tzinfo=dt.timezone.utc)
+
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
 
@@ -140,7 +146,8 @@ def check_forecast_status() -> str:
     ):
         message = (
             "⚠️ The task forecast-gsps failed. "
-            f"This means in the last {hours} hours, PVNet has failed to run but PVNet ECMWF only model has run. "
+            f"This means in the last {hours} hours, PVNet has failed to run "
+            f"but PVNet ECMWF only model has run. "
             "Please see run book for appropriate actions."
         )
     elif (pvnet_delay > dt.timedelta(hours=hours)) and (
