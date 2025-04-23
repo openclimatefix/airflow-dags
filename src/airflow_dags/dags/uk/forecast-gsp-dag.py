@@ -106,6 +106,7 @@ forecast_blender = ContainerDefinition(
 
 
 def check_forecast_status() -> str:
+    """Check the status of the forecast models."""
 
     # check api for forecast models pvnet_v2 and pvnet_ecmwf
     now = dt.datetime.utcnow()
@@ -117,27 +118,37 @@ def check_forecast_status() -> str:
     )
 
     pvnet_last_run = dt.datetime.strptime(response_pvnet.json(), "%Y-%m-%dT%H:%M:%S.%fZ")
-    pvnet_ecmwf_last_run = dt.datetime.strptime(response_pvnet_ecmwf.json(), "%Y-%m-%dT%H:%M:%S.%fZ")
+    pvnet_ecmwf_last_run = dt.datetime.strptime(
+        response_pvnet_ecmwf.json(), "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
 
-    if (pvnet_delay <= dt.timedelta(hours=1)) and (pvnet_ecmwf_delay <= dt.timedelta(hours=1)):
+    hours = 2
+
+    if (pvnet_delay <= dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+    ):
         message = (
             "⚠️The task forecast-gsps has failed, "
-            "but PVNet and PVNet ECMWF only model have run within the last hour. "
+            f"but PVNet and PVNet ECMWF only model have run within the last {hours} hours. "
             "No actions is required. "
         )
 
-    elif (pvnet_delay > dt.timedelta(hours=1)) and (pvnet_ecmwf_delay <= dt.timedelta(hours=1)):
+    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+    ):
         message = (
             "⚠️ The task forecast-gsps failed. "
-            "This means in the last 1 hours, PVNet has failed to run but PVNet ECMWF only model has run. "
+            f"This means in the last {hours} hours, PVNet has failed to run but PVNet ECMWF only model has run. "
             "Please see run book for appropriate actions."
         )
-    elif (pvnet_delay > dt.timedelta(hours=1)) and (pvnet_ecmwf_delay > dt.timedelta(hours=1)):
+    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay > dt.timedelta(hours=hours)
+    ):
         message = (
             "❌ The task forecast-gsps failed. "
-            "This means PVNet and PVNET_ECMWF has failed to run in the last 1 hours. "
+            f"This means PVNet and PVNET_ECMWF has failed to run in the last {hours} hours. "
             f" Last success run of PVNet was {pvnet_last_run} "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run}. "
             "Please see run book for appropriate actions."
