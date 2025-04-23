@@ -192,19 +192,14 @@ def gsp_forecast_pvnet_dag() -> None:
             "DAY_AHEAD_MODEL": "false",
             "FILTER_BAD_FORECASTS": "false",
         },
-        on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
-            "This means one or more of the critical PVNet models have failed to run. "
-            "We have about 6 hours before the blend services need this. "
-            "Please see run book for appropriate actions.",
-        ),
     )
 
     check_forecasts_op = PythonOperator(
         task_id="check-forecast-gsps-last-run",
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
-        on_success_callback=slack_message_callback("{{ ti.output }} "),
+        on_success_callback=slack_message_callback(
+            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}"),
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed."
             "This was trying to check when PVNet and PVNet ECMWF only last ran",
@@ -222,8 +217,7 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_gsps_op >> blend_forecasts_op
-    forecast_gsps_op >> check_forecasts_op
+    latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
 
 
 @dag(
