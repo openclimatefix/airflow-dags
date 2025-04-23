@@ -201,7 +201,6 @@ def gsp_forecast_pvnet_dag() -> None:
     )
 
     check_forecasts_op = PythonOperator(
-        dag=dag,
         task_id="check-forecast-gsps-last-run",
         provide_context=False,
         trigger_rule="one_failed",
