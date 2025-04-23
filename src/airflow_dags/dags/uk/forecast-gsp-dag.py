@@ -205,7 +205,7 @@ def gsp_forecast_pvnet_dag() -> None:
         provide_context=False,
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
-        on_sucess_callback=slack_message_callback("{{ ti.output }} "),
+        on_success_callback=slack_message_callback("{{ ti.output }} "),
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed."
             "This was trying to check when PVNet and PVNet ECMWF only last ran",
