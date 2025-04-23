@@ -202,7 +202,6 @@ def gsp_forecast_pvnet_dag() -> None:
 
     check_forecasts_op = PythonOperator(
         task_id="check-forecast-gsps-last-run",
-        provide_context=False,
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
         on_success_callback=slack_message_callback("{{ ti.output }} "),
