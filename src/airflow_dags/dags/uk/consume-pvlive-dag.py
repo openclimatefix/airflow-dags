@@ -37,7 +37,9 @@ pvlive_consumer = ContainerDefinition(
     container_tag="1.3.0" if env == "development" else "1.2.6",
     container_env={
         "LOGLEVEL": "DEBUG",
-        "PVLIVE_DOMAIN_URL": "api.pvlive.uk" if env == "development" else "api.solar.sheffield.ac.uk",
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk"
+        if env == "development"
+        else "api.solar.sheffield.ac.uk",
         # api.pvlive.uk" is the new one, api.solar.sheffield.ac.uk is the old one
     },
     container_secret_env={
@@ -47,6 +49,7 @@ pvlive_consumer = ContainerDefinition(
     container_cpu=256,
     container_memory=512,
 )
+
 
 @dag(
     dag_id="uk-consume-pvlive-intraday",
@@ -80,6 +83,7 @@ def pvlive_intraday_consumer_dag() -> None:
     )
 
     consume_pvlive_gsps >> update_api_last_gsp_data
+
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -120,6 +124,6 @@ def pvlive_dayafter_consumer_dag() -> None:
 
     consume_pvlive_national >> consume_pvlive_gsps
 
+
 pvlive_intraday_consumer_dag()
 pvlive_dayafter_consumer_dag()
-
