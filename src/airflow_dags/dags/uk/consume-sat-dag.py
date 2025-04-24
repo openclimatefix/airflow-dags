@@ -106,7 +106,7 @@ def sat_consumer_dag() -> None:
             "⚠️ The task {{ ti.task_id }} failed. "
             "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
             "which doesn't need satellite data. "
-            "EUMETSAT status link for the RSS service (5 min) is "
+            "The EUMETSAT status link for the RSS service (5 minute) is "
             "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
             "=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
             "and the 0 degree (15 minute) which we use as a backup is "
