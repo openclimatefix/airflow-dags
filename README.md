@@ -47,7 +47,7 @@ Initial release
 
 ## How to make a release to production
 
-Release to development are made automatically when a PR is merge to `main`. 
+Releases to development are made automatically when a PR is merge to `main`. 
 For production releases, we try to bundle a few changes together. 
 Once we are ready to release to production we follow the next steps
 
