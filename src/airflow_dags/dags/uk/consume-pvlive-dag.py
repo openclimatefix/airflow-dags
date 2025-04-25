@@ -92,7 +92,7 @@ def pvlive_intraday_consumer_dag() -> None:
 
     # we do want to remove this
     consume_pvlive_gsps_old = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="pvlive-intraday-consumer-gsps",
+        airflow_task_id="pvlive-intraday-consumer-gsps-old",
         container_def=pvlive_consumer_old,
         env_overrides={
             "N_GSPS": "317",
@@ -152,7 +152,7 @@ def pvlive_dayafter_consumer_dag() -> None:
     )
 
     consume_pvlive_gsps_old = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-pvlive-dayafter-gsps",
+        airflow_task_id="consume-pvlive-dayafter-gsps-old",
         container_def=pvlive_consumer_old,
         env_overrides={
             "N_GSPS": "317",
