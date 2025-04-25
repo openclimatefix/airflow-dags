@@ -20,6 +20,12 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.3.0
+
+- Adding a new NL consumer
+- Update pvnet slack error/warning message logic 
+- Update slack error messages/links for uk and india satellite consumers
+
 ### 1.2.0
 
 - Cloudcasting inputs on the intraday forecaster in dev
