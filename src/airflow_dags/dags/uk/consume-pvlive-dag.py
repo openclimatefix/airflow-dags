@@ -65,7 +65,7 @@ def pvlive_intraday_consumer_dag() -> None:
         airflow_task_id="pvlive-intraday-consumer-gsps",
         container_def=pvlive_consumer,
         env_overrides={
-            "N_GSPS": "342",
+            "N_GSPS": "342" if env == "development" else "317",
             "REGIME": "in-day",
         },
         on_failure_callback=slack_message_callback(
@@ -116,7 +116,7 @@ def pvlive_dayafter_consumer_dag() -> None:
         airflow_task_id="consume-pvlive-dayafter-gsps",
         container_def=pvlive_consumer,
         env_overrides={
-            "N_GSPS": "342",
+            "N_GSPS": "342" if env == "development" else "317",
             "REGIME": "day-after",
         },
         on_failure_callback=slack_message_callback(error_message),
