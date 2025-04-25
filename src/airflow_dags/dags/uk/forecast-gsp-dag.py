@@ -131,6 +131,9 @@ def check_forecast_status() -> str:
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
 
+    pvnet_last_run_str = pvnet_last_run.strftime("%Y-%m-%d %H:%M")
+    pvnet_ecmwf_last_run_str = pvnet_ecmwf_last_run.strftime("%Y-%m-%d %H:%M")
+
     hours = 2
 
     if (pvnet_delay <= dt.timedelta(hours=hours)) and (
@@ -157,15 +160,15 @@ def check_forecast_status() -> str:
         message = (
             "❌ The task forecast-gsps failed. "
             f"This means PVNet and PVNET_ECMWF has failed to run in the last {hours} hours. "
-            f" Last success run of PVNet was {pvnet_last_run} "
-            f"and PVNet ECMWF was {pvnet_ecmwf_last_run}. "
+            f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
             "Please see run book for appropriate actions."
         )
     else:
         message = (
             "❌ The task forecast-gsps failed. "
-            f" Last success run of PVNet was {pvnet_last_run} "
-            f"and PVNet ECMWF was {pvnet_ecmwf_last_run}. "
+            f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
             "Please see run book for appropriate actions."
         )
 
