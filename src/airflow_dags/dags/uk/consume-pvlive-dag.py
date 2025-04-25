@@ -37,7 +37,7 @@ pvlive_consumer_old = ContainerDefinition(
     container_tag="1.2.6",
     container_env={
         "LOGLEVEL": "DEBUG",
-        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk"
+        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -53,7 +53,7 @@ pvlive_consumer = ContainerDefinition(
     container_tag="1.3.0",
     container_env={
         "LOGLEVEL": "DEBUG",
-        "PVLIVE_DOMAIN_URL": "api.pvlive.uk"
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
