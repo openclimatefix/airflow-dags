@@ -48,7 +48,7 @@ Initial release
 ## How to make a release to production
 
 Releases to development are made automatically when a PR is merged to `main`. 
-For production releases, we try to bundle a few changes together. 
+For production releases, we try to bundle a few changes together in a minor version release. 
 Once we are ready to release to production we follow the next steps
 
 - Create a new branch called `X.Y-release`
