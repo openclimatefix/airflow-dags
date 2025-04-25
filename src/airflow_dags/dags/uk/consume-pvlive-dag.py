@@ -37,7 +37,7 @@ pvlive_consumer = ContainerDefinition(
     container_tag="1.2.6",
     container_env={
         "LOGLEVEL": "DEBUG",
-        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk"
+        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk",
         # api.pvlive.uk" is the new one, api.solar.sheffield.ac.uk is the old one
     },
     container_secret_env={
