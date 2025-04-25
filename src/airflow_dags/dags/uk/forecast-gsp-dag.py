@@ -3,8 +3,10 @@
 import datetime as dt
 import os
 
+import requests
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
+from airflow.operators.python import PythonOperator
 
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
@@ -63,7 +65,7 @@ dev_gsp_intraday_forecaster = ContainerDefinition(
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
-},
+    },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
     },
@@ -102,6 +104,77 @@ forecast_blender = ContainerDefinition(
     container_memory=1024,
 )
 
+
+def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
+    """Get last forecast run."""
+    url = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
+    response_pvnet = requests.get(
+        f"{url}/v0/solar/GB/check_last_forecast_run?model_name={model_name}",
+        timeout=10,
+    )
+
+    pvnet_last_run = dt.datetime.strptime(response_pvnet.json(), "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+        tzinfo=dt.UTC,
+    )
+
+    return pvnet_last_run
+
+
+def check_forecast_status() -> str:
+    """Check the status of the forecast models."""
+    # check api for forecast models pvnet_v2 and pvnet_ecmwf
+    now = dt.datetime.now(tz=dt.UTC)
+
+    pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
+    pvnet_ecmwf_last_run = get_forecast_last_run_from_api("pvnet_ecmwf")
+
+    pvnet_delay = now - pvnet_last_run
+    pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
+
+    pvnet_last_run_str = pvnet_last_run.strftime("%Y-%m-%d %H:%M")
+    pvnet_ecmwf_last_run_str = pvnet_ecmwf_last_run.strftime("%Y-%m-%d %H:%M")
+
+    hours = 2
+
+    if (pvnet_delay <= dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+    ):
+        message = (
+            "⚠️The task forecast-gsps has failed, "
+            f"but PVNet and PVNet ECMWF only model have run within the last {hours} hours. "
+            "No actions is required. "
+        )
+
+    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+    ):
+        message = (
+            "⚠️ The task forecast-gsps failed. "
+            f"This means in the last {hours} hours, PVNet has failed to run "
+            "but PVNet ECMWF only model has run. "
+            "Please see run book for appropriate actions."
+        )
+    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
+        pvnet_ecmwf_delay > dt.timedelta(hours=hours)
+    ):
+        message = (
+            "❌ The task forecast-gsps failed. "
+            f"This means PVNet and PVNET_ECMWF has failed to run in the last {hours} hours. "
+            f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
+            "Please see run book for appropriate actions."
+        )
+    else:
+        message = (
+            "❌ The task forecast-gsps failed. "
+            f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
+            "Please see run book for appropriate actions."
+        )
+
+    return message
+
+
 @dag(
     dag_id="uk-forecast-gsp",
     description=__doc__,
@@ -122,11 +195,17 @@ def gsp_forecast_pvnet_dag() -> None:
             "DAY_AHEAD_MODEL": "false",
             "FILTER_BAD_FORECASTS": "false",
         },
+    )
+
+    check_forecasts_op = PythonOperator(
+        task_id="check-forecast-gsps-last-run",
+        trigger_rule="one_failed",
+        python_callable=check_forecast_status,
+        on_success_callback=slack_message_callback(
+            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}"),
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
-            "This means one or more of the critical PVNet models have failed to run. "
-            "We have about 6 hours before the blend services need this. "
-            "Please see run book for appropriate actions.",
+            "⚠️ The task {{ ti.task_id }} failed."
+            "This was trying to check when PVNet and PVNet ECMWF only last ran",
         ),
     )
 
@@ -141,7 +220,8 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_gsps_op >> blend_forecasts_op
+    latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
+
 
 @dag(
     dag_id="uk-forecast-gsp-dayahead",
@@ -221,6 +301,7 @@ def national_forecast_dayahead_dag() -> None:
     )
 
     latest_only_op >> forecast_national_op >> blend_forecasts_op
+
 
 gsp_forecast_pvnet_dag()
 gsp_forecast_pvnet_dayahead_dag()
