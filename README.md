@@ -45,6 +45,18 @@ and handles the deployment process.
 
 Initial release
 
+## How to make a release to production
+
+Releases to development are made automatically when a PR is merged to `main`. 
+For production releases, we try to bundle a few changes together in a minor version release. 
+Once we are ready to release to production we follow the next steps
+
+- Create a new branch called `X.Y-release`
+- Update the readme, with the changes made in this new release. This can be done by compare tags, for [example](https://github.com/openclimatefix/airflow-dags/compare/v1.2.0...v1.2.7). 
+- Create a PR from `X.Y-release` to `main` and get this approved.
+- When merging this PR, add `#minor` to the PR `Extended description` under `Commit message`. 
+- Merge the PR to `main` and delete the branch, this will create the tag `X.Y`. 
+- Under Actions, go to `Deploy DAGs`, click on `Run workflow` and select the `X.Y` tag. This will then need to be approved. 
 
 ## Installation
 
