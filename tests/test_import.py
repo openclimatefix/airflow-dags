@@ -16,7 +16,7 @@ class TestImport(unittest.TestCase):
             include_examples=False,
             dag_folder=str(files("airflow_dags").joinpath("dags")),
         )
-        self.assertEqual(len(dag_bag.dags), 23)
+        self.assertEqual(len(dag_bag.dags), 24)
         self.assertFalse(dag_bag.import_errors)
 
         # Additional project-specific checks can be added here, e.g. to enforce each DAG has a tag

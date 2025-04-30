@@ -36,6 +36,7 @@ neso_consumer = ContainerDefinition(
         "COUNTRY": "nl",
         "SAVE_METHOD": "site-db",
         "ENVIRONMENT": env,
+        "HISTORIC_OR_FORECAST": "generation",
     },
     domain="nl",
     container_cpu=256,
