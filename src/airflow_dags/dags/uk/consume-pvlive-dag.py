@@ -112,7 +112,7 @@ def pvlive_intraday_consumer_dag() -> None:
         bash_command=f"curl -X GET {url}/v0/solar/GB/update_last_data?component=gsp",
     )
 
-    consume_pvlive_gsps_old >> update_api_last_gsp_data >> consume_pvlive_gsps
+    consume_pvlive_gsps >> update_api_last_gsp_data >> consume_pvlive_gsps_old
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -161,7 +161,7 @@ def pvlive_dayafter_consumer_dag() -> None:
         on_failure_callback=slack_message_callback(error_message),
     )
 
-    consume_pvlive_national >> consume_pvlive_gsps_old >> consume_pvlive_gsps
+    consume_pvlive_national >> consume_pvlive_gsps >> consume_pvlive_gsps_old
 
 
 pvlive_intraday_consumer_dag()
