@@ -27,7 +27,7 @@ default_args = {
 neso_consumer = ContainerDefinition(
     name="neso-consumer",
     container_image="docker.io/openclimatefix/solar_consumer",
-    container_tag="1.1.6",
+    container_tag="1.1.7",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
