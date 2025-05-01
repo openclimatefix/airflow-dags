@@ -66,8 +66,8 @@ def update_operator(provider: str) -> BashOperator:
     catchup=False,
     default_args=default_args,
 )
-def nwp_consumer_dag() -> None:
-    """DAG to download and process NWP data."""
+def nl_nwp_consumer_dag() -> None:
+    """DAG to download and process NWP data for the Netherlands."""
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
@@ -98,4 +98,4 @@ def nwp_consumer_dag() -> None:
     latest_only_op >> consume_ecmwf_op
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
 
-nwp_consumer_dag()
+nl_nwp_consumer_dag()
