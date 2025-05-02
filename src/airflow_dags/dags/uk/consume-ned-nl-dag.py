@@ -63,5 +63,29 @@ def ned_nl_consumer_dag() -> None:
         ),
     )
 
-ned_nl_consumer_dag()
+@dag(
+    dag_id="nl-consume-ned-nl-forecast",
+    description="Get Ned NL's solar forecast.",
+    schedule="0 * * * *",
+    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
+    default_args=default_args,
+)
+def ned_nl_forecast_dag() -> None:
+    """DAG to download data from Ned NL's solar forecast."""
+    EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="nl-forecast-ned-nl",
+        container_def=ned_nl_consumer,
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed. "
+            "But its ok, this only used for comparison. "
+            "No out of office hours support is required.",
+        ),
+        env_overrides={
+            "HISTORIC_OR_FORECAST": "forecast",
+        },
+    )
 
+
+ned_nl_consumer_dag()
+ned_nl_forecast_dag()
