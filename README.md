@@ -20,6 +20,16 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.4.0
+
+- Add new NL consumer for ned-nl forecast, and use version 1.1.9
+- Add new NL nwp consumer for ECMWF
+- Pull both on and new GSPs from PVLive
+- PVnet app updated to `2.5.16` -> `2.5.18`
+- Upgrade blend service to `1.1.2` - [fixes version issue](https://github.com/openclimatefix/uk-pv-forecast-blend/issues/48),
+note small data migration is needed
+- Update slack warning maessage for PVnet app
+
 ### 1.3.0
 
 - Adding a new NL consumer
