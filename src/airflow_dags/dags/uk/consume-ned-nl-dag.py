@@ -24,8 +24,8 @@ default_args = {
     "execution_timeout": dt.timedelta(minutes=45),
 }
 
-neso_consumer = ContainerDefinition(
-    name="neso-consumer",
+ned_nl_consumer = ContainerDefinition(
+    name="ned-nl-consumer",
     container_image="docker.io/openclimatefix/solar_consumer",
     container_tag="1.1.7",
     container_secret_env={
@@ -55,7 +55,7 @@ def ned_nl_consumer_dag() -> None:
     """DAG to download data from Ned NL's solar generation."""
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="nl-consume-ned-nl-generation",
-        container_def=neso_consumer,
+        container_def=ned_nl_consumer,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But its ok, this only used for comparison. "

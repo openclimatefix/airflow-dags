@@ -24,10 +24,10 @@ default_args = {
     "execution_timeout": dt.timedelta(minutes=45),
 }
 
-neso_consumer = ContainerDefinition(
-    name="neso-consumer",
+ned_nl_consumer_forecast = ContainerDefinition(
+    name="ned-nl-consumer-forecast",
     container_image="docker.io/openclimatefix/solar_consumer",
-    container_tag="1.1.7",
+    container_tag="1.1.8",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
@@ -55,7 +55,7 @@ def ned_nl_forecast_dag() -> None:
     """DAG to download data from Ned NL's solar forecast."""
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="nl-forecast-ned-nl",
-        container_def=neso_consumer,
+        container_def=ned_nl_consumer_forecast,
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "But its ok, this only used for comparison. "
