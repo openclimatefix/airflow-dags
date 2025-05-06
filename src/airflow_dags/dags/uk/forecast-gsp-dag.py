@@ -209,6 +209,18 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
+    blend_forecasts_national_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="blend-forecasts-national",
+        container_def=forecast_blender,
+        env_overrides={"N_GSP": "0"},
+        trigger_rule="all_done",
+        on_failure_callback=slack_message_callback(
+            "❌ The task {{ ti.task_id }} failed."
+            "The blending of forecast has failed. "
+            "Please see run book for appropriate actions. ",
+        ),
+    )
+
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
@@ -220,7 +232,7 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
+    latest_only_op >> forecast_gsps_op >> blend_forecasts_national_op >> [blend_forecasts_op, check_forecasts_op]
 
 
 @dag(
@@ -251,6 +263,18 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         },
     )
 
+    blend_forecasts_national_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="blend-forecasts-national",
+        container_def=forecast_blender,
+        env_overrides={"N_GSP": "0"},
+        trigger_rule="all_done",
+        on_failure_callback=slack_message_callback(
+            "❌ The task {{ ti.task_id }} failed."
+            "The blending of forecast has failed. "
+            "Please see run book for appropriate actions. ",
+        ),
+    )
+
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
@@ -262,7 +286,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_pvnet_day_ahead_op >> blend_forecasts_op
+    latest_only_op >> forecast_pvnet_day_ahead_op >> blend_forecasts_national_op >> blend_forecasts_op
 
 
 @dag(
@@ -292,7 +316,7 @@ def national_forecast_dayahead_dag() -> None:
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
-        env_overrides={"N_GSP": "1"},
+        env_overrides={"N_GSP": "0"},
         on_failure_callback=slack_message_callback(
             "❌ The task {{ ti.task_id }} failed."
             "The blending of forecast has failed. "
