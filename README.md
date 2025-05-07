@@ -26,8 +26,8 @@ and handles the deployment process.
 - Add new NL nwp consumer for ECMWF
 - Pull both on and new GSPs from PVLive
 - PVnet app updated to `2.5.16` -> `2.5.18`
-- Upgrade blend service to `1.1.2` - [fixes version issue](https://github.com/openclimatefix/uk-pv-forecast-blend/issues/48),
-note small data migration is needed
+- Upgrade blend service to `1.1.3` - [fixes version issue](https://github.com/openclimatefix/uk-pv-forecast-blend/issues/48),
+note small data migration is needed. Also API should be upgraded to `1.5.93`
 - Update slack warning maessage for PVnet app
 
 ### 1.3.0
