@@ -30,7 +30,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.5.19",
+    container_tag="2.5.18",
     container_env={
         "LOGLEVEL": "INFO",
         "ALLOW_ADJUSTER": "true",
