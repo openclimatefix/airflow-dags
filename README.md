@@ -22,7 +22,7 @@ and handles the deployment process.
 
 ### 1.4.0
 
-- Add new NL consumer for ned-nl forecast, and use version `1.1.12`
+- Add new NL consumer for Ned-NL forecast, and use version `1.1.12`
 - Add new NL nwp consumer for ECMWF
 - Pull both on and new GSPs from PVLive
 - PVnet app updated to `2.5.16` -> `2.5.18`, fixes git version
