@@ -1,12 +1,12 @@
-import requests
-import os
+""" General checks on Uk National/GSP API."""
 import datetime as dt
 import json
-
-from airflow.operators.python import PythonOperator
-from airflow.decorators import dag
-
 import logging
+import os
+
+import requests
+from airflow.decorators import dag
+from airflow.operators.python import PythonOperator
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +30,15 @@ default_args = {
 }
 
 
-def check_len_qe(data, min_len):
-    """
-    Check the length of the data is greater than or equal to min_len
-    """
+def check_len_qe(data:list, min_len:int):
+    """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
         raise ValueError(f"Data length {len(data)} is less than {min_len}."
                          f"The data is {data}.")
 
 
-def get_bearer_token_from_auth0():
-
+def get_bearer_token_from_auth0() -> str:
+    """ Get bearer token from Auth0. """
     # # if we don't have a token, or its out of date, then lets get a new one
     # # Note: need to make this user on dev and production auth0
 
