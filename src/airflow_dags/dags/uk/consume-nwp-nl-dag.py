@@ -28,7 +28,7 @@ default_args = {
 env = os.getenv("ENVIRONMENT", "development")
 
 nwp_consumer = ContainerDefinition(
-    name="nwp-consumer",
+    name="nwp-consumer-nl",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
     container_tag="1.1.23",
     container_env={
@@ -71,7 +71,7 @@ def nl_nwp_consumer_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-ecmwf-nwp",
+        airflow_task_id="consume-ecmwf-nwp-nl",
         container_def=nwp_consumer,
         max_active_tis_per_dag=1,
         env_overrides={
@@ -90,7 +90,7 @@ def nl_nwp_consumer_dag() -> None:
     )
 
     rename_zarr_ecmwf_op = determine_latest_zarr.override(
-        task_id="rename-latest-ecmwf-data",
+        task_id="rename-latest-ecmwf-data-nl",
     )(bucket=f"nowcasting-nwp-{env}", prefix="ecmwf-nl/data")
 
     call_api_update_ecmwf_op = update_operator(provider="ecmwf")
