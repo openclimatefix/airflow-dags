@@ -108,6 +108,20 @@ def check_national_forecast(access_token, horizon_minutes=None):
     assert "targetTime" in data[0]
     assert "expectedPowerGenerationMegawatts" in data[0]
 
+def check_national_forecast_include_metadata(access_token, horizon_minutes=None):
+
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
+    if horizon_minutes:
+        full_url += f"forecast_horizon_minutes={horizon_minutes}"
+    data = call_api(url=full_url, access_token=access_token)
+
+    # should have data point for 2 days in the past + 36 hours in the future
+    # date is in 30 min intervals
+    check_len_qe(data['forecastValues'], 2 * 24 * 2 + 30 * 2)
+
+    assert "targetTime" in data['forecastValues'][0]
+    assert "expectedPowerGenerationMegawatts" in data['forecastValues'][0]
+
 
 def check_national_pvlive(access_token):
 
@@ -302,6 +316,12 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    national_forecast_include_metadata = PythonOperator(
+        task_id="check-api-national-forecast-include-metadata",
+        python_callable=check_national_forecast_include_metadata,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     national_generation = PythonOperator(
         task_id="check-api-national-pvlive",
         python_callable=check_national_pvlive,
@@ -369,7 +389,7 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str, "horizon_minutes": 120},
     )
 
-    get_bearer_token >> national_forecast >> national_forecast_2_hour
+    get_bearer_token >> national_forecast >> [national_forecast_2_hour, national_forecast_include_metadata]
     get_bearer_token >> national_generation >> national_generation_day_after
     get_bearer_token >> gsp_forecast_all >> gsp_forecast_all_start_and_end >> gsp_forecast_all_one_datetime
     get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour
