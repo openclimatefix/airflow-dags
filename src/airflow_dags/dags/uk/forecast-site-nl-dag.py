@@ -43,7 +43,7 @@ site_forecaster = ContainerDefinition(
 
 # TODO run this every hour
 @dag(
-    dag_id="nl-site-forecast",
+    dag_id="nl-forecast",
     description=__doc__,
     schedule="0 2,3,8,9,14,15,20,21 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
@@ -55,7 +55,7 @@ def nl_forecast_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
     forecast_nl_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="forecast-nl",
+        airflow_task_id="nl-forecast",
         container_def=site_forecaster,
         max_active_tis_per_dag=10,
         env_overrides={
