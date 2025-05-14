@@ -30,7 +30,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.5.20",
+    container_tag="2.5.21",
     container_env={
         "LOGLEVEL": "INFO",
         "ALLOW_ADJUSTER": "true",
@@ -51,10 +51,11 @@ gsp_forecaster = ContainerDefinition(
 )
 
 # This version should only be used on dev for the time-being
+# see below, where we dont use this on production
 dev_gsp_intraday_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="cloudcasting_inputs" if env == "development" else "2.5.18",
+    container_tag="cloudcasting_inputs",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
