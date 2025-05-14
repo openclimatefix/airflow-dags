@@ -26,8 +26,8 @@ default_args = {
 
 ned_nl_consumer = ContainerDefinition(
     name="ned-nl-consumer",
-    container_image="docker.io/openclimatefix/solar_consumer",
-    container_tag="1.1.9",
+    container_image="ghcr.io/openclimatefix/solar-consumer",
+    container_tag="1.1.12",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
