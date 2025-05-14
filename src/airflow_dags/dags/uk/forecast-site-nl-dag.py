@@ -45,7 +45,7 @@ site_forecaster = ContainerDefinition(
 @dag(
     dag_id="nl-site-forecast",
     description=__doc__,
-    schedule=f"0 2,3,8,9,14,15,20,21 * * *",
+    schedule="0 2,3,8,9,14,15,20,21 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
