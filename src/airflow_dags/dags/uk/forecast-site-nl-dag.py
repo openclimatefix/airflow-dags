@@ -40,10 +40,12 @@ site_forecaster = ContainerDefinition(
     domain="nl",
 )
 
+
+# TODO run this every hour
 @dag(
     dag_id="nl-site-forecast",
     description=__doc__,
-    schedule=f"0 * * * *",
+    schedule=f"0 2,3,8,9,14,15,20,21 * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
