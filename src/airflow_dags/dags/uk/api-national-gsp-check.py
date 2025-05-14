@@ -150,6 +150,21 @@ def check_national_pvlive_day_after(access_token):
     assert "solarGenerationKw" in data[0]
 
 
+def check_gsp_forecast_all_compact_false(access_token):
+
+    full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
+    data = call_api(url=full_url, access_token=access_token)
+    logger.debug(data)
+
+    # 36 hours in the future, but just look at 30 hours
+    # date is in 30 min intervals
+    check_len_qe(data, 2 * 30)
+
+    assert "datetimeUtc" in data[0]
+    assert "forecastValues" in data[0]
+    assert len(data[0]["forecastValues"]) == 3
+
+
 def check_gsp_forecast_all(access_token):
 
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
@@ -340,6 +355,12 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    gsp_forecast_all_compact_false = PythonOperator(
+        task_id="check-api-gsp-forecast-all-compact-false",
+        python_callable=check_gsp_forecast_all_compact_false,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     gsp_forecast_all_start_and_end = PythonOperator(
         task_id="check-api-gsp-forecast-all-start-and-end",
         python_callable=check_gsp_forecast_all_start_and_end,
@@ -391,7 +412,7 @@ def api_national_gsp_check() -> None:
 
     get_bearer_token >> national_forecast >> [national_forecast_2_hour, national_forecast_include_metadata]
     get_bearer_token >> national_generation >> national_generation_day_after
-    get_bearer_token >> gsp_forecast_all >> gsp_forecast_all_start_and_end >> gsp_forecast_all_one_datetime
+    get_bearer_token >> gsp_forecast_all >> [gsp_forecast_all_start_and_end, gsp_forecast_all_one_datetime, gsp_forecast_all_compact_false]
     get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour
     get_bearer_token >> gsp_pvlive_all
     get_bearer_token >> gsp_pvlive_one >> gsp_pvlive_one_day_after
