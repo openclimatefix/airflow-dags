@@ -3,6 +3,7 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 
 import requests
 from airflow.decorators import dag
@@ -70,7 +71,9 @@ def call_api(url: str, access_token=None):
     else:
         headers = {}
 
+    t = time.time()
     response = requests.get(url, headers=headers)
+    logger.info(f"API call took {time.time() - t} seconds")
 
     assert response.status_code == 200, (
         f"API call failed calling {url} "
