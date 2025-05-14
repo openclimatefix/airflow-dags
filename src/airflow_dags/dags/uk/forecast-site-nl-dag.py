@@ -5,7 +5,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+# from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
