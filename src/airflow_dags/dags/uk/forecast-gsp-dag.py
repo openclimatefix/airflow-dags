@@ -55,7 +55,7 @@ gsp_forecaster = ContainerDefinition(
 dev_gsp_intraday_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="cloudcasting_inputs" if env == "development" else "2.5.18",
+    container_tag="dev" if env == "development" else "2.5.18",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
