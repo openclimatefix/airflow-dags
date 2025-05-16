@@ -1,4 +1,4 @@
-""" General checks on Uk National/GSP API."""
+"""General checks on Uk National/GSP API."""
 import datetime as dt
 import json
 import logging
@@ -31,15 +31,14 @@ default_args = {
 }
 
 
-def check_len_qe(data:list, min_len:int):
+def check_len_qe(data: list, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
-        raise ValueError(f"Data length {len(data)} is less than {min_len}."
-                         f"The data is {data}.")
+        raise ValueError(f"Data length {len(data)} is less than {min_len}." f"The data is {data}.")
 
 
 def get_bearer_token_from_auth0() -> str:
-    """ Get bearer token from Auth0. """
+    """Get bearer token from Auth0."""
     # # if we don't have a token, or its out of date, then lets get a new one
     # # Note: need to make this user on dev and production auth0
 
@@ -54,15 +53,15 @@ def get_bearer_token_from_auth0() -> str:
             "audience": audience,
         }
     )
-    logger.info(f"Getting bearer token")
+    logger.info("Getting bearer token")
     r = requests.post(url, data=data, headers=header)
     access_token = r.json()["access_token"]
 
-    logger.info(f"Got bearer token")
+    logger.info("Got bearer token")
     return access_token
 
 
-def call_api(url: str, access_token=None):
+def call_api(url: str, access_token=None) -> dict | [dict]:
 
     logger.info(f"Checking: {url}")
 
@@ -84,20 +83,20 @@ def call_api(url: str, access_token=None):
     return response.json()
 
 
-def check_api_is_up():
+def check_api_is_up() -> None:
     # check the api is up
     full_url = f"{base_url}/"
     call_api(url=full_url)
 
 
-def check_api_status():
+def check_api_status() -> None:
 
     # check the api is up
     full_url = f"{base_url}/v0/solar/GB/status"
     call_api(url=full_url)
 
 
-def check_national_forecast(access_token, horizon_minutes=None):
+def check_national_forecast(access_token, horizon_minutes=None) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
@@ -111,7 +110,8 @@ def check_national_forecast(access_token, horizon_minutes=None):
     assert "targetTime" in data[0]
     assert "expectedPowerGenerationMegawatts" in data[0]
 
-def check_national_forecast_include_metadata(access_token, horizon_minutes=None):
+
+def check_national_forecast_include_metadata(access_token, horizon_minutes=None) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     if horizon_minutes:
@@ -120,13 +120,13 @@ def check_national_forecast_include_metadata(access_token, horizon_minutes=None)
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_qe(data['forecastValues'], 2 * 24 * 2 + 30 * 2)
+    check_len_qe(data["forecastValues"], 2 * 24 * 2 + 30 * 2)
 
-    assert "targetTime" in data['forecastValues'][0]
-    assert "expectedPowerGenerationMegawatts" in data['forecastValues'][0]
+    assert "targetTime" in data["forecastValues"][0]
+    assert "expectedPowerGenerationMegawatts" in data["forecastValues"][0]
 
 
-def check_national_pvlive(access_token):
+def check_national_pvlive(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/national/pvlive"
     data = call_api(url=full_url, access_token=access_token)
@@ -139,7 +139,7 @@ def check_national_pvlive(access_token):
     assert "solarGenerationKw" in data[0]
 
 
-def check_national_pvlive_day_after(access_token):
+def check_national_pvlive_day_after(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/national/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
@@ -153,7 +153,7 @@ def check_national_pvlive_day_after(access_token):
     assert "solarGenerationKw" in data[0]
 
 
-def check_gsp_forecast_all_compact_false(access_token):
+def check_gsp_forecast_all_compact_false(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
     data = call_api(url=full_url, access_token=access_token)
@@ -168,7 +168,7 @@ def check_gsp_forecast_all_compact_false(access_token):
     assert len(data[0]["forecastValues"]) == 3
 
 
-def check_gsp_forecast_all(access_token):
+def check_gsp_forecast_all(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
     data = call_api(url=full_url, access_token=access_token)
@@ -183,7 +183,7 @@ def check_gsp_forecast_all(access_token):
     assert len(data[0]["forecastValues"]) >= 317
 
 
-def check_gsp_forecast_all_start_and_end(access_token):
+def check_gsp_forecast_all_start_and_end(access_token) -> None:
 
     # -2 days to now
     start_datetime = dt.datetime.utcnow() - dt.timedelta(days=2)
@@ -213,7 +213,7 @@ def check_gsp_forecast_all_start_and_end(access_token):
     assert end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)
 
 
-def check_gsp_forecast_all_one_datetime(access_token):
+def check_gsp_forecast_all_one_datetime(access_token) -> None:
 
     # now
     start_datetime = dt.datetime.utcnow()
@@ -242,7 +242,7 @@ def check_gsp_forecast_all_one_datetime(access_token):
     assert end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)
 
 
-def check_gsp_forecast_one(access_token, horizon_minutes=None):
+def check_gsp_forecast_one(access_token, horizon_minutes=None) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
@@ -257,7 +257,7 @@ def check_gsp_forecast_one(access_token, horizon_minutes=None):
     assert "expectedPowerGenerationMegawatts" in data[0]
 
 
-def check_gsp_pvlive_all(access_token):
+def check_gsp_pvlive_all(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
     data = call_api(url=full_url, access_token=access_token)
@@ -273,7 +273,7 @@ def check_gsp_pvlive_all(access_token):
     check_len_qe(data[0]["gspYields"], N)
 
 
-def check_gsp_pvlive_one(access_token):
+def check_gsp_pvlive_one(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive/"
     data = call_api(url=full_url, access_token=access_token)
@@ -287,7 +287,7 @@ def check_gsp_pvlive_one(access_token):
     assert "solarGenerationKw" in data[0]
 
 
-def check_gsp_pvlive_one_day_after(access_token):
+def check_gsp_pvlive_one_day_after(access_token) -> None:
 
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
@@ -413,9 +413,21 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str, "horizon_minutes": 120},
     )
 
-    get_bearer_token >> national_forecast >> [national_forecast_2_hour, national_forecast_include_metadata]
+    (
+        get_bearer_token
+        >> national_forecast
+        >> [national_forecast_2_hour, national_forecast_include_metadata]
+    )
     get_bearer_token >> national_generation >> national_generation_day_after
-    get_bearer_token >> gsp_forecast_all >> [gsp_forecast_all_start_and_end, gsp_forecast_all_one_datetime, gsp_forecast_all_compact_false]
+    (
+        get_bearer_token
+        >> gsp_forecast_all
+        >> [
+            gsp_forecast_all_start_and_end,
+            gsp_forecast_all_one_datetime,
+            gsp_forecast_all_compact_false,
+        ]
+    )
     get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour
     get_bearer_token >> gsp_pvlive_all
     get_bearer_token >> gsp_pvlive_one >> gsp_pvlive_one_day_after
