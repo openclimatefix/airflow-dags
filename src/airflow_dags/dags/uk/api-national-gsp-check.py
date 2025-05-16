@@ -76,9 +76,8 @@ def get_bearer_token_from_auth0() -> str:
     return access_token
 
 
-def call_api(url: str, access_token: Optional[str] = None) -> dict | list:
+def call_api(url: str, access_token: str | None = None) -> dict | list:
     """General function to call the API."""
-
     logger.info(f"Checking: {url}")
 
     headers = {"Authorization": "Bearer " + access_token} if access_token else {}
@@ -91,7 +90,7 @@ def call_api(url: str, access_token: Optional[str] = None) -> dict | list:
         raise Exception(
             f"API call failed calling {url} "
             f"with status code {response.status_code},"
-            f" message {response.text}"
+            f" message {response.text}",
         )
 
     return response.json()
@@ -109,7 +108,7 @@ def check_api_status() -> None:
     call_api(url=full_url)
 
 
-def check_national_forecast(access_token: str, horizon_minutes: Optional[int] = None) -> None:
+def check_national_forecast(access_token: str, horizon_minutes: int | None = None) -> None:
     """Check the national forecast."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
@@ -124,7 +123,8 @@ def check_national_forecast(access_token: str, horizon_minutes: Optional[int] = 
 
 
 def check_national_forecast_include_metadata(
-    access_token: str, horizon_minutes: int = None,
+    access_token: str,
+    horizon_minutes: int = None,
 ) -> None:
     """Check the national forecast with include_metadata=true."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
@@ -174,7 +174,7 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     # date is in 30 min intervals
     check_len_equal(data["forecasts"], 3)
     check_key_in_data(data["forecasts"][0], "forecastValues")
-    check_len_ge(data['forecasts'][0]["forecastValues"], 2 * 30)
+    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * 30)
 
 
 def check_gsp_forecast_all(access_token: str) -> None:
@@ -194,11 +194,11 @@ def check_gsp_forecast_all(access_token: str) -> None:
 def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
-    now = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+    now = dt.datetime.now(tz=dt.timezone.utc)
     start_datetime = now - dt.timedelta(days=2)
-    start_datetime_str = start_datetime.isoformat()
+    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
     end_datetime = now
-    end_datetime_str = end_datetime.isoformat()
+    end_datetime_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
     full_url = (
         f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
@@ -214,8 +214,12 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
 
-    first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
-    last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
+    first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
+        tzinfo=dt.timezone.utc
+    )
+    last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
+        tzinfo=dt.timezone.utc
+    )
 
     if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
         raise Exception(
@@ -232,10 +236,10 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
 def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     """Check the GSP forecast all with one datetime."""
     # now
-    start_datetime = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
-    start_datetime_str = start_datetime.isoformat()
+    start_datetime = dt.datetime.now(tz=dt.timezone.utc)
+    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
     end_datetime = start_datetime + dt.timedelta(hours=0.5)
-    end_datetime_str = end_datetime.isoformat()
+    end_datetime_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
     full_url = (
         f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
@@ -250,8 +254,12 @@ def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
 
-    first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
-    last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
+    first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
+        tzinfo=dt.timezone.utc
+    )
+    last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
+        tzinfo=dt.timezone.utc
+    )
 
     if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
         raise Exception(
