@@ -16,7 +16,7 @@ class TestImport(unittest.TestCase):
             include_examples=False,
             dag_folder=str(files("airflow_dags").joinpath("dags")),
         )
-        self.assertEqual(len(dag_bag.dags), 26)
+        self.assertEqual(len(dag_bag.dags), 27)
         self.assertFalse(dag_bag.import_errors)
 
         # Additional project-specific checks can be added here, e.g. to enforce each DAG has a tag
@@ -24,5 +24,5 @@ class TestImport(unittest.TestCase):
             self.assertTrue(len(dag.tags) == 0, msg=f"{dag_id} in {dag.full_filepath} has tags")
             domain, function = dag_id.split("-")[0], dag_id.split("-")[1]
             self.assertIn(domain, ["uk", "india", "nl"])
-            self.assertIn(function, ["consume", "forecast", "analysis", "manage"])
+            self.assertIn(function, ["api", "consume", "forecast", "analysis", "manage"])
 
