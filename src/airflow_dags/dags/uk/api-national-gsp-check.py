@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import time
-from typing import Optional
 
 import requests
 from airflow.decorators import dag
@@ -124,7 +123,7 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
 
 def check_national_forecast_include_metadata(
     access_token: str,
-    horizon_minutes: int = None,
+    horizon_minutes: int | None = None,
 ) -> None:
     """Check the national forecast with include_metadata=true."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
@@ -194,7 +193,7 @@ def check_gsp_forecast_all(access_token: str) -> None:
 def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
-    now = dt.datetime.now(tz=dt.timezone.utc)
+    now = dt.datetime.now(tz=dt.UTC)
     start_datetime = now - dt.timedelta(days=2)
     start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
     end_datetime = now
@@ -215,10 +214,10 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     check_len_ge(data[0]["forecastValues"], 317)
 
     first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
-        tzinfo=dt.timezone.utc
+        tzinfo=dt.UTC,
     )
     last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
-        tzinfo=dt.timezone.utc
+        tzinfo=dt.UTC,
     )
 
     if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
@@ -236,7 +235,7 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
 def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     """Check the GSP forecast all with one datetime."""
     # now
-    start_datetime = dt.datetime.now(tz=dt.timezone.utc)
+    start_datetime = dt.datetime.now(tz=dt.UTC)
     start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
     end_datetime = start_datetime + dt.timedelta(hours=0.5)
     end_datetime_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
@@ -255,10 +254,10 @@ def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     check_len_ge(data[0]["forecastValues"], 317)
 
     first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
-        tzinfo=dt.timezone.utc
+        tzinfo=dt.UTC,
     )
     last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ").replace(
-        tzinfo=dt.timezone.utc
+        tzinfo=dt.UTC,
     )
 
     if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
@@ -273,7 +272,7 @@ def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
         )
 
 
-def check_gsp_forecast_one(access_token: str, horizon_minutes: Optional[int] = None) -> None:
+def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None) -> None:
     """Check the GSP forecast one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
