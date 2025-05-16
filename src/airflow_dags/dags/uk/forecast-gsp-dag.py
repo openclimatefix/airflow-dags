@@ -289,19 +289,7 @@ def national_forecast_dayahead_dag() -> None:
         ),
     )
 
-    blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="blend-forecasts",
-        container_def=forecast_blender,
-        max_active_tis_per_dag=10,
-        env_overrides={"N_GSP": "1"},
-        on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed."
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
-        ),
-    )
-
-    latest_only_op >> forecast_national_op >> blend_forecasts_op
+    latest_only_op >> forecast_national_op
 
 
 gsp_forecast_pvnet_dag()
