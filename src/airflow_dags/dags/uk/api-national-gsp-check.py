@@ -75,7 +75,7 @@ def get_bearer_token_from_auth0() -> str:
     return access_token
 
 
-def call_api(url: str, access_token: str | None = None) -> dict | [dict]:
+def call_api(url: str, access_token: str = None):
     """General function to call the API."""
 
     logger.info(f"Checking: {url}")
@@ -108,7 +108,7 @@ def check_api_status() -> None:
     call_api(url=full_url)
 
 
-def check_national_forecast(access_token: str, horizon_minutes=None) -> None:
+def check_national_forecast(access_token: str, horizon_minutes: int = None) -> None:
     """Check the national forecast."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
@@ -122,7 +122,9 @@ def check_national_forecast(access_token: str, horizon_minutes=None) -> None:
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
-def check_national_forecast_include_metadata(access_token: str, horizon_minutes=None) -> None:
+def check_national_forecast_include_metadata(
+    access_token: str, horizon_minutes: int = None
+) -> None:
     """Check the national forecast with include_metadata=true."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     if horizon_minutes:
@@ -169,10 +171,9 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 30)
-    check_key_in_data(data[0], "datetimeUtc")
-    check_key_in_data(data[0], "forecastValues")
-    check_len_equal(data[0]["forecastValues"], 3)
+    check_len_equal(data['forecasts'], 3)
+    check_key_in_data(data['forecasts'][0], "forecastValues")
+    check_len_ge(data['forecasts'][0]["forecastValues"], 2 * 30)
 
 
 def check_gsp_forecast_all(access_token: str) -> None:
@@ -192,9 +193,9 @@ def check_gsp_forecast_all(access_token: str) -> None:
 def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
-    start_datetime = dt.datetime.utcnow() - dt.timedelta(days=2)
+    start_datetime = dt.datetime.now() - dt.timedelta(days=2)
     start_datetime_str = start_datetime.isoformat()
-    end_datetime = dt.datetime.utcnow()
+    end_datetime = dt.datetime.now()
     end_datetime_str = end_datetime.isoformat()
 
     full_url = (
@@ -229,7 +230,7 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
 def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     """Check the GSP forecast all with one datetime."""
     # now
-    start_datetime = dt.datetime.utcnow()
+    start_datetime = dt.datetime.now()
     start_datetime_str = start_datetime.isoformat()
     end_datetime = start_datetime + dt.timedelta(hours=0.5)
     end_datetime_str = end_datetime.isoformat()
@@ -263,7 +264,7 @@ def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
         )
 
 
-def check_gsp_forecast_one(access_token: str, horizon_minutes=None) -> None:
+def check_gsp_forecast_one(access_token: str, horizon_minutes: int = None) -> None:
     """Check the GSP forecast one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
@@ -273,8 +274,8 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes=None) -> None:
     # 2 days in the past + 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
     check_len_ge(data, 2 * 24 * 2 + 2 * 30)
-    check_key_in_data(data[0], "datetimeUtc")
-    check_key_in_data(data[0], "forecastValues")
+    check_key_in_data(data[0], "targetTime")
+    check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
 def check_gsp_pvlive_all(access_token: str) -> None:
@@ -343,7 +344,9 @@ def api_national_gsp_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
+    access_token_str = (
+        "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
+    )
     national_forecast = PythonOperator(
         task_id="check-api-national-forecast",
         python_callable=check_national_forecast,
