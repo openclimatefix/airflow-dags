@@ -41,7 +41,7 @@ def check_len_equal(data: list, equal_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) != equal_len:
         raise ValueError(
-            f"Data length {len(data)} is not equal {equal_len}." f"The data is {data}."
+            f"Data length {len(data)} is not equal {equal_len}." f"The data is {data}.",
         )
 
 
@@ -75,7 +75,7 @@ def get_bearer_token_from_auth0() -> str:
     return access_token
 
 
-def call_api(url: str, access_token=None) -> dict | [dict]:
+def call_api(url: str, access_token: str | None = None) -> dict | [dict]:
     """General function to call the API."""
 
     logger.info(f"Checking: {url}")
@@ -86,11 +86,12 @@ def call_api(url: str, access_token=None) -> dict | [dict]:
     response = requests.get(url, headers=headers, timeout=30)
     logger.info(f"API call took {time.time() - t} seconds")
 
-    assert response.status_code == 200, (
-        f"API call failed calling {url} "
-        f"with status code {response.status_code},"
-        f" message {response.text}"
-    )
+    if response.status_code != 200:
+        raise Exception(
+            f"API call failed calling {url} "
+            f"with status code {response.status_code},"
+            f" message {response.text}"
+        )
 
     return response.json()
 
@@ -107,7 +108,7 @@ def check_api_status() -> None:
     call_api(url=full_url)
 
 
-def check_national_forecast(access_token, horizon_minutes=None) -> None:
+def check_national_forecast(access_token: str, horizon_minutes=None) -> None:
     """Check the national forecast."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
@@ -121,7 +122,7 @@ def check_national_forecast(access_token, horizon_minutes=None) -> None:
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
-def check_national_forecast_include_metadata(access_token, horizon_minutes=None) -> None:
+def check_national_forecast_include_metadata(access_token: str, horizon_minutes=None) -> None:
     """Check the national forecast with include_metadata=true."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     if horizon_minutes:
@@ -135,7 +136,7 @@ def check_national_forecast_include_metadata(access_token, horizon_minutes=None)
     check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
 
 
-def check_national_pvlive(access_token) -> None:
+def check_national_pvlive(access_token: str) -> None:
     """Check the national pvlive."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive"
     data = call_api(url=full_url, access_token=access_token)
@@ -147,7 +148,7 @@ def check_national_pvlive(access_token) -> None:
     check_key_in_data(data[0], "solarGenerationKw")
 
 
-def check_national_pvlive_day_after(access_token) -> None:
+def check_national_pvlive_day_after(access_token: str) -> None:
     """Check the national pvlive with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
@@ -160,7 +161,7 @@ def check_national_pvlive_day_after(access_token) -> None:
     check_key_in_data(data[0], "solarGenerationKw")
 
 
-def check_gsp_forecast_all_compact_false(access_token) -> None:
+def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     """Check the GSP forecast all with compact=false."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
     data = call_api(url=full_url, access_token=access_token)
@@ -174,7 +175,7 @@ def check_gsp_forecast_all_compact_false(access_token) -> None:
     check_len_equal(data[0]["forecastValues"], 3)
 
 
-def check_gsp_forecast_all(access_token) -> None:
+def check_gsp_forecast_all(access_token: str) -> None:
     """Check the GSP forecast all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
     data = call_api(url=full_url, access_token=access_token)
@@ -188,7 +189,7 @@ def check_gsp_forecast_all(access_token) -> None:
     check_len_ge(data[0]["forecastValues"], 317)
 
 
-def check_gsp_forecast_all_start_and_end(access_token) -> None:
+def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
     """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
     start_datetime = dt.datetime.utcnow() - dt.timedelta(days=2)
@@ -210,14 +211,22 @@ def check_gsp_forecast_all_start_and_end(access_token) -> None:
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
 
-    logger.info(start_datetime)
     first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
     last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
-    assert start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime
-    assert end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)
+
+    if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
+        raise Exception(
+            f"{first_datetime} is not in the range {start_datetime} "
+            f"to {start_datetime + dt.timedelta(hours=0.5)}"
+        )
+    if not (end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)):
+        raise Exception(
+            f"{last_datetime} is not in the range "
+            f"{end_datetime - dt.timedelta(hours=1)} to {end_datetime}"
+        )
 
 
-def check_gsp_forecast_all_one_datetime(access_token) -> None:
+def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
     """Check the GSP forecast all with one datetime."""
     # now
     start_datetime = dt.datetime.utcnow()
@@ -254,7 +263,7 @@ def check_gsp_forecast_all_one_datetime(access_token) -> None:
         )
 
 
-def check_gsp_forecast_one(access_token, horizon_minutes=None) -> None:
+def check_gsp_forecast_one(access_token: str, horizon_minutes=None) -> None:
     """Check the GSP forecast one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
@@ -268,7 +277,7 @@ def check_gsp_forecast_one(access_token, horizon_minutes=None) -> None:
     check_key_in_data(data[0], "forecastValues")
 
 
-def check_gsp_pvlive_all(access_token) -> None:
+def check_gsp_pvlive_all(access_token: str) -> None:
     """Check the GSP pvlive all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
     data = call_api(url=full_url, access_token=access_token)
@@ -283,7 +292,7 @@ def check_gsp_pvlive_all(access_token) -> None:
     check_len_ge(data[0]["gspYields"], N)
 
 
-def check_gsp_pvlive_one(access_token) -> None:
+def check_gsp_pvlive_one(access_token: str) -> None:
     """Check the GSP pvlive one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive/"
     data = call_api(url=full_url, access_token=access_token)
@@ -296,7 +305,7 @@ def check_gsp_pvlive_one(access_token) -> None:
     check_key_in_data(data[0], "solarGenerationKw")
 
 
-def check_gsp_pvlive_one_day_after(access_token) -> None:
+def check_gsp_pvlive_one_day_after(access_token: str) -> None:
     """Check the GSP pvlive one with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
@@ -318,8 +327,7 @@ def check_gsp_pvlive_one_day_after(access_token) -> None:
     default_args=default_args,
 )
 def api_national_gsp_check() -> None:
-    """Dag to check API"""
-
+    """Dag to check API."""
     _ = PythonOperator(
         task_id="check-api",
         python_callable=check_api_is_up,
@@ -335,7 +343,7 @@ def api_national_gsp_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     national_forecast = PythonOperator(
         task_id="check-api-national-forecast",
         python_callable=check_national_forecast,
