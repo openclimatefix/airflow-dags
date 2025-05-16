@@ -31,10 +31,24 @@ default_args = {
 }
 
 
-def check_len_qe(data: list, min_len: int) -> None:
+def check_len_ge(data: list, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
         raise ValueError(f"Data length {len(data)} is less than {min_len}." f"The data is {data}.")
+
+
+def check_len_equal(data: list, equal_len: int) -> None:
+    """Check the length of the data is greater than or equal to min_len."""
+    if len(data) != equal_len:
+        raise ValueError(
+            f"Data length {len(data)} is not equal {equal_len}." f"The data is {data}."
+        )
+
+
+def check_key_in_data(data: dict, key: str) -> None:
+    """Check the key is in the data."""
+    if key not in data:
+        raise ValueError(f"Key {key} not in data {data}.")
 
 
 def get_bearer_token_from_auth0() -> str:
@@ -51,10 +65,10 @@ def get_bearer_token_from_auth0() -> str:
             "password": password,
             "grant_type": "password",
             "audience": audience,
-        }
+        },
     )
     logger.info("Getting bearer token")
-    r = requests.post(url, data=data, headers=header)
+    r = requests.post(url, data=data, headers=header, timeout=30)
     access_token = r.json()["access_token"]
 
     logger.info("Got bearer token")
@@ -62,16 +76,14 @@ def get_bearer_token_from_auth0() -> str:
 
 
 def call_api(url: str, access_token=None) -> dict | [dict]:
+    """General function to call the API."""
 
     logger.info(f"Checking: {url}")
 
-    if access_token:
-        headers = {"Authorization": "Bearer " + access_token}
-    else:
-        headers = {}
+    headers = {"Authorization": "Bearer " + access_token} if access_token else {}
 
     t = time.time()
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=30)
     logger.info(f"API call took {time.time() - t} seconds")
 
     assert response.status_code == 200, (
@@ -84,20 +96,19 @@ def call_api(url: str, access_token=None) -> dict | [dict]:
 
 
 def check_api_is_up() -> None:
-    # check the api is up
+    """Check the api is up."""
     full_url = f"{base_url}/"
     call_api(url=full_url)
 
 
 def check_api_status() -> None:
-
-    # check the api is up
+    """Check the status."""
     full_url = f"{base_url}/v0/solar/GB/status"
     call_api(url=full_url)
 
 
 def check_national_forecast(access_token, horizon_minutes=None) -> None:
-
+    """Check the national forecast."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
@@ -105,14 +116,13 @@ def check_national_forecast(access_token, horizon_minutes=None) -> None:
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_qe(data, 2 * 24 * 2 + 30 * 2)
-
-    assert "targetTime" in data[0]
-    assert "expectedPowerGenerationMegawatts" in data[0]
+    check_len_ge(data, 2 * 24 * 2 + 30 * 2)
+    check_key_in_data(data[0], "targetTime")
+    check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
 def check_national_forecast_include_metadata(access_token, horizon_minutes=None) -> None:
-
+    """Check the national forecast with include_metadata=true."""
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     if horizon_minutes:
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
@@ -120,71 +130,66 @@ def check_national_forecast_include_metadata(access_token, horizon_minutes=None)
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_qe(data["forecastValues"], 2 * 24 * 2 + 30 * 2)
-
-    assert "targetTime" in data["forecastValues"][0]
-    assert "expectedPowerGenerationMegawatts" in data["forecastValues"][0]
+    check_len_ge(data["forecastValues"], 2 * 24 * 2 + 30 * 2)
+    check_key_in_data(data["forecastValues"][0], "targetTime")
+    check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
 
 
 def check_national_pvlive(access_token) -> None:
-
+    """Check the national pvlive."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive"
     data = call_api(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # We could get more precise with this check
-    check_len_qe(data, 2 * 24 * 2 - 1)
-
-    assert "datetimeUtc" in data[0]
-    assert "solarGenerationKw" in data[0]
+    check_len_ge(data, 2 * 24 * 2 - 1)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "solarGenerationKw")
 
 
 def check_national_pvlive_day_after(access_token) -> None:
-
+    """Check the national pvlive with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
 
     # should have data point for more than 12 hours in the past,
     # This is because the data is delayed
     # we could get more precise with this check
-    check_len_qe(data, 2 * 12)
-
-    assert "datetimeUtc" in data[0]
-    assert "solarGenerationKw" in data[0]
+    check_len_ge(data, 2 * 12)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "solarGenerationKw")
 
 
 def check_gsp_forecast_all_compact_false(access_token) -> None:
-
+    """Check the GSP forecast all with compact=false."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
     data = call_api(url=full_url, access_token=access_token)
     logger.debug(data)
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_qe(data, 2 * 30)
-
-    assert "datetimeUtc" in data[0]
-    assert "forecastValues" in data[0]
-    assert len(data[0]["forecastValues"]) == 3
+    check_len_ge(data, 2 * 30)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "forecastValues")
+    check_len_equal(data[0]["forecastValues"], 3)
 
 
 def check_gsp_forecast_all(access_token) -> None:
-
+    """Check the GSP forecast all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
     data = call_api(url=full_url, access_token=access_token)
     logger.debug(data)
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_qe(data, 2 * 30)
-
-    assert "datetimeUtc" in data[0]
-    assert "forecastValues" in data[0]
-    assert len(data[0]["forecastValues"]) >= 317
+    check_len_ge(data, 2 * 30)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "forecastValues")
+    check_len_ge(data[0]["forecastValues"], 317)
 
 
 def check_gsp_forecast_all_start_and_end(access_token) -> None:
-
+    """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
     start_datetime = dt.datetime.utcnow() - dt.timedelta(days=2)
     start_datetime_str = start_datetime.isoformat()
@@ -200,11 +205,10 @@ def check_gsp_forecast_all_start_and_end(access_token) -> None:
 
     # 2 days in the past
     # date is in 30 min intervals
-    check_len_qe(data, 2 * 24 * 2)
-
-    assert "datetimeUtc" in data[0]
-    assert "forecastValues" in data[0]
-    assert len(data[0]["forecastValues"]) >= 317
+    check_len_ge(data, 2 * 24 * 2)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "forecastValues")
+    check_len_ge(data[0]["forecastValues"], 317)
 
     logger.info(start_datetime)
     first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
@@ -214,7 +218,7 @@ def check_gsp_forecast_all_start_and_end(access_token) -> None:
 
 
 def check_gsp_forecast_all_one_datetime(access_token) -> None:
-
+    """Check the GSP forecast all with one datetime."""
     # now
     start_datetime = dt.datetime.utcnow()
     start_datetime_str = start_datetime.isoformat()
@@ -229,21 +233,29 @@ def check_gsp_forecast_all_one_datetime(access_token) -> None:
     logger.info(data)
 
     # Just one datetime
-    check_len_qe(data, 1)
-
-    assert "datetimeUtc" in data[0]
-    assert "forecastValues" in data[0]
-    assert len(data[0]["forecastValues"]) >= 317
+    check_len_ge(data, 1)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "forecastValues")
+    check_len_ge(data[0]["forecastValues"], 317)
 
     logger.info(start_datetime)
     first_datetime = dt.datetime.strptime(data[0]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
     last_datetime = dt.datetime.strptime(data[-1]["datetimeUtc"], "%Y-%m-%dT%H:%M:%SZ")
-    assert start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime
-    assert end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)
+
+    if not (start_datetime + dt.timedelta(hours=0.5) >= first_datetime >= start_datetime):
+        raise Exception(
+            f"{first_datetime} is not in the range {start_datetime} "
+            f"to {start_datetime + dt.timedelta(hours=0.5)}"
+        )
+    if not (end_datetime >= last_datetime >= end_datetime - dt.timedelta(hours=1)):
+        raise Exception(
+            f"{last_datetime} is not in the range "
+            f"{end_datetime - dt.timedelta(hours=1)} to {end_datetime}"
+        )
 
 
 def check_gsp_forecast_one(access_token, horizon_minutes=None) -> None:
-
+    """Check the GSP forecast one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
         full_url += f"?forecast_horizon_minutes={horizon_minutes}"
@@ -251,54 +263,50 @@ def check_gsp_forecast_one(access_token, horizon_minutes=None) -> None:
 
     # 2 days in the past + 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_qe(data, 2 * 24 * 2 + 2 * 30)
-
-    assert "targetTime" in data[0]
-    assert "expectedPowerGenerationMegawatts" in data[0]
+    check_len_ge(data, 2 * 24 * 2 + 2 * 30)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "forecastValues")
 
 
 def check_gsp_pvlive_all(access_token) -> None:
-
+    """Check the GSP pvlive all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
     data = call_api(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # date is in 30 min intervals
     N = 24 * 2 * 2 - 1
-    check_len_qe(data, 317)
-
-    assert "gspYields" in data[0]
-    assert "datetimeUtc" in data[0]["gspYields"][0]
-    assert "solarGenerationKw" in data[0]["gspYields"][0]
-    check_len_qe(data[0]["gspYields"], N)
+    check_len_ge(data, 317)
+    check_key_in_data(data[0], "gspYields")
+    check_key_in_data(data[0]["gspYields"][0], "datetimeUtc")
+    check_key_in_data(data[0]["gspYields"][0], "solarGenerationKw")
+    check_len_ge(data[0]["gspYields"], N)
 
 
 def check_gsp_pvlive_one(access_token) -> None:
-
+    """Check the GSP pvlive one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive/"
     data = call_api(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # date is in 30 min intervals
     N = 24 * 2 * 2 - 1
-    check_len_qe(data, N)
-
-    assert "datetimeUtc" in data[0]
-    assert "solarGenerationKw" in data[0]
+    check_len_ge(data, N)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "solarGenerationKw")
 
 
 def check_gsp_pvlive_one_day_after(access_token) -> None:
-
+    """Check the GSP pvlive one with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive?regime=day-after"
     data = call_api(url=full_url, access_token=access_token)
 
     # should have data point for more than 12 hours in the past,
     # This is because the data is delayed
     N = 12 * 2
-    check_len_qe(data, N)
-
-    assert "datetimeUtc" in data[0]
-    assert "solarGenerationKw" in data[0]
+    check_len_ge(data, N)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "solarGenerationKw")
 
 
 @dag(
