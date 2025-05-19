@@ -6,9 +6,9 @@ import os
 import time
 
 import requests
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
+from airflow_dags.plugins.callbacks.slack import slack_message_callback
 
 logger = logging.getLogger(__name__)
 
