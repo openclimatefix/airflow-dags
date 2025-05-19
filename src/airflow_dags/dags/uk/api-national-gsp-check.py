@@ -6,6 +6,7 @@ import os
 import time
 
 import requests
+from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 
@@ -301,6 +302,20 @@ def check_gsp_pvlive_all(access_token: str) -> None:
     check_len_ge(data[0]["gspYields"], N)
 
 
+def check_gsp_pvlive_all_compact(access_token: str) -> None:
+    """Check the GSP pvlive all."""
+    full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/?compact=true"
+    data = call_api(url=full_url, access_token=access_token)
+
+    # should have data point for 2 days in the past, maybe the last one isnt in yet
+    # date is in 30 min intervals
+    N = 24 * 2 * 2 - 1
+    check_len_ge(data, N)
+    check_key_in_data(data[0], "datetimeUtc")
+    check_key_in_data(data[0], "generationKwByGspId")
+    check_key_in_data(data[0]["generationKwByGspId"], "1")
+
+
 def check_gsp_pvlive_one(access_token: str) -> None:
     """Check the GSP pvlive one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive/"
@@ -415,6 +430,12 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    gsp_pvlive_all_compact = PythonOperator(
+        task_id="check-api-gsp-pvlive-all-compact",
+        python_callable=check_gsp_pvlive_all_compact,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     gsp_pvlive_one = PythonOperator(
         task_id="check-api-gsp-pvlive-one",
         python_callable=check_gsp_pvlive_one,
@@ -440,6 +461,17 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str, "horizon_minutes": 120},
     )
 
+    if_any_task_failed = PythonOperator(
+        task_id="api-uk-national-gsp-check-if-any-task-failed",
+        python_callable=lambda: None,
+        trigger_rule="one_failed",
+        on_success_callback=slack_message_callback(
+            "⚠️ One of the API checks has failed. "
+            "See which ones have failed on airflow, to help debug the issue. "
+            "No out-of-hours support is required.",
+        ),
+    )
+
     (
         get_bearer_token
         >> national_forecast
@@ -456,8 +488,25 @@ def api_national_gsp_check() -> None:
         ]
     )
     get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour
-    get_bearer_token >> gsp_pvlive_all
+    get_bearer_token >> gsp_pvlive_all >> gsp_pvlive_all_compact
     get_bearer_token >> gsp_pvlive_one >> gsp_pvlive_one_day_after
+
+    [
+        national_forecast,
+        national_forecast_2_hour,
+        national_forecast_include_metadata,
+        national_generation,
+        national_generation_day_after,
+        gsp_forecast_all,
+        gsp_forecast_all_compact_false,
+        gsp_forecast_all_start_and_end,
+        gsp_forecast_all_one_datetime,
+        gsp_forecast_one,
+        gsp_forecast_one_2_hour,
+        gsp_pvlive_all,
+        gsp_pvlive_one,
+        gsp_pvlive_one_day_after,
+    ] >> if_any_task_failed
 
 
 api_national_gsp_check()
