@@ -27,7 +27,7 @@ default_args = {
 metrics_calculator = ContainerDefinition(
     name="metrics",
     container_image="docker.io/openclimatefix/nowcasting_metrics",
-    container_tag="1.2.23",
+    container_tag="1.2.26",
     container_env={
         "USE_PVNET_GSP_SUM": "true",
         "LOGLEVEL": "DEBUG",
