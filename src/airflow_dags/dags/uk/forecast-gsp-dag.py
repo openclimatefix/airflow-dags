@@ -27,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-gsp_forecaster = ContainerDefinition(
+prod_gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="2.5.21",
@@ -40,7 +40,8 @@ gsp_forecaster = ContainerDefinition(
         "RAISE_MODEL_FAILURE": "critical",
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
-        "USE_OCF_DATA_SAMPLER": str(env == "development").lower(),
+        "USE_OCF_DATA_SAMPLER": "true",
+        "RUN_EXTRA_MODELS": "false",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -52,10 +53,10 @@ gsp_forecaster = ContainerDefinition(
 
 # This version should only be used on dev for the time-being
 # see below, where we dont use this on production
-dev_gsp_intraday_forecaster = ContainerDefinition(
+dev_gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="dev" if env == "development" else "2.5.18",
+    container_tag="dev",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -66,6 +67,8 @@ dev_gsp_intraday_forecaster = ContainerDefinition(
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
+        "RUN_CRITICAL_MODELS_ONLY": "false",
+        "FILTER_BAD_FORECASTS": "false",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -75,7 +78,8 @@ dev_gsp_intraday_forecaster = ContainerDefinition(
     container_memory=12288,
 )
 
-gsp_intraday_forecaster = dev_gsp_intraday_forecaster if env == "development" else gsp_forecaster
+gsp_forecaster = dev_gsp_forecaster if env == "development" else prod_gsp_forecaster
+
 
 national_forecaster = ContainerDefinition(
     name="forecast-national",
@@ -189,12 +193,10 @@ def gsp_forecast_pvnet_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
     forecast_gsps_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-gsps",
-        container_def=gsp_intraday_forecaster,
+        container_def=gsp_forecaster,
         env_overrides={
-            "RUN_CRITICAL_MODELS_ONLY": str(env == "production").lower(),
             "ALLOW_SAVE_GSP_SUM": "true",
             "DAY_AHEAD_MODEL": "false",
-            "FILTER_BAD_FORECASTS": "false",
         },
     )
 
@@ -247,7 +249,6 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         ),
         env_overrides={
             "DAY_AHEAD_MODEL": "true",
-            "RUN_EXTRA_MODELS": "false",
             "USE_OCF_DATA_SAMPLER": "true",
         },
     )
