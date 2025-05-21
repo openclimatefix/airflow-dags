@@ -27,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-prod_gsp_forecaster = ContainerDefinition(
+prod_gsp_forecaster_args = dict(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="2.5.21",
@@ -53,7 +53,7 @@ prod_gsp_forecaster = ContainerDefinition(
 
 # This version should only be used on dev for the time-being
 # see below, where we dont use this on production
-dev_gsp_forecaster = ContainerDefinition(
+dev_gsp_forecaster_args = dict(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="dev",
@@ -77,7 +77,10 @@ dev_gsp_forecaster = ContainerDefinition(
     container_memory=12288,
 )
 
-gsp_forecaster = dev_gsp_forecaster if env == "development" else prod_gsp_forecaster
+if env == "development":
+    gsp_forecaster = ContainerDefinition(**dev_gsp_forecaster_args)
+else:
+    gsp_forecaster = ContainerDefinition(**prod_gsp_forecaster_args)
 
 
 national_forecaster = ContainerDefinition(
