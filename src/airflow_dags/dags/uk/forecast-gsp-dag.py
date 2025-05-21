@@ -27,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-prod_gsp_forecaster_args = dict(
+prod_gsp_forecaster_args = dict( # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="2.5.21",
@@ -53,7 +53,7 @@ prod_gsp_forecaster_args = dict(
 
 # This version should only be used on dev for the time-being
 # see below, where we dont use this on production
-dev_gsp_forecaster_args = dict(
+dev_gsp_forecaster_args = dict( # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="dev",
