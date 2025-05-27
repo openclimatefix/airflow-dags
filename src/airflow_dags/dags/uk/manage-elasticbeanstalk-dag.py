@@ -49,7 +49,7 @@ def elb_reset_dag() -> None:
     latest_only = LatestOnlyOperator(task_id="latest_only")
 
     for name in names:
-        number_of_instances = 2 if name == f"uk-{env}-airflow" else 1
+        number_of_instances = 2 if name == f"uk-{env}-nowcasting-api" else 1
 
         elb_2 = PythonOperator(
             task_id=f"scale_elb_2_{name}",
