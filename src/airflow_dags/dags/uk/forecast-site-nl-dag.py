@@ -36,7 +36,7 @@ site_forecaster = ContainerDefinition(
         f"{env}/rds/pvsite": ["DB_URL"],
     },
     container_cpu=1024,
-    container_memory=4096,
+    container_memory=6144,
     domain="nl",
 )
 
