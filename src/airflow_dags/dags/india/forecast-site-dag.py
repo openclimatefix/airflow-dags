@@ -42,6 +42,26 @@ india_forecaster = ContainerDefinition(
     domain="india",
 )
 
+ad_forecaster = ContainerDefinition(
+    name="forecast-ad",
+    container_image="ghcr.io/openclimatefix/site-forecast-app",
+    container_tag="ad-model",
+    container_env={
+        "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
+        "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
+        "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/data/latest/iodc_latest.zarr.zip",
+        "CLIENT_NAME": "ad",
+        "COUNTRY": "india",
+    },
+    container_secret_env={
+        f"{env}/rds/indiadb": ["DB_URL"],
+        f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
+    },
+    container_cpu=1024,
+    container_memory=3072,
+    domain="india",
+)
+
 # hour the forecast can run, not include 7,8,19,20
 hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
 @dag(
@@ -103,7 +123,21 @@ def ad_forecast_dag() -> None:
         max_active_tis_per_dag=10,
     )
 
-    latest_only_op >> forecast_ad_op
+    forecast_ad_v2_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ad-v2",
+        container_def=ad_forecaster,
+        env_overrides={
+            "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad-v2",
+        },
+        on_failure_callback=slack_message_callback(
+            "⚠️ The task {{ ti.task_id }} failed. "
+            "No out-of-hours support is required at the moment. "
+            "Please see run book for appropriate actions.",
+        ),
+        max_active_tis_per_dag=10,
+    )
+
+    latest_only_op >> [forecast_ad_op, forecast_ad_v2_op]
 
 ruvnl_forecast_dag()
 ad_forecast_dag()
