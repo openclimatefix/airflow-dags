@@ -1,6 +1,6 @@
 # Airflow Dags
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 **Airflow pipelines for Open Climate Fix's production systems**
@@ -174,6 +174,7 @@ On the directory structure:
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/devsjc"><img src="https://avatars.githubusercontent.com/u/47188100?v=4?s=100" width="100px;" alt="devsjc"/><br /><sub><b>devsjc</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=devsjc" title="Code">💻</a> <a href="#research-devsjc" title="Research">🔬</a> <a href="https://github.com/openclimatefix/airflow-dags/pulls?q=is%3Apr+reviewed-by%3Adevsjc" title="Reviewed Pull Requests">👀</a> <a href="#ideas-devsjc" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/openclimatefix/airflow-dags/commits?author=devsjc" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/peterdudfield"><img src="https://avatars.githubusercontent.com/u/34686298?v=4?s=100" width="100px;" alt="Peter Dudfield"/><br /><sub><b>Peter Dudfield</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=peterdudfield" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
