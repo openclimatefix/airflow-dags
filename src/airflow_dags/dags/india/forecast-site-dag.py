@@ -106,8 +106,8 @@ def ad_forecast_dag() -> None:
     """Create AD forecasts."""
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    forecast_ad_old_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="forecast-ad-old",
+    forecast_ad_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ad",
         container_def=india_forecaster,
         env_overrides={
             "CLIENT_NAME": "ad",
@@ -123,9 +123,12 @@ def ad_forecast_dag() -> None:
         max_active_tis_per_dag=10,
     )
 
-    forecast_ad_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="forecast-ad",
+    forecast_ad_v2_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ad-v2",
         container_def=ad_forecaster,
+        env_overrides={
+            "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad-v2",
+        },
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. "
             "No out-of-hours support is required at the moment. "
@@ -134,7 +137,7 @@ def ad_forecast_dag() -> None:
         max_active_tis_per_dag=10,
     )
 
-    latest_only_op >> [forecast_ad_op, forecast_ad_old_op]
+    latest_only_op >> [forecast_ad_op, forecast_ad_v2_op]
 
 ruvnl_forecast_dag()
 ad_forecast_dag()
