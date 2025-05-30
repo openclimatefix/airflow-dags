@@ -1,6 +1,6 @@
 # Airflow Dags
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 **Airflow pipelines for Open Climate Fix's production systems**
@@ -179,6 +179,7 @@ On the directory structure:
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Sukh-P"><img src="https://avatars.githubusercontent.com/u/42407101?v=4?s=100" width="100px;" alt="Sukhil Patel"/><br /><sub><b>Sukhil Patel</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=Sukh-P" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/yuvraajnarula"><img src="https://avatars.githubusercontent.com/u/49155095?v=4?s=100" width="100px;" alt="Yuvraaj Narula"/><br /><sub><b>Yuvraaj Narula</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=yuvraajnarula" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zakwatts"><img src="https://avatars.githubusercontent.com/u/47150349?v=4?s=100" width="100px;" alt="Megawattz"/><br /><sub><b>Megawattz</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=zakwatts" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/EricS02"><img src="https://avatars.githubusercontent.com/u/124088002?v=4?s=100" width="100px;" alt="Erics"/><br /><sub><b>Erics</b></sub></a><br /><a href="https://github.com/openclimatefix/airflow-dags/commits?author=EricS02" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
