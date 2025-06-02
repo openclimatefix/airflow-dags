@@ -30,7 +30,7 @@ default_args = {
 prod_gsp_forecaster_args = dict( # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.5.21",
+    container_tag="2.5.22",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
