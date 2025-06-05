@@ -143,7 +143,7 @@ def check_national_forecast_include_metadata(
 def check_national_forecast_metadata_true_and_false(
     access_token: str,
 ) -> None:
-    """Check the national forecast with include_metadata=true and false
+    """Check the national forecast with include_metadata true and false.
 
     Make sure both routes gives back the same values
     """
@@ -164,7 +164,7 @@ def check_national_forecast_metadata_true_and_false(
     for k, v in values_true.items():
         if k in values_false and v != values_false[k]:
             diff_values.append(
-                {"targetTime": k, "metadata=true": v, "metadata=false": values_false[k]}
+                {"targetTime": k, "metadata=true": v, "metadata=false": values_false[k]},
             )
 
     if len(diff_values) > 0:
