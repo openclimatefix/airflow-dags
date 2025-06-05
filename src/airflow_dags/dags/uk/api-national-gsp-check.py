@@ -420,7 +420,7 @@ def api_national_gsp_check() -> None:
     )
 
     national_forecast_compare_metadata = PythonOperator(
-        task_id="check-api-national-forecast-compare-metadata-true-and-fa;se",
+        task_id="check-api-national-forecast-compare-metadata-true-and-false",
         python_callable=check_national_forecast_metadata_true_and_false,
         op_kwargs={"access_token": access_token_str},
     )
