@@ -27,36 +27,10 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-prod_gsp_forecaster_args = dict( # noqa: C408
+gsp_forecaster_args = dict( # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.5.22",
-    container_env={
-        "LOGLEVEL": "INFO",
-        "RAISE_MODEL_FAILURE": "critical",
-        "ALLOW_ADJUSTER": "true",
-        "ALLOW_SAVE_GSP_SUM": "true",
-        "DAY_AHEAD_MODEL": "false",
-        "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/pvnet_batches",
-        "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf/data/latest.zarr",
-        "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
-        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
-        "USE_OCF_DATA_SAMPLER": "false",
-    },
-    container_secret_env={
-        f"{env}/rds/forecast/": ["DB_URL"],
-    },
-    domain="uk",
-    container_cpu=2048,
-    container_memory=12288,
-)
-
-# This version should only be used on dev for the time-being
-# see below, where we dont use this on production
-dev_gsp_forecaster_args = dict( # noqa: C408
-    name="forecast-pvnet",
-    container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="dev",
+    container_tag="2.6.0",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -76,11 +50,7 @@ dev_gsp_forecaster_args = dict( # noqa: C408
     container_cpu=2048,
     container_memory=12288,
 )
-
-if env == "development":
-    gsp_forecaster = ContainerDefinition(**dev_gsp_forecaster_args)
-else:
-    gsp_forecaster = ContainerDefinition(**prod_gsp_forecaster_args)
+gsp_forecaster = ContainerDefinition(**gsp_forecaster_args)
 
 
 national_forecaster = ContainerDefinition(
