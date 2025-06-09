@@ -23,6 +23,11 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.6.0 - 2025-06-09
+
+- Add new API check for national/forecast
+- Update UK PVnet app from `2.5.22` to `2.6.0` - new model for new gsps areas. 
+
 ### 1.5.0 - 2025-06-02
 
 - Add new API checks for UK GSP and National
