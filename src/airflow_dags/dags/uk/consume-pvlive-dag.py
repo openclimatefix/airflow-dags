@@ -90,29 +90,12 @@ def pvlive_intraday_consumer_dag() -> None:
         ),
     )
 
-    # we do want to remove this
-    consume_pvlive_gsps_old = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="pvlive-intraday-consumer-gsps-old",
-        container_def=pvlive_consumer_old,
-        env_overrides={
-            "N_GSPS": "317",
-            "REGIME": "in-day",
-        },
-        on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
-            "This is needed for the adjuster in the Forecast."
-            "No out of office hours support needed."
-            "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
-            "to see if its working. ",
-        ),
-    )
-
     update_api_last_gsp_data = BashOperator(
         task_id="uk-gsp-lastdownloaded-api-update",
         bash_command=f"curl -X GET {url}/v0/solar/GB/update_last_data?component=gsp",
     )
 
-    consume_pvlive_gsps >> update_api_last_gsp_data >> consume_pvlive_gsps_old
+    consume_pvlive_gsps >> update_api_last_gsp_data
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -151,17 +134,7 @@ def pvlive_dayafter_consumer_dag() -> None:
         on_failure_callback=slack_message_callback(error_message),
     )
 
-    consume_pvlive_gsps_old = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-pvlive-dayafter-gsps-old",
-        container_def=pvlive_consumer_old,
-        env_overrides={
-            "N_GSPS": "317",
-            "REGIME": "day-after",
-        },
-        on_failure_callback=slack_message_callback(error_message),
-    )
-
-    consume_pvlive_national >> consume_pvlive_gsps >> consume_pvlive_gsps_old
+    consume_pvlive_national >> consume_pvlive_gsps
 
 
 pvlive_intraday_consumer_dag()

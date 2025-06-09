@@ -23,6 +23,20 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.6.0 - 2025-06-09
+
+- Add new API check for national/forecast
+- Update UK PVnet app from `2.5.22` to `2.6.0` - new model for new gsps areas. 
+
+### 1.5.0 - 2025-06-02
+
+- Add new API checks for UK GSP and National
+- Update blend service from `1.1.3` to `1.1.4` - improved logging
+- UK PVnet app updated to `2.5.18` -> `2.5.22` - Don't regrid ECMWF for DA model and get ready for new GSPs.
+- New NL Forecasts
+- Metrics upgrade from `1.2.23` to `1.3.0`, major speed upgrade for ME
+- Scale UK GSP and National API to 2 ec2 instances
+
 ### 1.4.0
 
 - Add new NL consumer for Ned-NL forecast, and use version `1.1.12`

@@ -140,6 +140,46 @@ def check_national_forecast_include_metadata(
     check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
 
 
+def check_national_forecast_metadata_true_and_false(
+    access_token: str,
+) -> None:
+    """Check the national forecast with include_metadata true and false.
+
+    Make sure both routes gives back the same values
+    """
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
+    data_true = call_api(url=full_url, access_token=access_token)
+
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=false"
+    data_false = call_api(url=full_url, access_token=access_token)
+
+    values_true = data_true["forecastValues"]
+    values_false = data_false
+
+    # create dict of target times and power
+    values_true = {v["targetTime"]: v["expectedPowerGenerationMegawatts"] for v in values_true}
+    values_false = {v["targetTime"]: v["expectedPowerGenerationMegawatts"] for v in values_false}
+
+    diff_values = []
+    for k, v in values_true.items():
+        if k in values_false and v != values_false[k]:
+            diff_values.append(
+                {"targetTime": k, "metadata=true": v, "metadata=false": values_false[k]},
+            )
+
+    if len(diff_values) > 0:
+        message = (
+            "Values with include_metadata=true and false are not the same. "
+            "This should not happen. "
+        )
+        message += f"The first different values is at {diff_values[0]}."
+
+        if len(diff_values) > 1:
+            message += f"The last different values is at {diff_values[-1]}"
+
+        raise ValueError(message)
+
+
 def check_national_pvlive(access_token: str) -> None:
     """Check the national pvlive."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive"
@@ -169,7 +209,6 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     """Check the GSP forecast all with compact=false."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
     data = call_api(url=full_url, access_token=access_token)
-    logger.debug(data)
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
@@ -182,7 +221,6 @@ def check_gsp_forecast_all(access_token: str) -> None:
     """Check the GSP forecast all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
     data = call_api(url=full_url, access_token=access_token)
-    logger.debug(data)
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
@@ -206,7 +244,6 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
         f"&start_datetime_utc={start_datetime_str}&end_datetime_utc={end_datetime_str}"
     )
     data = call_api(url=full_url, access_token=access_token)
-    logger.info(data)
 
     # 2 days in the past
     # date is in 30 min intervals
@@ -247,7 +284,6 @@ def check_gsp_forecast_all_one_datetime(access_token: str) -> None:
         f"&start_datetime_utc={start_datetime_str}&end_datetime_utc={end_datetime_str}"
     )
     data = call_api(url=full_url, access_token=access_token)
-    logger.info(data)
 
     # Just one datetime
     check_len_ge(data, 1)
@@ -383,6 +419,12 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    national_forecast_compare_metadata = PythonOperator(
+        task_id="check-api-national-forecast-compare-metadata-true-and-false",
+        python_callable=check_national_forecast_metadata_true_and_false,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     national_generation = PythonOperator(
         task_id="check-api-national-pvlive",
         python_callable=check_national_pvlive,
@@ -476,7 +518,11 @@ def api_national_gsp_check() -> None:
     (
         get_bearer_token
         >> national_forecast
-        >> [national_forecast_2_hour, national_forecast_include_metadata]
+        >> [
+            national_forecast_2_hour,
+            national_forecast_include_metadata,
+            national_forecast_compare_metadata,
+        ]
     )
     get_bearer_token >> national_generation >> national_generation_day_after
     (
@@ -511,3 +557,26 @@ def api_national_gsp_check() -> None:
 
 
 api_national_gsp_check()
+
+if __name__ == "__main__":
+    # Run all the function, Manual UAT
+    # This can be useful after the API is deployed
+    check_api_is_up()
+    bearer_token = get_bearer_token_from_auth0()
+    check_national_forecast(bearer_token)
+    check_national_forecast(bearer_token, horizon_minutes=120)
+    check_national_forecast_include_metadata(bearer_token)
+    check_national_forecast_metadata_true_and_false(bearer_token)
+    check_national_pvlive(bearer_token)
+    check_national_pvlive_day_after(bearer_token)
+    check_gsp_forecast_all(bearer_token)
+    check_gsp_forecast_all_compact_false(bearer_token)
+    check_gsp_forecast_all_start_and_end(bearer_token)
+    check_gsp_forecast_all_one_datetime(bearer_token)
+    check_gsp_forecast_one(bearer_token)
+    check_gsp_forecast_one(bearer_token, horizon_minutes=120)
+    check_gsp_pvlive_all(bearer_token)
+    check_gsp_pvlive_all_compact(bearer_token)
+    check_gsp_pvlive_one(bearer_token)
+    check_gsp_pvlive_one_day_after(bearer_token)
+    check_api_status()
