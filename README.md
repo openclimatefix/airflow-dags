@@ -23,6 +23,14 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.7.0 - XX
+
+- Add new ML model for India solar site. 
+- Remove PVLive on-prem consumer
+- Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to datbase
+- NL forecast from `0.0.11` to `0.0.18`, NL 48 hour forecast and runs every hour
+- Metrics upgrade from `1.3.0` to `1.3.4`, big speed up
+
 ### 1.6.0 - 2025-06-09
 
 - Add new API check for national/forecast
