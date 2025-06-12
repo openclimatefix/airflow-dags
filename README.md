@@ -27,7 +27,7 @@ and handles the deployment process.
 
 - Add new ML model for India solar site. 
 - Remove PVLive on-prem consumer
-- Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to datbase
+- Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to database
 - NL forecast from `0.0.11` to `0.0.18`, NL 48 hour forecast and runs every hour
 - Metrics upgrade from `1.3.0` to `1.3.4`, big speed up
 - Upgrade site database clean up to `1.0.31`, dont delete NL site
