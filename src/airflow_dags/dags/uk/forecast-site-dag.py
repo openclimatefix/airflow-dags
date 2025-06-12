@@ -45,7 +45,7 @@ site_forecaster = ContainerDefinition(
 sitedb_cleaner = ContainerDefinition(
     name="clean-pvsitedb",
     container_image="docker.io/openclimatefix/pvsite_database_cleanup",
-    container_tag="1.0.30",
+    container_tag="1.0.31",
     container_env={
         "SAVE_DIR": f"s3://uk-site-forecaster-models-{env}/database",
         "LOGLEVEL": "INFO",
