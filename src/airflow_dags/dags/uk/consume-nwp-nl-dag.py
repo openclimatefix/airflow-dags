@@ -30,7 +30,7 @@ env = os.getenv("ENVIRONMENT", "development")
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer-nl",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.23",
+    container_tag="1.1.26",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
