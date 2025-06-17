@@ -23,6 +23,12 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.7.0 - 2025-06-16
+- Update UK NWP consumer from `v1.1.21` to `v1.1.26`
+- Update UK NWP consumer in NL from `v1.1.23` to `v1.1.26`
+- Add India AD forecast V2
+- Run NL forecast every hour
+
 ### 1.6.0 - 2025-06-09
 
 - Add new API check for national/forecast
