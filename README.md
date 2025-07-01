@@ -24,7 +24,7 @@ and handles the deployment process.
 ## Releases
 
 
-### 1.8.0 - XX
+### 1.8.0 - 2025-07-01
 
 - Remove PVLive on-prem consumer
 - Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to database
