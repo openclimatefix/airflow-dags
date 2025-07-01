@@ -136,6 +136,5 @@ def pvlive_dayafter_consumer_dag() -> None:
 
     consume_pvlive_national >> consume_pvlive_gsps
 
-
 pvlive_intraday_consumer_dag()
 pvlive_dayafter_consumer_dag()

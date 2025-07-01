@@ -23,14 +23,23 @@ and handles the deployment process.
 
 ## Releases
 
-### 1.7.0 - XX
+
+### 1.8.0 - XX
 
 - Add new ML model for India solar site. 
 - Remove PVLive on-prem consumer
 - Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to database
-- NL forecast from `0.0.11` to `0.0.18`, NL 48 hour forecast and runs every hour
+- NL forecast from `0.0.11` to `0.0.20`, NL 48 hour forecast and runs every hour
 - Metrics upgrade from `1.3.0` to `1.3.4`, big speed up
 - Upgrade site database clean up to `1.0.31`, dont delete NL site
+- Upgrade uk site forecast `1.0.32`, only uk sites
+
+### 1.7.0 - 2025-06-16
+
+- Update UK NWP consumer from `v1.1.21` to `v1.1.26`
+- Update UK NWP consumer in NL from `v1.1.23` to `v1.1.26`
+- Add India AD forecast V2
+- Run NL forecast every hour
 
 ### 1.6.0 - 2025-06-09
 
