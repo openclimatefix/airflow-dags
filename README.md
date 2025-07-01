@@ -26,7 +26,6 @@ and handles the deployment process.
 
 ### 1.8.0 - XX
 
-- Add new ML model for India solar site. 
 - Remove PVLive on-prem consumer
 - Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to database
 - NL forecast from `0.0.11` to `0.0.20`, NL 48 hour forecast and runs every hour
