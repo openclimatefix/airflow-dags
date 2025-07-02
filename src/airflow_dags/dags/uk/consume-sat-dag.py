@@ -123,22 +123,22 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    consume_rss_op = EcsAutoRegisterRunTaskOperator(
-       airflow_task_id="consume-rss",
-        container_def=sat_consumer,
-        env_overrides={
-            "SATCONS_TIME": "{{" \
-            + "(data_interval_start - macros.timedelta(minutes=210))" \
-            + ".strftime('%Y-%m-%dT%H:%M')" \
-            + "}}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-        },
-    )
-    extract_latest_rss_op = extract_latest_zarr(
-        bucket=f"nowcasting-sat-{env}",
-        prefix="testdata/rss/rss_3000m.icechunk",
-        window_mins=210,
-    )
+    # consume_rss_op = EcsAutoRegisterRunTaskOperator(
+    #    airflow_task_id="consume-rss",
+    #     container_def=sat_consumer,
+    #     env_overrides={
+    #         "SATCONS_TIME": "{{" \
+    #         + "(data_interval_start - macros.timedelta(minutes=210))" \
+    #         + ".strftime('%Y-%m-%dT%H:%M')" \
+    #         + "}}",
+    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+    #     },
+    # )
+    # extract_latest_rss_op = extract_latest_zarr(
+    #     bucket=f"nowcasting-sat-{env}",
+    #     prefix="testdata/rss/rss_3000m.icechunk",
+    #     window_mins=210,
+    # )
     # consume_iodc_op = EcsAutoRegisterRunTaskOperator(
     #    airflow_task_id="consume-odegree",
     #     container_def=sat_consumer,
