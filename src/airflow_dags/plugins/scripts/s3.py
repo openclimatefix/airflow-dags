@@ -1,4 +1,10 @@
 """Helper functions that handle S3 files."""
+import tempfile
+
+import icechunk
+import numpy as np
+import xarray as xr
+import zarr
 from airflow.decorators import task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
@@ -53,4 +59,32 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
 
     else:
         s3hook.log.info("No changes to latest.zarr required")
+
+@task(task_id="extract_latest_zarr")
+def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
+    """Extracts a latest.zarr file from an icechunk store in a bucket."""
+    s3hook = S3Hook(aws_conn_id=None)  # Use Boto3 default connection strategy
+    storage = icechunk.s3_storage(bucket=bucket, prefix=prefix, from_env=True)
+    repo = icechunk.Repository.open(storage=storage)
+    session = repo.readonly_session(branch="main")
+    store_ds = xr.open_zarr(store=session.store, consolidated=False)
+    store_ds_latest = store_ds.where(
+        store_ds.coords["time"] >= (
+            store_ds.coords["time"].max().values - np.timedelta64(window_mins, "m")
+        ), drop=True,
+    )
+    s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
+    with tempfile.NamedTemporaryFile(suffix=".zarr.zip") as tmpfile:
+        store_ds_latest.to_zarr(
+            zarr.storage.ZipStore(path=tmpfile.name),
+            mode="w",
+            consolidated=True,
+        )
+        s3hook.load_file(
+            filename=tmpfile.name,
+            bucket_name=bucket,
+            replace=True,
+            key=f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip",
+        )
+    s3hook.log.info(f"Extracted latest zarr to {bucket}/{prefix}/latest.zarr.zip")
 

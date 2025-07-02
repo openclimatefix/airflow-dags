@@ -17,6 +17,7 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
+from airflow_dags.plugins.scripts.s3 import extract_latest_zarr
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -34,15 +35,17 @@ default_args = {
 sat_consumer = ContainerDefinition(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.2.0",
+    container_tag="0.2.1",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
+        "SATCONS_ICECHUNK": "true",
         "SATCONS_SATELLITE": "rss",
         "SATCONS_VALIDATE": "true",
+        "SATCONS_RESOLUTION": "3000",
         "SATCONS_RESCALE": "true",
         "SATCONS_WINDOW_MINS": "210",
-        "SATCONS_NUM_WORKERS": "4",
+        "SATCONS_NUM_WORKERS": "1",
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
@@ -51,7 +54,7 @@ sat_consumer = ContainerDefinition(
     },
     domain="uk",
     container_cpu=1024,
-    container_memory=6144,
+    container_memory=5120,
     container_storage=30,
 )
 
@@ -120,17 +123,22 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    # consume_rss_op = EcsAutoRegisterRunTaskOperator(
-    #    airflow_task_id="consume-rss",
-    #     container_def=sat_consumer,
-    #     env_overrides={
-    #         "SATCONS_TIME": "{{" \
-    #         + "(data_interval_start - macros.timedelta(minutes=210))" \
-    #         + ".strftime('%Y-%m-%dT%H:%M')" \
-    #         + "}}",
-    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-    #     },
-    # )
+    consume_rss_op = EcsAutoRegisterRunTaskOperator(
+       airflow_task_id="consume-rss",
+        container_def=sat_consumer,
+        env_overrides={
+            "SATCONS_TIME": "{{" \
+            + "(data_interval_start - macros.timedelta(minutes=210))" \
+            + ".strftime('%Y-%m-%dT%H:%M')" \
+            + "}}",
+            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+        },
+    )
+    extract_latest_rss_op = extract_latest_zarr(
+        bucket=f"nowcasting-sat-{env}",
+        prefix="testdata/rss/rss_3000m.icechunk",
+        window_mins=210,
+    )
     # consume_iodc_op = EcsAutoRegisterRunTaskOperator(
     #    airflow_task_id="consume-odegree",
     #     container_def=sat_consumer,
@@ -154,7 +162,7 @@ def sat_consumer_dag() -> None:
     # )
 
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-    # latest_only_op >> consume_rss_op >> consume_iodc_op
+    latest_only_op >> consume_rss_op >> extract_latest_rss_op
 
 @dag(
     dag_id="uk-manage-clean-sat",
