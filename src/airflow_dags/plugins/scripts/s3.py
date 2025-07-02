@@ -64,7 +64,13 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
 def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
     """Extracts a latest.zarr file from an icechunk store in a bucket."""
     s3hook = S3Hook(aws_conn_id=None)  # Use Boto3 default connection strategy
-    storage = icechunk.s3_storage(bucket=bucket, prefix=prefix, from_env=True)
+    creds = s3hook.get_credentials()
+    storage = icechunk.s3_storage(
+        bucket=bucket,
+        prefix=prefix,
+        access_key_id=creds.access_key,
+        secret_access_key=creds.secret_key,
+    )
     repo = icechunk.Repository.open(storage=storage)
     session = repo.readonly_session(branch="main")
     store_ds = xr.open_zarr(store=session.store, consolidated=False)
