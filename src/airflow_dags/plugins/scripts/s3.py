@@ -68,8 +68,7 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
     storage = icechunk.s3_storage(
         bucket=bucket,
         prefix=prefix,
-        access_key_id=creds.access_key,
-        secret_access_key=creds.secret_key,
+        session_token=creds.token,
     )
     repo = icechunk.Repository.open(storage=storage)
     session = repo.readonly_session(branch="main")
