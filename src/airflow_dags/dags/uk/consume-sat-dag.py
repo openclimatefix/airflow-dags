@@ -17,7 +17,6 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
-from airflow_dags.plugins.scripts.s3 import extract_latest_zarr
 
 env = os.getenv("ENVIRONMENT", "development")
 
