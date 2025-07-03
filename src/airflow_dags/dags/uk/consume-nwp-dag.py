@@ -1,6 +1,5 @@
 """DAG to download and process NWP data from various sources."""
 
-
 import datetime as dt
 import os
 
@@ -47,6 +46,7 @@ nwp_consumer = ContainerDefinition(
     container_memory=2048,
 )
 
+
 def update_operator(provider: str) -> BashOperator:
     """BashOperator to update the API with the latest downloaded data."""
     file: str = f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr/.zattrs"
@@ -58,6 +58,7 @@ def update_operator(provider: str) -> BashOperator:
         task_id=f"update-api-{provider}",
         bash_command=command,
     )
+
 
 @dag(
     dag_id="uk-consume-nwp",
@@ -82,7 +83,7 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/data-metoffice",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "This is non-critical; the forecast will move to ECMWF-only, "
             "Metoffice status link is "
             "<https://datahub.metoffice.gov.uk/support/service-status|here> "
@@ -102,7 +103,7 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/ecmwf/data",
         },
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧 "
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here> "
             "Please see run book for appropriate actions. ",
@@ -124,5 +125,6 @@ def nwp_consumer_dag() -> None:
     consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
     latest_only_op >> consume_ecmwf_op
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
+
 
 nwp_consumer_dag()

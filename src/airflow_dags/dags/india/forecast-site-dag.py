@@ -1,4 +1,5 @@
 """DAGs to forecast generation for sites."""
+
 import datetime as dt
 import os
 
@@ -64,6 +65,8 @@ ad_forecaster = ContainerDefinition(
 
 # hour the forecast can run, not include 7,8,19,20
 hours = "0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,21,22,23"
+
+
 @dag(
     dag_id="india-forecast-ruvnl",
     description=__doc__,
@@ -85,7 +88,7 @@ def ruvnl_forecast_dag() -> None:
             "USE_SATELLITE": "False",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
             "This would ideally be fixed before for DA actions at 09.00 IST. "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
@@ -93,6 +96,7 @@ def ruvnl_forecast_dag() -> None:
     )
 
     latest_only_op >> forecast_ruvnl_op
+
 
 @dag(
     dag_id="india-forecast-ad",
@@ -116,7 +120,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
@@ -130,7 +134,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad-v2",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
@@ -138,6 +142,7 @@ def ad_forecast_dag() -> None:
     )
 
     latest_only_op >> [forecast_ad_op, forecast_ad_v2_op]
+
 
 ruvnl_forecast_dag()
 ad_forecast_dag()

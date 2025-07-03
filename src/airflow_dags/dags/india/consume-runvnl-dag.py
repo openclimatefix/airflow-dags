@@ -62,4 +62,5 @@ def ruvnl_consumer_dag() -> None:
 
     latest_only_op >> consume_ruvnl_op
 
+
 ruvnl_consumer_dag()
