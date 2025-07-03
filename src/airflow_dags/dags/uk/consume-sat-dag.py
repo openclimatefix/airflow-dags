@@ -105,7 +105,7 @@ def sat_consumer_dag() -> None:
         airflow_task_id="satip-consume",
         container_def=satip,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
             "which doesn't need satellite data. "
             "The EUMETSAT status link for the RSS service (5 minute) is "
@@ -180,7 +180,7 @@ def sat_cleanup_dag() -> None:
         container_def=satip,
         env_overrides={"CLEANUP": "1"},
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
             "and the satellite consumer should also do this. "
             "No out-of-hours support is required.",

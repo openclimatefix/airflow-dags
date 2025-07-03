@@ -82,7 +82,7 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/data-metoffice",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "This is non-critical; the forecast will move to ECMWF-only, "
             "Metoffice status link is "
             "<https://datahub.metoffice.gov.uk/support/service-status|here> "
@@ -102,7 +102,7 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/ecmwf/data",
         },
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧 "
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here> "
             "Please see run book for appropriate actions. ",

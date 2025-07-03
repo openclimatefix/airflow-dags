@@ -53,7 +53,7 @@ def neso_consumer_dag() -> None:
         airflow_task_id="consume-neso-forecast",
         container_def=neso_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),

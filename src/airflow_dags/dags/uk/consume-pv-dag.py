@@ -58,7 +58,7 @@ def pv_consumer_dag() -> None:
         container_def=pv_consumer,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But its ok, this isnt needed for any production services. "
             "No out of office hours support is required.",
         ),

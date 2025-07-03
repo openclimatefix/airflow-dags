@@ -57,7 +57,7 @@ def ned_nl_consumer_dag() -> None:
         airflow_task_id="nl-consume-ned-nl-generation",
         container_def=ned_nl_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇳🇱 "
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),
@@ -77,7 +77,7 @@ def ned_nl_forecast_dag() -> None:
         airflow_task_id="nl-forecast-ned-nl",
         container_def=ned_nl_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇳🇱 "
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),

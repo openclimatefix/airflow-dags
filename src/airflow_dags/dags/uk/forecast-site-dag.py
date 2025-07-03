@@ -74,7 +74,7 @@ def site_forecast_dag() -> None:
         airflow_task_id="forecast-sites",
         container_def=site_forecaster,
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧"
             "Please see run book for appropriate actions. ",
         ),
     )
@@ -97,7 +97,7 @@ def clean_site_db_dag() -> None:
         airflow_task_id="uk-clean-sitedb",
         container_def=sitedb_cleaner,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed, but it is non-critical. "
+            "⚠️ The task {{ ti.task_id }} failed, 🇬🇧 but it is non-critical. "
             "No out of hours support is required.",
         ),
     )

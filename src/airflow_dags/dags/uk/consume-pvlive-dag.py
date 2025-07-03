@@ -82,7 +82,7 @@ def pvlive_intraday_consumer_dag() -> None:
             "REGIME": "in-day",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "This is needed for the adjuster in the Forecast."
             "No out of office hours support needed."
             "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
