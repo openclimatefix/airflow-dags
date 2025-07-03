@@ -40,6 +40,7 @@ metrics_calculator = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="uk-analysis-metrics",
     description="DAG to calculate metrics from the forecast.",

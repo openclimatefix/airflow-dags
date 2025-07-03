@@ -39,6 +39,7 @@ neso_consumer = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="uk-consume-neso",
     description="Get NESO's solar forecast.",
@@ -59,5 +60,5 @@ def neso_consumer_dag() -> None:
         ),
     )
 
-neso_consumer_dag()
 
+neso_consumer_dag()

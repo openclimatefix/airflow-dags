@@ -43,6 +43,7 @@ ned_nl_consumer = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="nl-consume-ned-nl",
     description="Get Ned NL's solar generation.",
@@ -62,6 +63,7 @@ def ned_nl_consumer_dag() -> None:
             "No out of office hours support is required.",
         ),
     )
+
 
 @dag(
     dag_id="nl-consume-ned-nl-forecast",

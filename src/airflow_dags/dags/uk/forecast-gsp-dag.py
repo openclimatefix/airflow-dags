@@ -27,7 +27,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-gsp_forecaster_args = dict( # noqa: C408
+gsp_forecaster_args = dict(  # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
     container_tag="2.6.0",
@@ -178,7 +178,8 @@ def gsp_forecast_pvnet_dag() -> None:
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
         on_success_callback=slack_message_callback(
-            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}"),
+            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}"
+        ),
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. 🇬🇧"
             "This was trying to check when PVNet and PVNet ECMWF only last ran",
@@ -222,7 +223,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         ),
         env_overrides={
             "DAY_AHEAD_MODEL": "true",
-            "USE_OCF_DATA_SAMPLER": "true", # Note this setting is ignored by the dev image
+            "USE_OCF_DATA_SAMPLER": "true",  # Note this setting is ignored by the dev image
             "FILTER_BAD_FORECASTS": str(env == "production").lower(),
         },
     )
@@ -232,7 +233,7 @@ def gsp_forecast_pvnet_dayahead_dag() -> None:
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. 🇬🇧"
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧 "
             "The blending of forecast has failed. "
             "Please see run book for appropriate actions. ",
         ),
@@ -258,7 +259,7 @@ def national_forecast_dayahead_dag() -> None:
         container_def=national_forecaster,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧"
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But its ok, this forecast is only a backup. "
             "No out of office hours support is required, unless other forecasts are failing",
         ),

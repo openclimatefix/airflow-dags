@@ -132,4 +132,5 @@ def nwp_consumer_dag() -> None:
     latest_only_op >> consume_gfs_op >> rename_zarr_gfs
     latest_only_op >> consume_metoffice_op >> rename_zarr_metoffice
 
+
 nwp_consumer_dag()

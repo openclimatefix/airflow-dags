@@ -1,4 +1,5 @@
 """DAGs to forecast generation for sites."""
+
 import datetime as dt
 import os
 
@@ -29,8 +30,8 @@ site_forecaster = ContainerDefinition(
     container_image="ghcr.io/openclimatefix/site-forecast-app",
     container_tag="0.0.20",
     container_env={
-        "NWP_ECMWF_ZARR_PATH":f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
-        "SATELLITE_ZARR_PATH":f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
+        "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
+        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
@@ -59,7 +60,7 @@ def nl_forecast_dag() -> None:
         container_def=site_forecaster,
         max_active_tis_per_dag=10,
         env_overrides={
-            #"SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/site_pvnet_batches",
+            # "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/site_pvnet_batches",
         },
         # on_failure_callback=slack_message_callback(
         #     "⚠️ The task {{ ti.task_id }} failed. "
@@ -69,5 +70,5 @@ def nl_forecast_dag() -> None:
 
     latest_only_op >> forecast_nl_op
 
-nl_forecast_dag()
 
+nl_forecast_dag()

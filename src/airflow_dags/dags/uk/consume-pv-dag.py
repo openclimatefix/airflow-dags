@@ -1,4 +1,5 @@
 """Dag to download PV generation data."""
+
 import datetime as dt
 import os
 
@@ -34,12 +35,15 @@ pv_consumer = ContainerDefinition(
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/data/solar-sheffield": [
-            "SS_USER_ID", "SS_KEY", "SS_URL",
+            "SS_USER_ID",
+            "SS_KEY",
+            "SS_URL",
         ],
     },
     container_cpu=256,
     container_memory=512,
 )
+
 
 @dag(
     dag_id="uk-consume-pv",
@@ -65,5 +69,6 @@ def pv_consumer_dag() -> None:
     )
 
     latest_only_op >> consume_pv_passiv_op
+
 
 pv_consumer_dag()

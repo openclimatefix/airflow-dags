@@ -41,6 +41,7 @@ cloudcasting_app = ContainerDefinition(
     container_cpu=1024,
 )
 
+
 @dag(
     dag_id="uk-forecast-clouds",
     description=__doc__,
@@ -60,5 +61,5 @@ def cloudcasting_dag() -> None:
         ),
     )
 
-cloudcasting_dag()
 
+cloudcasting_dag()

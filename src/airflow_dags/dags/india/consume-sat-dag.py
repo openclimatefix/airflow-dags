@@ -37,13 +37,15 @@ satellite_consumer = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
-            "API_KEY", "API_SECRET",
+            "API_KEY",
+            "API_SECRET",
         ],
     },
     container_cpu=1024,
     container_memory=5120,
     domain="india",
 )
+
 
 @dag(
     dag_id="india-consume-satellite",
@@ -73,5 +75,6 @@ def sat_consumer_dag() -> None:
     )
 
     latest_only_op >> consume_sat_op
+
 
 sat_consumer_dag()

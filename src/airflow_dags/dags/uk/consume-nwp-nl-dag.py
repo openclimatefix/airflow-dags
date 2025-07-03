@@ -1,6 +1,5 @@
 """DAG to download and process NWP data from ECMWF NL."""
 
-
 import datetime as dt
 import os
 
@@ -46,6 +45,7 @@ nwp_consumer = ContainerDefinition(
     container_memory=2048,
 )
 
+
 def update_operator(provider: str) -> BashOperator:
     """BashOperator to update the API with the latest downloaded data."""
     file: str = f"s3://nowcasting-nwp-{env}/ecmwf-nl/latest.zarr/.zattrs"
@@ -57,6 +57,7 @@ def update_operator(provider: str) -> BashOperator:
         task_id=f"update-api-{provider}",
         bash_command=command,
     )
+
 
 @dag(
     dag_id="nl-consume-nwp",
@@ -97,5 +98,6 @@ def nl_nwp_consumer_dag() -> None:
 
     latest_only_op >> consume_ecmwf_op
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
+
 
 nl_nwp_consumer_dag()

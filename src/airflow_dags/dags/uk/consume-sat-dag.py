@@ -48,7 +48,8 @@ sat_consumer = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
-            "EUMETSAT_CONSUMER_KEY", "EUMETSAT_CONSUMER_SECRET",
+            "EUMETSAT_CONSUMER_KEY",
+            "EUMETSAT_CONSUMER_SECRET",
         ],
     },
     domain="uk",
@@ -76,18 +77,19 @@ satip = ContainerDefinition(
     container_memory=5120,
 )
 
+
 def update_operator(cadence_mins: int) -> BashOperator:
     """BashOperator to update the API with the latest downloaded file."""
     file: str = f"s3://nowcasting-sat-{env}/testdata/latest.zarr.zip"
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = (
-        f'curl -X GET '
-        f'"{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
+        f"curl -X GET " f'"{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
     )
     return BashOperator(
         task_id=f"uk-satellite-update-{cadence_mins!s}min",
         bash_command=command,
     )
+
 
 @dag(
     dag_id="uk-consume-sat",
@@ -163,6 +165,7 @@ def sat_consumer_dag() -> None:
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
     # latest_only_op >> consume_rss_op >> extract_latest_rss_op
 
+
 @dag(
     dag_id="uk-manage-clean-sat",
     description=__doc__,
@@ -190,7 +193,5 @@ def sat_cleanup_dag() -> None:
     latest_only_op >> clean_datatailor
 
 
-
 sat_consumer_dag()
 sat_cleanup_dag()
-
