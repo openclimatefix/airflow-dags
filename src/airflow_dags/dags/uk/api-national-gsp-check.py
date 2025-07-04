@@ -1,4 +1,5 @@
 """General checks on Uk National/GSP API."""
+
 import datetime as dt
 import json
 import logging

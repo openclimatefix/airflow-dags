@@ -40,6 +40,7 @@ metrics_calculator = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="uk-analysis-metrics",
     description="DAG to calculate metrics from the forecast.",
@@ -60,7 +61,7 @@ def metrics_dag() -> None:
             "LOGLEVEL": "DEBUG",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed,"
+            "⚠️ The task {{ ti.task_id }} failed, 🇬🇧 "
             " but its ok. This task is not critical for live services. "
             "No out of hours support is required.",
         ),
@@ -87,7 +88,7 @@ def me_dag() -> None:
             "LOGLEVEL": "DEBUG",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed,"
+            "⚠️ The task {{ ti.task_id }} failed, 🇬🇧 "
             " but its ok. This task is not critical for live services. "
             "No out of hours support is required.",
         ),

@@ -41,6 +41,7 @@ cloudcasting_app = ContainerDefinition(
     container_cpu=1024,
 )
 
+
 @dag(
     dag_id="uk-forecast-clouds",
     description=__doc__,
@@ -54,11 +55,11 @@ def cloudcasting_dag() -> None:
         airflow_task_id="run-cloudcasting-app",
         container_def=cloudcasting_app,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed,"
+            "⚠️ The task {{ ti.task_id }} failed, 🇬🇧 "
             " but its ok. The cloudcasting is currently not critical. "
             "No out of hours support is required.",
         ),
     )
 
-cloudcasting_dag()
 
+cloudcasting_dag()

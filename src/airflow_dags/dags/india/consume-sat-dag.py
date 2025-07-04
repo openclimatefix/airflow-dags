@@ -37,13 +37,15 @@ satellite_consumer = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
-            "API_KEY", "API_SECRET",
+            "API_KEY",
+            "API_SECRET",
         ],
     },
     container_cpu=1024,
     container_memory=5120,
     domain="india",
 )
+
 
 @dag(
     dag_id="india-consume-satellite",
@@ -62,7 +64,7 @@ def sat_consumer_dag() -> None:
         container_def=satellite_consumer,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
             "The EUMETSAT status link for the IODC satellite is "
             "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
             "ossi_level2_filename=seviri_iodc.html|here> "
@@ -73,5 +75,6 @@ def sat_consumer_dag() -> None:
     )
 
     latest_only_op >> consume_sat_op
+
 
 sat_consumer_dag()

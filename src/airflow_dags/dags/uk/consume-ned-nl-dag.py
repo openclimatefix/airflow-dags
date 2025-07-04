@@ -43,6 +43,7 @@ ned_nl_consumer = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="nl-consume-ned-nl",
     description="Get Ned NL's solar generation.",
@@ -57,11 +58,12 @@ def ned_nl_consumer_dag() -> None:
         airflow_task_id="nl-consume-ned-nl-generation",
         container_def=ned_nl_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇳🇱 "
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),
     )
+
 
 @dag(
     dag_id="nl-consume-ned-nl-forecast",
@@ -77,7 +79,7 @@ def ned_nl_forecast_dag() -> None:
         airflow_task_id="nl-forecast-ned-nl",
         container_def=ned_nl_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇳🇱 "
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),
