@@ -17,7 +17,7 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
     # Get a list of all the non-latest zarrs in the bucket prefix
     prefixes = s3hook.list_prefixes(bucket_name=bucket, prefix=prefix + "/", delimiter="/")
     zarrs = sorted(
-        [p for p in prefixes if p.endswith(".zarr/") and "latest" not in p], reverse=True
+        [p for p in prefixes if p.endswith(".zarr/") and "latest" not in p], reverse=True,
     )
     # Get the size of the most recent zarr and the latest.zarr zarr
     s3bucket = s3hook.get_bucket(bucket_name=bucket)

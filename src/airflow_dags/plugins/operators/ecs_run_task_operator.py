@@ -88,7 +88,7 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
                         )
                         return True
                 elif existing_container_def.get(
-                    key
+                    key,
                 ) != self.container_def.ecs_container_definition().get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",

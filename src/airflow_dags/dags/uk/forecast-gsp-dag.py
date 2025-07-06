@@ -178,7 +178,7 @@ def gsp_forecast_pvnet_dag() -> None:
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
         on_success_callback=slack_message_callback(
-            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}"
+            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}",
         ),
         on_failure_callback=slack_message_callback(
             "⚠️ The task {{ ti.task_id }} failed. 🇬🇧"
