@@ -25,4 +25,3 @@ class TestImport(unittest.TestCase):
             domain, function = dag_id.split("-")[0], dag_id.split("-")[1]
             self.assertIn(domain, ["uk", "india", "nl"])
             self.assertIn(function, ["api", "consume", "forecast", "analysis", "manage"])
-

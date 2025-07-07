@@ -49,7 +49,8 @@ sat_consumer = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/data/satellite-consumer": [
-            "EUMETSAT_CONSUMER_KEY", "EUMETSAT_CONSUMER_SECRET",
+            "EUMETSAT_CONSUMER_KEY",
+            "EUMETSAT_CONSUMER_SECRET",
         ],
     },
     domain="uk",
@@ -77,18 +78,19 @@ satip = ContainerDefinition(
     container_memory=5120,
 )
 
+
 def update_operator(cadence_mins: int) -> BashOperator:
     """BashOperator to update the API with the latest downloaded file."""
     file: str = f"s3://nowcasting-sat-{env}/testdata/latest.zarr.zip"
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = (
-        f'curl -X GET '
-        f'"{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
+        f"curl -X GET " f'"{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
     )
     return BashOperator(
         task_id=f"uk-satellite-update-{cadence_mins!s}min",
         bash_command=command,
     )
+
 
 @dag(
     dag_id="uk-consume-sat",
@@ -106,7 +108,7 @@ def sat_consumer_dag() -> None:
         airflow_task_id="satip-consume",
         container_def=satip,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
             "which doesn't need satellite data. "
             "The EUMETSAT status link for the RSS service (5 minute) is "
@@ -165,6 +167,7 @@ def sat_consumer_dag() -> None:
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
     latest_only_op >> consume_rss_op >> extract_latest_rss_op
 
+
 @dag(
     dag_id="uk-manage-clean-sat",
     description=__doc__,
@@ -182,7 +185,7 @@ def sat_cleanup_dag() -> None:
         container_def=satip,
         env_overrides={"CLEANUP": "1"},
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. "
+            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
             "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
             "and the satellite consumer should also do this. "
             "No out-of-hours support is required.",
@@ -192,7 +195,5 @@ def sat_cleanup_dag() -> None:
     latest_only_op >> clean_datatailor
 
 
-
 sat_consumer_dag()
 sat_cleanup_dag()
-

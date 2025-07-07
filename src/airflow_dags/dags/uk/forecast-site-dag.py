@@ -58,6 +58,7 @@ sitedb_cleaner = ContainerDefinition(
     container_memory=512,
 )
 
+
 @dag(
     dag_id="uk-forecast-site",
     description=__doc__,
@@ -74,12 +75,13 @@ def site_forecast_dag() -> None:
         airflow_task_id="forecast-sites",
         container_def=site_forecaster,
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. "
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧 "
             "Please see run book for appropriate actions. ",
         ),
     )
 
     latest_only_op >> forecast_sites_op
+
 
 @dag(
     dag_id="uk-manage-sitedb-cleanup",
@@ -97,12 +99,13 @@ def clean_site_db_dag() -> None:
         airflow_task_id="uk-clean-sitedb",
         container_def=sitedb_cleaner,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed, but it is non-critical. "
+            "⚠️ The task {{ ti.task_id }} failed, 🇬🇧 but it is non-critical. "
             "No out of hours support is required.",
         ),
     )
 
     latest_only_op >> database_clean_op
+
 
 site_forecast_dag()
 clean_site_db_dag()

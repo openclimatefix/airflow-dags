@@ -34,6 +34,7 @@ names = [
     f"india-{env}-india-api",
 ]
 
+
 @dag(
     dag_id="india-manage-elb-reset",
     description=__doc__,
@@ -65,5 +66,6 @@ def elb_reset_dag() -> None:
         )
 
         latest_only >> elb_2 >> elb_1
+
 
 elb_reset_dag()

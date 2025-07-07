@@ -13,6 +13,7 @@ from botocore.errorfactory import ClientError
 # These should probably be templated instead of top-level, see
 # https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html#top-level-python-code
 
+
 class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
     """Operator to run tasks on ECS.
 
@@ -23,14 +24,14 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
     container_def: "ContainerDefinition"
 
     def __init__(
-            self,
-            *,
-            airflow_task_id: str,
-            container_def: "ContainerDefinition",
-            env_overrides: dict[str, str] | None = None,
-            command_override: list[str] | None = None,
-            **kwargs: int | bool | str | dict[str, str] | list[str],
-        ) -> None:
+        self,
+        *,
+        airflow_task_id: str,
+        container_def: "ContainerDefinition",
+        env_overrides: dict[str, str] | None = None,
+        command_override: list[str] | None = None,
+        **kwargs: int | bool | str | dict[str, str] | list[str],
+    ) -> None:
         """Create a new instance of the class."""
         self.container_def = container_def
 
@@ -68,28 +69,27 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
         """Determine whether the task definition is out of date."""
         try:
             existing_def = self.client.describe_task_definition(
-                taskDefinition=self.container_def.name, include=["TAGS"],
+                taskDefinition=self.container_def.name,
+                include=["TAGS"],
             )
             existing_container_def = existing_def["taskDefinition"]["containerDefinitions"][0]
-            existing_kwargs = existing_def["taskDefinition"] | { "tags": existing_def["tags"] }
+            existing_kwargs = existing_def["taskDefinition"] | {"tags": existing_def["tags"]}
             existing_kwargs.pop("containerDefinitions")
 
             # Only return the ECS operator if the task has changed
             for key in self.container_def.ecs_container_definition():
                 if key == "environment":
                     existing = {frozenset(d.items()) for d in existing_container_def["environment"]}
-                    new = {
-                        frozenset(d.items())
-                        for d in self.container_def.ecs_environment()
-                    }
+                    new = {frozenset(d.items()) for d in self.container_def.ecs_environment()}
                     if existing != new:
                         self.log.info(
                             "Definition key 'environment' different, registering new task "
                             f"definition (current: '{existing}'; new: '{new}')",
                         )
                         return True
-                elif existing_container_def.get(key) \
-                        != self.container_def.ecs_container_definition().get(key):
+                elif existing_container_def.get(
+                    key,
+                ) != self.container_def.ecs_container_definition().get(key):
                     self.log.info(
                         f"Definition key '{key}' different, registering new task definition",
                     )
@@ -109,7 +109,6 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
 
         self.log.info("Task definition up to date")
         return False
-
 
     @override
     def execute(self, context: Context) -> Any:
@@ -140,6 +139,7 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
             context["ti"].xcom_push(key="task_definition_arn", value=task_definition_arn)
 
         return super().execute(context=context)
+
 
 @dataclasses.dataclass
 class ContainerDefinition:
@@ -198,19 +198,19 @@ class ContainerDefinition:
             "SENTRY_DSN": os.getenv("SENTRY_DSN", ""),
             "ENVIRONMENT": os.getenv("ENVIRONMENT", "development"),
         }
-        return [
-            {"name": k, "value": v}
-            for k, v in (self.container_env | default_env).items()
-        ]
+        return [{"name": k, "value": v} for k, v in (self.container_env | default_env).items()]
 
     def ecs_secrets(self) -> list[dict[str, str]]:
         """Return an ECS secrets definition list."""
         AWS_OWNER_ID: str = os.getenv("AWS_OWNER_ID", "")
         _, region = self.cluster_region_tuple
         return [
-            {"name": key, "valueFrom": f"arn:aws:secretsmanager:{region}:{AWS_OWNER_ID}"\
+            {
+                "name": key,
+                "valueFrom": f"arn:aws:secretsmanager:{region}:{AWS_OWNER_ID}"
                 f":secret:{secret}:{key}::",
-            } for secret, keys in self.container_secret_env.items()
+            }
+            for secret, keys in self.container_secret_env.items()
             for key in keys
         ]
 
@@ -263,4 +263,3 @@ class ContainerDefinition:
         if self.domain == "india":
             return f"india-ecs-cluster-{ENV}", "ap-south-1"
         return f"Nowcasting-{ENV}", "eu-west-1"
-

@@ -1,4 +1,5 @@
 """Helper functions that handle S3 files."""
+
 import tempfile
 
 import icechunk
@@ -15,9 +16,9 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
     s3hook = S3Hook(aws_conn_id=None)  # Use Boto3 default connection strategy
     # Get a list of all the non-latest zarrs in the bucket prefix
     prefixes = s3hook.list_prefixes(bucket_name=bucket, prefix=prefix + "/", delimiter="/")
-    zarrs = sorted([
-        p for p in prefixes if p.endswith(".zarr/") and "latest" not in p
-    ], reverse=True)
+    zarrs = sorted(
+        [p for p in prefixes if p.endswith(".zarr/") and "latest" not in p], reverse=True,
+    )
     # Get the size of the most recent zarr and the latest.zarr zarr
     s3bucket = s3hook.get_bucket(bucket_name=bucket)
     size_old, size_new = (0, 0)
@@ -60,6 +61,7 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
     else:
         s3hook.log.info("No changes to latest.zarr required")
 
+
 @task(task_id="extract_latest_zarr")
 def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
     """Extracts a latest.zarr file from an icechunk store in a bucket."""
@@ -74,9 +76,9 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
     session = repo.readonly_session(branch="main")
     store_ds = xr.open_zarr(store=session.store, consolidated=False)
     store_ds_latest = store_ds.where(
-        store_ds.coords["time"] >= (
-            store_ds.coords["time"].max().values - np.timedelta64(window_mins, "m")
-        ), drop=True,
+        store_ds.coords["time"]
+        >= (store_ds.coords["time"].max().values - np.timedelta64(window_mins, "m")),
+        drop=True,
     )
     s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
     with tempfile.NamedTemporaryFile(suffix=".zarr.zip") as tmpfile:
@@ -92,4 +94,3 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
             key=f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip",
         )
     s3hook.log.info(f"Extracted latest zarr to {bucket}/{prefix}/latest.zarr.zip")
-
