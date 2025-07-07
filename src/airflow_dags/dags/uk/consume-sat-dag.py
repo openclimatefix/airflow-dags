@@ -17,6 +17,7 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
+from airflow_dags.plugins.scripts.s3 import extract_latest_zarr
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -122,22 +123,23 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-    # consume_rss_op = EcsAutoRegisterRunTaskOperator(
-    #    airflow_task_id="consume-rss",
-    #     container_def=sat_consumer,
-    #     env_overrides={
-    #         "SATCONS_TIME": "{{" \
-    #         + "(data_interval_start - macros.timedelta(minutes=210))" \
-    #         + ".strftime('%Y-%m-%dT%H:%M')" \
-    #         + "}}",
-    #         "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-    #     },
-    # )
-    # extract_latest_rss_op = extract_latest_zarr(
-    #     bucket=f"nowcasting-sat-{env}",
-    #     prefix="testdata/rss/rss_3000m.icechunk",
-    #     window_mins=210,
-    # )
+    consume_rss_op = EcsAutoRegisterRunTaskOperator(
+       airflow_task_id="consume-rss",
+        container_def=sat_consumer,
+        env_overrides={
+            "SATCONS_TIME": "{{" \
+            + "(data_interval_start - macros.timedelta(minutes=210))" \
+            + ".strftime('%Y-%m-%dT%H:%M')" \
+            + "}}",
+            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+        },
+        task_concurrency=1,
+    )
+    extract_latest_rss_op = extract_latest_zarr(
+        bucket=f"nowcasting-sat-{env}",
+        prefix="testdata/rss/rss_3000m.icechunk",
+        window_mins=210,
+    )
     # consume_iodc_op = EcsAutoRegisterRunTaskOperator(
     #    airflow_task_id="consume-odegree",
     #     container_def=sat_consumer,
@@ -161,7 +163,7 @@ def sat_consumer_dag() -> None:
     # )
 
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-    # latest_only_op >> consume_rss_op >> extract_latest_rss_op
+    latest_only_op >> consume_rss_op >> extract_latest_rss_op
 
 @dag(
     dag_id="uk-manage-clean-sat",
