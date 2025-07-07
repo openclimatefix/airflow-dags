@@ -23,6 +23,12 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.9.0 - 2025-07-XX
+
+- Add country flags to slack messages
+- PVNet to `2.6.3`, save forecast horizon
+- NL forecast to `0.0.22`
+- NedNL Consumer to `1.1.14`
 
 ### 1.8.0 - 2025-07-01
 
