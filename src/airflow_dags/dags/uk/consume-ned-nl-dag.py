@@ -27,7 +27,7 @@ default_args = {
 ned_nl_consumer = ContainerDefinition(
     name="ned-nl-consumer",
     container_image="ghcr.io/openclimatefix/solar-consumer",
-    container_tag="1.1.12",
+    container_tag="1.1.14",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
@@ -47,7 +47,7 @@ ned_nl_consumer = ContainerDefinition(
 @dag(
     dag_id="nl-consume-ned-nl",
     description="Get Ned NL's solar generation.",
-    schedule="0 * * * *",
+    schedule="0,15,30,45 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
