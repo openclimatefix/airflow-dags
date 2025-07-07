@@ -35,7 +35,7 @@ default_args = {
 sat_consumer = ContainerDefinition(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.2.2",
+    container_tag="0.2.3",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
