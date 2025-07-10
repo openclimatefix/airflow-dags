@@ -23,7 +23,7 @@ and handles the deployment process.
 
 ## Releases
 
-### 1.9.0 - 2025-07-XX
+### 1.9.0 - 2025-07-10
 
 - Add country flags to slack messages
 - PVNet to `2.6.3`, save forecast horizon
