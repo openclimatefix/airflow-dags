@@ -28,7 +28,7 @@ and handles the deployment process.
 - Add country flags to slack messages
 - PVNet to `2.6.3`, save forecast horizon
 - NL forecast to `0.0.22`
-- NedNL Consumer to `1.1.14` and run every 15 minutes
+- NedNL Consumer to `1.1.14` and run every 30 minutes
 - Upgrade NedNl Forecast to `1.1.14`
 
 ### 1.8.0 - 2025-07-01
