@@ -28,7 +28,7 @@ default_args = {
 india_forecaster = ContainerDefinition(
     name="forecast",
     container_image="docker.io/openclimatefix/india_forecast_app",
-    container_tag="1.1.39",
+    container_tag="1.2.0",
     container_env={
         "NWP_GFS_ZARR_PATH": f"s3://india-nwp-{env}/gfs/data/latest.zarr",
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
@@ -46,7 +46,7 @@ india_forecaster = ContainerDefinition(
 ad_forecaster = ContainerDefinition(
     name="forecast-ad",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="0.0.16",
+    container_tag="1.1.0",
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
