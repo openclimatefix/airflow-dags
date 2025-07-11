@@ -27,7 +27,7 @@ default_args = {
 pv_consumer = ContainerDefinition(
     name="pv-consumer",
     container_image="docker.io/openclimatefix/pvconsumer",
-    container_tag="2.1.0",
+    container_tag="2.2.0",
     container_env={
         "PROVIDER": "solar_sheffield_passiv",
         "LOGLEVEL": "INFO",
