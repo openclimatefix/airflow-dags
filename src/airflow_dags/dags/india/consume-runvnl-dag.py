@@ -30,7 +30,7 @@ default_args = {
 ruvnl_consumer = ContainerDefinition(
     name="ruvnl-consumer",
     container_image="docker.io/openclimatefix/ruvnl_consumer_app",
-    container_tag="0.1.20",
+    container_tag="0.2.0",
     container_command=["--write-to-db"],
     container_secret_env={
         f"{env}/rds/indiadb": ["DB_URL"],
