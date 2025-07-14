@@ -1,14 +1,14 @@
 """Functions for elastic beanstalk environment."""
-from datetime import datetime, timezone
 import logging
 import time
+from datetime import datetime, UTC
 
 import boto3
 
 logger = logging.getLogger(__name__)
 
 
-def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: int = 300):
+def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: int = 300) -> None:
     """Terminate any old instances in an elastic beanstalk environment.
 
     Note when an instance in terminate in ELB, the ELB will automatically start a new one up
@@ -24,15 +24,15 @@ def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: i
     number_of_instances = len(response["EnvironmentResources"]["Instances"])
     if number_of_instances < 2:
         logger.info(
-            f"Only {number_of_instances} instance(s) found in environment '{name}'. "
-            f"Termination would be too risky."
+            f"Only {number_of_instances} instance(s) found in environment '{name}'. ",
+            f"Termination would be too risky.",
         )
         return
 
     for instance in response["EnvironmentResources"]["Instances"]:
         instance_details = ec2.describe_instances(InstanceIds=[instance["Id"]])
         launch_datetime = instance_details["Reservations"][0]["Instances"][0]["LaunchTime"]
-        if (datetime.now(tz=timezone.utc) - launch_datetime).days > days_limit:
+        if (datetime.now(tz=UTC) - launch_datetime).days > days_limit:
             logger.info(f"Terminating old instance {instance['Id']} launched at {launch_datetime}")
             ec2 = boto3.client("ec2")
             ec2.terminate_instances(InstanceIds=[instance["Id"]])
