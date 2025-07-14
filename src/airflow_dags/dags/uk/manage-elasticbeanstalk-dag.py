@@ -6,9 +6,11 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
-
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
-from airflow_dags.plugins.scripts.elastic_beanstalk import scale_elastic_beanstalk_instance
+from airflow_dags.plugins.scripts.elastic_beanstalk import (
+    scale_elastic_beanstalk_instance,
+    terminate_any_old_instances,
+)
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -66,12 +68,26 @@ def elb_reset_dag() -> None:
         elb_1 = PythonOperator(
             task_id=f"scale_elb_1_{name}",
             python_callable=scale_elastic_beanstalk_instance,
-            op_kwargs={"name": name, "number_of_instances": number_of_instances},
+            op_kwargs={"name": name, "number_of_instances": number_of_instances, "days_limit": 3},
             max_active_tis_per_dag=2,
             on_failure_callback=slack_message_callback(elb_error_message),
         )
 
-        latest_only >> elb_2 >> elb_1
+        if "api" in name:
+            elb_terminate = PythonOperator(
+                task_id=f"scale_elb_2_{name}",
+                python_callable=terminate_any_old_instances,
+                op_kwargs={
+                    "name": name,
+                    "sleep_seconds": 60 * 5,
+                },
+                max_active_tis_per_dag=2,
+                on_failure_callback=slack_message_callback(elb_error_message),
+            )
+            latest_only >> elb_2 >> elb_terminate >> elb_1
+        else:
+
+            latest_only >> elb_2 >> elb_1
 
 
 elb_reset_dag()
