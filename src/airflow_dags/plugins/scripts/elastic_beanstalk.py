@@ -1,7 +1,7 @@
 """Functions for elastic beanstalk environment."""
 import logging
 import time
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import boto3
 
@@ -25,7 +25,7 @@ def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: i
     if number_of_instances < 2:
         logger.info(
             f"Only {number_of_instances} instance(s) found in environment '{name}'. ",
-            f"Termination would be too risky.",
+            "Termination would be too risky.",
         )
         return
 

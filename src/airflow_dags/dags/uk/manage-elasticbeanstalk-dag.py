@@ -6,6 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
+
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.elastic_beanstalk import (
     scale_elastic_beanstalk_instance,
