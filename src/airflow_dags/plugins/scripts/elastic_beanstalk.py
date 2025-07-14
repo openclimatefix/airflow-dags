@@ -21,19 +21,21 @@ def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: i
     ec2 = boto3.client("ec2")
     response = eb.describe_environment_resources(EnvironmentName=name)
 
-    number_of_instances = len(response['EnvironmentResources']['Instances'])
+    number_of_instances = len(response["EnvironmentResources"]["Instances"])
     if number_of_instances < 2:
-        logger.info(f"Only {number_of_instances} instance(s) found in environment '{name}'. "
-                    f"Termination would be too risky.")
+        logger.info(
+            f"Only {number_of_instances} instance(s) found in environment '{name}'. "
+            f"Termination would be too risky."
+        )
         return
 
-    for instance in response['EnvironmentResources']['Instances']:
-        instance_details = ec2.describe_instances(InstanceIds=[instance['Id']])
-        launch_datetime = instance_details['Reservations'][0]['Instances'][0]['LaunchTime']
+    for instance in response["EnvironmentResources"]["Instances"]:
+        instance_details = ec2.describe_instances(InstanceIds=[instance["Id"]])
+        launch_datetime = instance_details["Reservations"][0]["Instances"][0]["LaunchTime"]
         if (datetime.now(tz=timezone.utc) - launch_datetime).days > days_limit:
             logger.info(f"Terminating old instance {instance['Id']} launched at {launch_datetime}")
-            ec2 = boto3.client('ec2')
-            ec2.terminate_instances(InstanceIds=[instance['Id']])
+            ec2 = boto3.client("ec2")
+            ec2.terminate_instances(InstanceIds=[instance["Id"]])
             time.sleep(sleep_seconds)
         else:
             logger.info(f"Instance {instance['Id']} is not old enough, skipping termination.")
