@@ -75,7 +75,7 @@ def elb_reset_dag() -> None:
 
         if "api" in name:
             elb_terminate = PythonOperator(
-                task_id=f"scale_elb_2_{name}",
+                task_id=f"terminate_old_ec2_{name}",
                 python_callable=terminate_any_old_instances,
                 op_kwargs={
                     "name": name,
