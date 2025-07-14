@@ -36,6 +36,10 @@ def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: i
             logger.info(f"Terminating old instance {instance['Id']} launched at {launch_datetime}")
             ec2 = boto3.client("ec2")
             ec2.terminate_instances(InstanceIds=[instance["Id"]])
+            logger.info(
+                f"Instance {instance['Id']} terminated, ",
+                f"now sleeping for {sleep_seconds} seconds to allow for new instance to start.",
+            )
             time.sleep(sleep_seconds)
         else:
             logger.info(f"Instance {instance['Id']} is not old enough, skipping termination.")
