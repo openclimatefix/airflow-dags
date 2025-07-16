@@ -1,7 +1,9 @@
-import os
+""" Functions to help checks on apis"""
 import json
 import logging
+import os
 import time
+
 import requests
 
 username = os.getenv("AUTH0_USERNAME")

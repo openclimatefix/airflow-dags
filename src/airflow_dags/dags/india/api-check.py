@@ -8,10 +8,10 @@ from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
-    check_len_ge,
-    check_key_in_data,
-    get_bearer_token_from_auth0,
     call_api,
+    get_bearer_token_from_auth0,
+    check_key_in_data,
+    check_len_ge,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,16 +45,15 @@ def check_api_status() -> None:
 
 
 def check_sites(access_token: str) -> None:
+    """ Check can get sites"""
     full_url = f"{base_url}/sites"
 
     data = call_api(url=full_url, access_token=access_token)
 
     # should have at least 1 site
-    print(data)
     check_len_ge(data, 1)
 
     # check that the data has the expected keys
-    print(data)
     check_key_in_data(data[0], "site_uuid")
 
 

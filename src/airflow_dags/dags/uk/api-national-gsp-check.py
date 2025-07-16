@@ -8,11 +8,11 @@ from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
-    check_len_ge,
-    check_len_equal,
-    check_key_in_data,
-    get_bearer_token_from_auth0,
     call_api,
+    get_bearer_token_from_auth0,
+    check_key_in_data,
+    check_len_equal,
+    check_len_ge,
 )
 
 logger = logging.getLogger(__name__)
