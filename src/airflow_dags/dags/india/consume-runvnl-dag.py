@@ -9,9 +9,7 @@ from airflow.operators.latest_only import LatestOnlyOperator
 from airflow_dags.plugins.callbacks.slack import (
     get_slack_message_callback_no_action_required,
 )
-from airflow_dags.plugins.callbacks.slack import (
-    slack_message_callback_no_action_required,
-)
+
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
