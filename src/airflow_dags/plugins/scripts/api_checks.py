@@ -10,12 +10,6 @@ client_id = os.getenv("AUTH0_CLIENT_ID")
 domain = os.getenv("AUTH0_DOMAIN")
 audience = os.getenv("AUTH0_AUDIENCE")
 
-username =  "api-check@openclimatefix.org"
-password = "a994SJ13E5zj"
-client_id = "VqaPLArS3LG97MF4uY6RSQmJV0hiNwxN"
-domain = "nowcasting-dev.eu.auth0.com"
-audience = "https://nowcasting-api-eu-auth0.com/"
-
 logger = logging.getLogger(__name__)
 
 
