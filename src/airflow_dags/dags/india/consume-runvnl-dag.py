@@ -9,11 +9,10 @@ from airflow.operators.latest_only import LatestOnlyOperator
 from airflow_dags.plugins.callbacks.slack import (
     get_slack_message_callback_no_action_required,
 )
-
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
-)   
+)
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -57,7 +56,7 @@ def ruvnl_consumer_dag() -> None:
     consume_ruvnl_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-runvl",
         container_def=ruvnl_consumer,
-        on_failure_callback=get_slack_message_callback_no_action_required('in'),
+        on_failure_callback=get_slack_message_callback_no_action_required("in"),
         max_active_tis_per_dag=10,
     )
 

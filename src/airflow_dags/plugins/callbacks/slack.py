@@ -47,7 +47,10 @@ def get_slack_message_callback_no_action_required(country: str = "gb") -> list[B
     flag = flags.get(country.lower(), "🏳️")
     return [
         send_slack_notification(
-            text=f"{flag} The task {{ ti.task_id }} failed, but its ok. No out of hours support is required.",
+            text=(
+                    f"{flag} The task {{ ti.task_id }} failed, but its ok. "
+                    "No out of hours support is required."
+                ),
             channel=f"tech-ops-airflow-{env}",
             username="Airflow",
         ),
