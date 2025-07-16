@@ -1,4 +1,4 @@
-""" Functions to help checks on apis"""
+"""Functions to help checks on apis."""
 import json
 import logging
 import os

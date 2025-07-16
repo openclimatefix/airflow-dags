@@ -6,12 +6,13 @@ import os
 
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
+
 from airflow_dags.plugins.callbacks.slack import slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
     call_api,
-    get_bearer_token_from_auth0,
     check_key_in_data,
     check_len_ge,
+    get_bearer_token_from_auth0,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def check_api_status() -> None:
 
 
 def check_sites(access_token: str) -> None:
-    """ Check can get sites"""
+    """Check can get sites."""
     full_url = f"{base_url}/sites"
 
     data = call_api(url=full_url, access_token=access_token)
@@ -59,7 +60,6 @@ def check_sites(access_token: str) -> None:
 
 def check_forecast(access_token: str) -> None:
     """Check the forecast."""
-
     sites = call_api(url=f"{base_url}/sites", access_token=access_token)
     for site in sites:
 
@@ -78,7 +78,6 @@ def check_forecast(access_token: str) -> None:
 
 def check_generation(access_token: str) -> None:
     """Check the forecast."""
-
     sites = call_api(url=f"{base_url}/sites", access_token=access_token)
     for site in sites:
         site_uuid = site["site_uuid"]
