@@ -30,15 +30,13 @@ India
 - Add checks on API
 - RUVNL consumer to `1.2.0`, use new database schema. 
 - Site Forecast to `1.2.0`, use new database schema.
- Site API needs to be `>=0.2.0`
 
 UK
 - Site Database migration is needed
 - Add checks on site API
 - PV Consumer to `1.2.1`, use new database schema.
 - PV Site Forecast to `1.1.0`, use new database schema.
-- Reset old ec2 instances for UK National API. 
-- Site API needs to be `>=1.1.0`
+- Reset old ec2 instances for UK National API.
 
 NL
 - Database migration is needed (Same as UK Sites)
