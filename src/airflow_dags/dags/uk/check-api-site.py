@@ -81,38 +81,6 @@ def check_forecast(access_token: str) -> None:
         check_key_in_data(forecast_values[0], "target_datetime_utc")
         check_key_in_data(forecast_values[0], "expected_generation_kw")
 
-
-def check_generation(access_token: str) -> None:
-    """Check the forecast."""
-    sites = call_api(url=f"{base_url}/sites", access_token=access_token)
-    for site in sites["site_list"]:
-        site_uuid = site["site_uuid"]
-
-        full_url = f"{base_url}/sites/{site_uuid}/pv_actual"
-
-        data = call_api(url=full_url, access_token=access_token)
-
-        check_key_in_data(data, "pv_actual_values")
-        pv_actual_values = data["pv_actual_values"]
-
-        # should have data point for 2 days in the past
-        # date is in 30 min intervals
-        check_len_ge(pv_actual_values, 2 * 24 * 4)
-        check_key_in_data(pv_actual_values[0], "datetime_utc")
-        check_key_in_data(pv_actual_values[0], "actual_generation_kw")
-
-        # check that the last datetime is within the last hour
-        last_datetime = max([d["datetime_utc"] for d in pv_actual_values])
-        # convert last_datetime to a datetime object
-        last_datetime = dt.datetime.fromisoformat(last_datetime).replace(tzinfo=dt.UTC)
-        if dt.datetime.now(dt.UTC) - last_datetime > dt.timedelta(hours=1):
-            raise ValueError(
-                f"Last datetime {last_datetime} is more than 1 hour old. "
-                "This is likely because the API has not been updated with the latest data."
-                f"This is for {site=}",
-            )
-
-
 @dag(
     dag_id="uk-api-site-check",
     description=__doc__,
@@ -153,18 +121,12 @@ def api_site_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
-    generation = PythonOperator(
-        task_id="check-generation",
-        python_callable=check_forecast,
-        op_kwargs={"access_token": access_token_str},
-    )
-
     if_any_task_failed = PythonOperator(
         task_id="api-uk-national-gsp-check-if-any-task-failed",
         python_callable=lambda: None,
         trigger_rule="one_failed",
         on_success_callback=slack_message_callback(
-            "⚠️ One of the API Site checks has failed. 🇬🇧 "
+            "⚠️ 🇬🇧 {{ ti.dag_id }} One of the API Site checks has failed. "
             "See which ones have failed on airflow, to help debug the issue. "
             "No out-of-hours support is required.",
         ),
@@ -175,14 +137,12 @@ def api_site_check() -> None:
         >> sites
         >> [
             forecast,
-            generation,
         ]
     )
 
     [
         sites,
         forecast,
-        generation,
     ] >> if_any_task_failed
 
 
