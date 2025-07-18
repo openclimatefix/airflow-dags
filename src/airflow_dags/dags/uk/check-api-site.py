@@ -1,4 +1,3 @@
-
 """General checks on Uk National/GSP API."""
 
 import datetime as dt
@@ -81,6 +80,7 @@ def check_forecast(access_token: str) -> None:
         check_key_in_data(forecast_values[0], "target_datetime_utc")
         check_key_in_data(forecast_values[0], "expected_generation_kw")
 
+
 @dag(
     dag_id="uk-api-site-check",
     description=__doc__,
@@ -155,4 +155,3 @@ if __name__ == "__main__":
     bearer_token = get_bearer_token_from_auth0()
     check_sites(bearer_token)
     check_forecast(bearer_token)
-    check_generation(bearer_token)
