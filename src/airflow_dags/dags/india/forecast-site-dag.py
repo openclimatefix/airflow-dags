@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import slack_message_callback, task_link
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -88,7 +88,7 @@ def ruvnl_forecast_dag() -> None:
             "USE_SATELLITE": "False",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
+            f"⚠️🇮🇳 The task {task_link} failed."
             "This would ideally be fixed before for DA actions at 09.00 IST. "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
@@ -120,7 +120,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
+            "⚠️🇮🇳 The task <{{ ti.task_id }} airflow-dev.quartz.solar/{{ ti.dag_id }}> failed. "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
@@ -134,7 +134,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad-v2",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇮🇳 "
+            f"⚠️🇮🇳 The task {task_link} failed."
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),

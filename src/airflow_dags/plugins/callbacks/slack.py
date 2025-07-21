@@ -7,6 +7,8 @@ from airflow.providers.slack.notifications.slack import send_slack_notification
 
 # get the env
 env = os.getenv("ENVIRONMENT", "development")
+url = os.getenv("URL")
+task_link = "<{{ ti.task_id }} airflow-dev.quartz.solar/{{ ti.dag_id }}>"
 
 # declare on_failure_callback
 on_failure_callback = [
@@ -37,7 +39,8 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
-def get_slack_message_callback_no_action_required(country: str = "gb") -> list[BaseNotifier]:
+
+def get_slack_message_callback_no_action_required(task_id:str, country: str = "gb") -> list[BaseNotifier]:
     """Send a slack message with a country flag, depending on the country code."""
     flags = {
         "gb": "🇬🇧",
@@ -48,7 +51,7 @@ def get_slack_message_callback_no_action_required(country: str = "gb") -> list[B
     return [
         send_slack_notification(
             text=(
-                    f"{flag} The task {{ ti.task_id }} failed, but its ok. "
+                    f"⚠️{flag} The task {task_id} failed, but its ok. "
                     "No out of hours support is required."
                 ),
             channel=f"tech-ops-airflow-{env}",

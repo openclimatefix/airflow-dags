@@ -157,7 +157,7 @@ def api_site_check() -> None:
         python_callable=lambda: None,
         trigger_rule="one_failed",
         on_success_callback=slack_message_callback(
-            "⚠️ One of the API checks has failed. 🇮🇳 "
+            "⚠️🇮🇳 One of the API checks has failed. "
             "See which ones have failed on airflow, to help debug the issue. "
             "No out-of-hours support is required.",
         ),
