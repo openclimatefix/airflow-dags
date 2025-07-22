@@ -7,7 +7,7 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback, task_link
+from airflow_dags.plugins.callbacks.slack import slack_message_callback, get_task_link
 from airflow_dags.plugins.scripts.elastic_beanstalk import scale_elastic_beanstalk_instance
 
 env = os.getenv("ENVIRONMENT", "development")
@@ -23,7 +23,7 @@ default_args = {
 }
 
 elb_error_message = (
-    f"⚠️🇮🇳 The task {task_link} failed,"
+    f"⚠️🇮🇳 The task {{ {get_task_link()} }} failed,"
     " but its ok. This task tried to reset the Elastic Beanstalk instances. "
     "No out of hours support is required."
 )

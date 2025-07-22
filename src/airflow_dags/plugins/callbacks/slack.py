@@ -8,7 +8,9 @@ from airflow.providers.slack.notifications.slack import send_slack_notification
 # get the env
 env = os.getenv("ENVIRONMENT", "development")
 url = os.getenv("URL", "airflow-dev.quartz.energy")
-task_link = f"<{{ ti.task_id }} {{ conf.get('webserver', 'BASE_URL') }}/{{ ti.dag_id }}>"
+
+def get_task_link():
+    return f"<ti.task_id conf.get('webserver', 'BASE_URL')/ ti.dag_id >"
 
 # declare on_failure_callback
 on_failure_callback = [
@@ -51,7 +53,7 @@ def get_slack_message_callback_no_action_required(task_id:str, country: str = "g
     return [
         send_slack_notification(
             text=(
-                    f"⚠️{flag} The task {task_id} failed, but its ok. "
+                    f"⚠️{flag} The task {{ {task_id} }} failed, but its ok. "
                     "No out of hours support is required."
                 ),
             channel=f"tech-ops-airflow-{env}",

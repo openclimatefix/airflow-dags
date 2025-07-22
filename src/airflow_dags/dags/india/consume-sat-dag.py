@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback, task_link
+from airflow_dags.plugins.callbacks.slack import slack_message_callback, get_task_link
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -64,7 +64,7 @@ def sat_consumer_dag() -> None:
         container_def=satellite_consumer,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The task {task_link} failed."
+            f"⚠️🇮🇳 The task {{ {get_task_link()} }}  failed."
             "The EUMETSAT status link for the IODC satellite is "
             "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
             "ossi_level2_filename=seviri_iodc.html|here> "

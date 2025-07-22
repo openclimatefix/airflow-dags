@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback, task_link
+from airflow_dags.plugins.callbacks.slack import slack_message_callback, get_task_link
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -71,7 +71,7 @@ def nwp_consumer_dag() -> None:
         },
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The task {task_link} failed. "
+            f"⚠️🇮🇳 The task {{ {get_task_link()} }}  failed. "
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here>. "
             "No out-of-hours support is required at the moment. "
@@ -107,7 +107,7 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://india-nwp-{env}/metoffice/data",
         },
         on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The task {task_link} failed. "
+            f"⚠️🇮🇳 The task {{ {get_task_link()} }} failed. "
             "The forecast will continue running until it runs out of data. "
             "Metoffice status link is "
             "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
