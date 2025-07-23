@@ -120,7 +120,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️🇮🇳 The task <{{ ti.task_id }} airflow-dev.quartz.solar/{{ ti.dag_id }}> failed. "
+            f"⚠️🇮🇳 The task {{ {get_task_link()} }} failed. "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
         ),
