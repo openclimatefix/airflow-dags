@@ -12,7 +12,7 @@ from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -109,7 +109,7 @@ def sat_consumer_dag() -> None:
         airflow_task_id="satip-consume",
         container_def=satip,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
+            f"⚠️🇬🇧 The task {get_task_link()} failed. "
             "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
             "which doesn't need satellite data. "
             "The EUMETSAT status link for the RSS service (5 minute) is "
@@ -126,23 +126,23 @@ def sat_consumer_dag() -> None:
     update_5min_op = update_operator(cadence_mins=5)
     update_15min_op = update_operator(cadence_mins=15)
 
-   #  consume_rss_op = EcsAutoRegisterRunTaskOperator(
-   #     airflow_task_id="consume-rss",
-   #      container_def=sat_consumer,
-   #      env_overrides={
-   #          "SATCONS_TIME": "{{" \
-   #          + "(data_interval_start - macros.timedelta(minutes=210))" \
-   #          + ".strftime('%Y-%m-%dT%H:%M')" \
-   #          + "}}",
-   #          "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
-   #      },
-   #      task_concurrency=1,
-   #  )
-   #  extract_latest_rss_op = extract_latest_zarr(
-   #      bucket=f"nowcasting-sat-{env}",
-   #      prefix="testdata/rss/rss_3000m.icechunk",
-   #      window_mins=210,
-   #  )
+    #  consume_rss_op = EcsAutoRegisterRunTaskOperator(
+    #     airflow_task_id="consume-rss",
+    #      container_def=sat_consumer,
+    #      env_overrides={
+    #          "SATCONS_TIME": "{{" \
+    #          + "(data_interval_start - macros.timedelta(minutes=210))" \
+    #          + ".strftime('%Y-%m-%dT%H:%M')" \
+    #          + "}}",
+    #          "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+    #      },
+    #      task_concurrency=1,
+    #  )
+    #  extract_latest_rss_op = extract_latest_zarr(
+    #      bucket=f"nowcasting-sat-{env}",
+    #      prefix="testdata/rss/rss_3000m.icechunk",
+    #      window_mins=210,
+    #  )
     # consume_iodc_op = EcsAutoRegisterRunTaskOperator(
     #    airflow_task_id="consume-odegree",
     #     container_def=sat_consumer,
@@ -186,7 +186,7 @@ def sat_cleanup_dag() -> None:
         container_def=satip,
         env_overrides={"CLEANUP": "1"},
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
+            f"⚠️🇬🇧 The {get_task_link()} failed. "
             "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
             "and the satellite consumer should also do this. "
             "No out-of-hours support is required.",

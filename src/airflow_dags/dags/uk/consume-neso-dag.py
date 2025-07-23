@@ -5,7 +5,7 @@ import os
 
 from airflow.decorators import dag
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -54,7 +54,7 @@ def neso_consumer_dag() -> None:
         airflow_task_id="consume-neso-forecast",
         container_def=neso_consumer,
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
+            f"⚠️🇬🇧 The {get_task_link()} failed."
             "But its ok, this only used for comparison. "
             "No out of office hours support is required.",
         ),

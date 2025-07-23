@@ -7,7 +7,7 @@ from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -83,7 +83,7 @@ def nl_nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data",
         },
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. 🇳🇱 "
+            f"❌🇳🇱 The {get_task_link()} failed.  "
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here> "
             "Please see run book for appropriate actions. ",

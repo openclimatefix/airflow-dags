@@ -12,7 +12,7 @@ from datetime import timedelta
 from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -82,7 +82,7 @@ def pvlive_intraday_consumer_dag() -> None:
             "REGIME": "in-day",
         },
         on_failure_callback=slack_message_callback(
-            "⚠️ The task {{ ti.task_id }} failed. 🇬🇧 "
+            f"⚠️🇬🇧 The {get_task_link()} failed. "
             "This is needed for the adjuster in the Forecast."
             "No out of office hours support needed."
             "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
@@ -109,8 +109,8 @@ def pvlive_intraday_consumer_dag() -> None:
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""
     error_message: str = (
-        "⚠️ The task {{ ti.task_id }} failed,"
-        " but its ok. This task is not critical for live services. "
+        f"⚠️🇬🇧 The {get_task_link()} failed, "
+        "but its ok. This task is not critical for live services. "
         "No out of hours support is required."
     )
 
