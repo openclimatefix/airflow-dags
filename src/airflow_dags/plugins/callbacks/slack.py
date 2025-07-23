@@ -9,8 +9,9 @@ from airflow.providers.slack.notifications.slack import send_slack_notification
 env = os.getenv("ENVIRONMENT", "development")
 url = os.getenv("URL", "airflow-dev.quartz.energy")
 
+
 def get_task_link():
-    return f"<ti.task_id conf.get('webserver', 'BASE_URL')/ ti.dag_id >"
+    return f'<href=https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>'
 
 # declare on_failure_callback
 on_failure_callback = [

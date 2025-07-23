@@ -23,7 +23,7 @@ default_args = {
 }
 
 elb_error_message = (
-    f"⚠️🇮🇳 The task {{ {get_task_link()} }} failed,"
+    f"⚠️🇮🇳 The {get_task_link()} failed,"
     " but its ok. This task tried to reset the Elastic Beanstalk instances. "
     "No out of hours support is required."
 )
