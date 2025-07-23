@@ -11,7 +11,8 @@ url = os.getenv("URL", "airflow-dev.quartz.energy")
 
 
 def get_task_link():
-    return f'<href=https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>'
+    # note we need 4 { so that after f-string its 2 { which is needed for airflow
+    return f'<https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>'
 
 # declare on_failure_callback
 on_failure_callback = [
