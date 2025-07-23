@@ -1,4 +1,4 @@
-"""General checks on Uk National/GSP API."""
+"""General checks on Uk Site API."""
 
 import datetime as dt
 import logging
@@ -74,9 +74,10 @@ def check_forecast(access_token: str) -> None:
         check_key_in_data(data, "forecast_values")
         forecast_values = data["forecast_values"]
 
-        # should have data point for 2 days in the past + 36 hours in the future
+        # should have data point for 2 days in the past + 36 hours in the future.
+        # We just check for the next 30 hours though
         # date is in 30 min intervals
-        check_len_ge(forecast_values, 2 * 24 * 2 + 36 * 2)
+        check_len_ge(forecast_values, 2 * 24 * 2 + 30 * 2)
         check_key_in_data(forecast_values[0], "target_datetime_utc")
         check_key_in_data(forecast_values[0], "expected_generation_kw")
 
