@@ -19,7 +19,7 @@ def get_task_link() -> str:
 # declare on_failure_callback
 on_failure_callback = [
     send_slack_notification(
-        text="The task {{ ti.task_id }} failed",
+        text=f"The {get_task_link()} failed",
         channel=f"tech-ops-airflow-{env}",
         username="Airflow",
     ),
@@ -27,7 +27,7 @@ on_failure_callback = [
 
 slack_message_callback_no_action_required = [
     send_slack_notification(
-        text="⚠️ The task {{ ti.task_id }} failed,"
+        text=f"⚠️ The {get_task_link()}  failed,"
         " but its ok. No out of hours support is required.",
         channel=f"tech-ops-airflow-{env}",
         username="Airflow",
@@ -47,7 +47,7 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
 
 
 def get_slack_message_callback_no_action_required(
-    task_id: str, country: str = "gb",
+    country: str = "gb",
 ) -> list[BaseNotifier]:
     """Send a slack message with a country flag, depending on the country code."""
     flags = {
@@ -59,7 +59,7 @@ def get_slack_message_callback_no_action_required(
     return [
         send_slack_notification(
             text=(
-                f"⚠️{flag} The task {{ {task_id} }} failed, but its ok. "
+                f"⚠️{flag} The {get_task_link()} failed, but its ok. "
                 "No out of hours support is required."
             ),
             channel=f"tech-ops-airflow-{env}",
