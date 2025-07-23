@@ -88,7 +88,7 @@ def ruvnl_forecast_dag() -> None:
             "USE_SATELLITE": "False",
         },
         on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The task {{ {get_task_link()} }}  failed."
+            f"⚠️🇮🇳 The task {get_task_link()} failed."
             "This would ideally be fixed before for DA actions at 09.00 IST. "
             "No out-of-hours support is required at the moment. "
             "Please see run book for appropriate actions.",
