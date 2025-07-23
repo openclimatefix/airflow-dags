@@ -37,14 +37,14 @@ default_args = {
 def check_len_ge(data: list, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
-        raise ValueError(f"Data length {len(data)} is less than {min_len}." f"The data is {data}.")
+        raise ValueError(f"Data length {len(data)} is less than {min_len}.The data is {data}.")
 
 
 def check_len_equal(data: list, equal_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) != equal_len:
         raise ValueError(
-            f"Data length {len(data)} is not equal {equal_len}." f"The data is {data}.",
+            f"Data length {len(data)} is not equal {equal_len}.The data is {data}.",
         )
 
 
@@ -170,8 +170,7 @@ def check_national_forecast_metadata_true_and_false(
 
     if len(diff_values) > 0:
         message = (
-            "Values with include_metadata=true and false are not the same. "
-            "This should not happen. "
+            "Values with include_metadata=true and false are not the same. This should not happen. "
         )
         message += f"The first different values is at {diff_values[0]}."
 
@@ -405,9 +404,7 @@ def api_national_gsp_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = (
-        "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
-    )
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     national_forecast = PythonOperator(
         task_id="check-api-national-forecast",
         python_callable=check_national_forecast,

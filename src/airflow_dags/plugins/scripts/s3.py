@@ -1,11 +1,10 @@
 """Helper functions that handle S3 files."""
 
+import shutil
 import tempfile
 
 import icechunk
-import numpy as np
 import xarray as xr
-import zarr
 from airflow.decorators import task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
@@ -17,7 +16,8 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
     # Get a list of all the non-latest zarrs in the bucket prefix
     prefixes = s3hook.list_prefixes(bucket_name=bucket, prefix=prefix + "/", delimiter="/")
     zarrs = sorted(
-        [p for p in prefixes if p.endswith(".zarr/") and "latest" not in p], reverse=True,
+        [p for p in prefixes if p.endswith(".zarr/") and "latest" not in p],
+        reverse=True,
     )
     # Get the size of the most recent zarr and the latest.zarr zarr
     s3bucket = s3hook.get_bucket(bucket_name=bucket)
@@ -36,7 +36,6 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
     # If the sizes are different, create a new latest.zarr
     s3hook.log.info(f"size_old={size_old}, size_new={size_new}")
     if size_old != size_new and size_new > 500 * 1e3:  # Expecting at least 500KB
-
         # delete latest.zarr
         s3hook.log.info(f"Deleting {prefix}/latest.zarr/")
         if prefix + "/latest.zarr/" in prefixes:
@@ -63,32 +62,39 @@ def determine_latest_zarr(bucket: str, prefix: str) -> None:
 
 
 @task(task_id="extract_latest_zarr")
-def extract_latest_zarr(bucket: str, prefix: str, window_mins: int) -> None:
+def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins: int) -> None:
     """Extracts a latest.zarr file from an icechunk store in a bucket."""
     s3hook = S3Hook(aws_conn_id=None)  # Use Boto3 default connection strategy
-    # creds = s3hook.get_credentials()
+    creds = s3hook.get_credentials()
+
     storage = icechunk.s3_storage(
         bucket=bucket,
         prefix=prefix,
-        from_env=True,
+        region=s3hook.region_name,
+        access_key_id=creds.access_key,
+        secret_access_key=creds.secret_key,
+        session_token=creds.token,
     )
     repo = icechunk.Repository.open(storage=storage)
     session = repo.readonly_session(branch="main")
     store_ds = xr.open_zarr(store=session.store, consolidated=False)
-    store_ds_latest = store_ds.where(
-        store_ds.coords["time"]
-        >= (store_ds.coords["time"].max().values - np.timedelta64(window_mins, "m")),
-        drop=True,
-    )
+    desired_image_num: int = window_mins // cadence_mins
     s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
-    with tempfile.NamedTemporaryFile(suffix=".zarr.zip") as tmpfile:
-        store_ds_latest.to_zarr(
-            zarr.storage.ZipStore(path=tmpfile.name),
+    with tempfile.TemporaryDirectory(suffix=".zarr") as tmpzarr:
+        store_ds.isel(time=slice(-desired_image_num, None)).to_zarr(
+            tmpzarr,
             mode="w",
             consolidated=True,
         )
+        # Zip the zarr directory
+        shutil.make_archive(
+            base_name=tmpzarr + "/latest",
+            root_dir=tmpzarr,
+            base_dir=".",
+            format="zip",
+        )
         s3hook.load_file(
-            filename=tmpfile.name,
+            filename=f"{tmpzarr}/latest.zip",
             bucket_name=bucket,
             replace=True,
             key=f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip",

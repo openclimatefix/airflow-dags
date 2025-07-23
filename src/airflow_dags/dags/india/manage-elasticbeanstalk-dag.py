@@ -48,7 +48,6 @@ def elb_reset_dag() -> None:
     latest_only = LatestOnlyOperator(task_id="latest_only")
 
     for name in names:
-
         elb_2 = PythonOperator(
             task_id=f"scale_elb_2_{name}",
             python_callable=scale_elastic_beanstalk_instance,

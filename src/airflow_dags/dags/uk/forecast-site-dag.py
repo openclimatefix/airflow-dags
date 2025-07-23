@@ -75,8 +75,7 @@ def site_forecast_dag() -> None:
         airflow_task_id="forecast-sites",
         container_def=site_forecaster,
         on_failure_callback=slack_message_callback(
-            "❌ The task {{ ti.task_id }} failed. 🇬🇧 "
-            "Please see run book for appropriate actions. ",
+            "❌ The task {{ ti.task_id }} failed. 🇬🇧 Please see run book for appropriate actions. ",
         ),
     )
 
