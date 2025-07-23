@@ -19,7 +19,8 @@ on_failure_callback = [
 
 slack_message_callback_no_action_required = [
     send_slack_notification(
-        text="⚠️ The task {{ ti.task_id }} failed, but its ok. No out of hours support is required.",
+        text="⚠️ The task {{ ti.task_id }} failed,"
+        " but its ok. No out of hours support is required.",
         channel=f"tech-ops-airflow-{env}",
         username="Airflow",
     ),
