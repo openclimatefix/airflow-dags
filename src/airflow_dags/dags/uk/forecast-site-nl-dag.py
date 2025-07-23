@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-# from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -62,10 +62,10 @@ def nl_forecast_dag() -> None:
         env_overrides={
             # "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/site_pvnet_batches",
         },
-        # on_failure_callback=slack_message_callback(
-        #     "⚠️ The task {{ ti.task_id }} failed. "
-        #     "Please see run book for appropriate actions.",
-        # ),
+        on_failure_callback=slack_message_callback(
+            f"⚠️🇳🇱 The {get_task_link()} failed. "
+            "Please see run book for appropriate actions.",
+        ),
     )
 
     latest_only_op >> forecast_nl_op
