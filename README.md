@@ -23,6 +23,17 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.11.0 - 2025-07-23
+
+All: better slack messages with alerts 
+
+India
+- New site forecast app to `1.1.6` with satellite data scale and night clipping fixes.
+- Better alerting for RUVNL consumer. 
+
+NL
+- site forecast app to `1.1.5` to include night clipping fix.  
+
 ### 1.10.0 - 2025-07-17
 
 India
