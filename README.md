@@ -23,6 +23,13 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.12.0 - 2025-07-28
+
+All: Add links to airflow in slack messages
+UK:
+- Add new satellite consumer
+- Change Site API not to check generation values
+
 ### 1.11.0 - 2025-07-23
 
 All: better slack messages with alerts 
