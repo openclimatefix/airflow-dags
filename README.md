@@ -23,6 +23,14 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.13.0 - 2025-07-29
+
+India
+- Update site forecast app to `1.1.7` with forecast times fix.
+
+NL
+- Update site forecast app to `1.1.7` with forecast times fix. 
+
 ### 1.12.0 - 2025-07-28
 
 All: Add links to airflow in slack messages
