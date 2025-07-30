@@ -80,6 +80,8 @@ def pvlive_intraday_consumer_dag() -> None:
         env_overrides={
             "N_GSPS": "342",
             "REGIME": "in-day",
+            "BACKFILL_HOURS": "12",
+            
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇬🇧 The {get_task_link()} failed. "
