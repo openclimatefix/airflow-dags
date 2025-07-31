@@ -140,7 +140,7 @@ def sat_consumer_dag() -> None:
     )
     extract_latest_rss_op = extract_latest_zarr(
         bucket=f"nowcasting-sat-{env}",
-        prefix="testdata/rss/data/rss_3000m.icechunk",
+        prefix="testdata/rss/data/rss_uk3000m.icechunk",
         window_mins=210,
         cadence_mins=5,
     )
