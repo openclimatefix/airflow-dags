@@ -60,7 +60,9 @@ def nl_forecast_dag() -> None:
         container_def=site_forecaster,
         max_active_tis_per_dag=10,
         env_overrides={
-            # "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/site_pvnet_batches",
+            # TODO change bucket name from uk to eu
+            # https://github.com/openclimatefix/ocf-infrastructure/issues/887
+            "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/nl_pvnet_batches",
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇳🇱 The {get_task_link()} failed. "
