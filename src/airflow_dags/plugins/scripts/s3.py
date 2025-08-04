@@ -83,14 +83,17 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
     dataset = store_ds.isel(time=slice(-desired_image_num, None))
     with tempfile.TemporaryDirectory() as tmpdir:
         # make zarr.zip
-        path = f"{tmpdir}/temp.zarr.zip"
-        with zarr.ZipStore(path) as store:
+        filename = f"{tmpdir}/temp.zarr.zip"
+        s3hook.log.info(f"Making zarr.zip at {filename}")
+        with zarr.storage.ZipStore(filename, mode="w") as store:
             dataset.to_zarr(store, compute=True, mode="w", consolidated=True)
 
-            s3hook.load_file(
-                filename=f"{tmpdir}/latest.zarr.zip",
-                bucket_name=bucket,
-                replace=True,
-                key=f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip",
-            )
+        key = f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip"
+        s3hook.log.info(f"Saving {filename} to s3 {bucket}/{key}")
+        s3hook.load_file(
+            filename=filename,
+            bucket_name=bucket,
+            replace=True,
+            key=key,
+        )
     s3hook.log.info(f"Extracted latest zarr to {bucket}/{prefix}/latest.zarr.zip")
