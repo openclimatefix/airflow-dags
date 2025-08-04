@@ -50,7 +50,7 @@ pvlive_consumer_old = ContainerDefinition(
 pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",
-    container_tag="1.3.0",
+    container_tag="1.3.1",
     container_env={
         "LOGLEVEL": "DEBUG",
         "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
