@@ -86,7 +86,7 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
         filename = f"{tmpdir}/temp.zarr.zip"
         s3hook.log.info(f"Making zarr.zip at {filename}")
         with zarr.storage.ZipStore(filename, mode="w") as store:
-            dataset.to_zarr(store, compute=True, mode="w", consolidated=True)
+            dataset.to_zarr(store, mode="w", consolidated=False)
 
         key = f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip"
         s3hook.log.info(f"Saving {filename} to s3 {bucket}/{key}")
