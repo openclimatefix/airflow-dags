@@ -134,13 +134,13 @@ def sat_consumer_dag() -> None:
             + "(data_interval_start - macros.timedelta(minutes=210))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/rss",
         },
         task_concurrency=1,
     )
     extract_latest_rss_op = extract_latest_zarr(
         bucket=f"nowcasting-sat-{env}",
-        prefix="testdata/rss/data/rss_uk3000m.icechunk",
+        prefix="rss/data/rss_uk3000m.icechunk",
         window_mins=210,
         cadence_mins=5,
     )
