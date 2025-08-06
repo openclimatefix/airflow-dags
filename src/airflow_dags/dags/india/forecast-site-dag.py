@@ -66,7 +66,7 @@ ad_forecaster = ContainerDefinition(
 @dag(
     dag_id="india-forecast-ruvnl",
     description=__doc__,
-    schedule=f"0 * * * *",
+    schedule="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
