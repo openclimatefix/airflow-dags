@@ -40,8 +40,9 @@ gsp_forecaster_args = dict(  # noqa: C408
         "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/pvnet_batches",
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf/data/latest.zarr",
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
-        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
+        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
+        "SATELLITE_SCALE_FACTOR": 1,
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
