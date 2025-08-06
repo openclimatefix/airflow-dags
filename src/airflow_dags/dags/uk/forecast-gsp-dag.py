@@ -42,7 +42,7 @@ gsp_forecaster_args = dict(  # noqa: C408
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
-        "SATELLITE_SCALE_FACTOR": 1,
+        "SATELLITE_SCALE_FACTOR": "1",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
