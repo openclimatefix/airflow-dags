@@ -1,10 +1,10 @@
 """Helper functions that handle S3 files."""
 
-import shutil
 import tempfile
 
 import icechunk
 import xarray as xr
+import zarr
 from airflow.decorators import task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
@@ -80,23 +80,20 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
     store_ds = xr.open_zarr(store=session.store, consolidated=False)
     desired_image_num: int = window_mins // cadence_mins
     s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
-    with tempfile.TemporaryDirectory(suffix=".zarr") as tmpzarr:
-        store_ds.isel(time=slice(-desired_image_num, None)).to_zarr(
-            tmpzarr,
-            mode="w",
-            consolidated=True,
-        )
-        # Zip the zarr directory
-        shutil.make_archive(
-            base_name=tmpzarr + "/latest",
-            root_dir=tmpzarr,
-            base_dir=".",
-            format="zip",
-        )
+    dataset = store_ds.isel(time=slice(-desired_image_num, None))
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # make zarr.zip
+        filename = f"{tmpdir}/temp.zarr.zip"
+        s3hook.log.info(f"Making zarr.zip at {filename}")
+        with zarr.storage.ZipStore(filename, mode="w") as store:
+            dataset.to_zarr(store, mode="w", consolidated=False)
+
+        key = f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip"
+        s3hook.log.info(f"Saving {filename} to s3 {bucket}/{key}")
         s3hook.load_file(
-            filename=f"{tmpzarr}/latest.zip",
+            filename=filename,
             bucket_name=bucket,
             replace=True,
-            key=f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip",
+            key=key,
         )
     s3hook.log.info(f"Extracted latest zarr to {bucket}/{prefix}/latest.zarr.zip")
