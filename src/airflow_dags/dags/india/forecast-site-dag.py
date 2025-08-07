@@ -46,7 +46,7 @@ india_forecaster = ContainerDefinition(
 ad_forecaster = ContainerDefinition(
     name="forecast-ad",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.1.7",
+    container_tag="1.1.10",
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
