@@ -13,6 +13,7 @@ from airflow_dags.plugins.scripts.api_checks import (
     check_key_in_data,
     check_len_equal,
     check_len_ge,
+    check_values_ascending_order,
     get_bearer_token_from_auth0,
 )
 
@@ -140,6 +141,69 @@ def check_national_pvlive_day_after(access_token: str) -> None:
     check_len_ge(data, 2 * 12)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "solarGenerationKw")
+
+
+def check_national_forecast_quantiles_order(access_token: str) -> None:
+    """Check that national forecast quantiles are returned in correct order.
+    
+    This function validates that probabilistic forecast values (quantiles)
+    for national forecasts are returned in ascending order (p10 < p50 < p90).
+    """
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
+    data = call_api(url=full_url, access_token=access_token)
+    
+    # Check that we have forecast values
+    check_key_in_data(data, "forecastValues")
+    forecast_values = data["forecastValues"]
+    check_len_ge(forecast_values, 1)
+    
+    # Check if any forecast values have probabilistic data
+    quantile_keys_found = set()
+    for forecast_value in forecast_values:
+        if "probabilisticValues" in forecast_value and forecast_value["probabilisticValues"]:
+            quantile_keys_found.update(forecast_value["probabilisticValues"].keys())
+    
+    if not quantile_keys_found:
+        logger.warning("No probabilistic values found in national forecast response")
+        return
+    
+    logger.info(f"Found quantile keys: {sorted(quantile_keys_found)}")
+    
+    # Check each forecast value's quantiles are in correct order
+    for i, forecast_value in enumerate(forecast_values):
+        if "probabilisticValues" not in forecast_value or not forecast_value["probabilisticValues"]:
+            continue
+            
+        probabilistic_values = forecast_value["probabilisticValues"]
+        
+        # Extract quantile values and sort by quantile level
+        quantiles = []
+        for key, value in probabilistic_values.items():
+            if key.startswith('p') and key[1:].isdigit():
+                quantile_level = int(key[1:])  # Extract number from p10, p50, p90
+                quantiles.append((quantile_level, value, key))
+        
+        if len(quantiles) < 2:
+            continue  # Need at least 2 quantiles to check order
+            
+        # Sort by quantile level (10, 50, 90)
+        quantiles.sort(key=lambda x: x[0])
+        
+        # Check that quantile values are in ascending order
+        for j in range(1, len(quantiles)):
+            prev_level, prev_value, prev_key = quantiles[j-1]
+            curr_level, curr_value, curr_key = quantiles[j]
+            
+            if prev_value > curr_value:
+                raise ValueError(
+                    f"Quantiles not in correct order at forecast index {i}. "
+                    f"{prev_key}={prev_value} should be <= {curr_key}={curr_value}. "
+                    f"Target time: {forecast_value.get('targetTime', 'unknown')}"
+                )
+        
+        logger.debug(f"Quantiles correctly ordered for forecast {i}: {[(k, v) for _, v, k in quantiles]}")
+    
+    logger.info("All national forecast quantiles are in correct order")
 
 
 def check_gsp_forecast_all_compact_false(access_token: str) -> None:
@@ -374,6 +438,16 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    national_forecast_quantiles_order = PythonOperator(
+        task_id="check-api-national-forecast-quantiles-order",
+        python_callable=check_national_forecast_quantiles_order,
+        op_kwargs={"access_token": access_token_str},
+        on_failure_callback=slack_message_callback(
+            "⚠️🇬🇧 National forecast quantiles are not in correct order! "
+            "This may affect probabilistic forecast accuracy. Please check the API response."
+        ),
+    )
+
     gsp_forecast_all = PythonOperator(
         task_id="check-api-gsp-forecast-all",
         python_callable=check_gsp_forecast_all,
@@ -462,6 +536,7 @@ def api_national_gsp_check() -> None:
         ]
     )
     get_bearer_token >> national_generation >> national_generation_day_after
+    get_bearer_token >> national_forecast_quantiles_order
     (
         get_bearer_token
         >> gsp_forecast_all
@@ -479,6 +554,7 @@ def api_national_gsp_check() -> None:
         national_forecast,
         national_forecast_2_hour,
         national_forecast_include_metadata,
+        national_forecast_quantiles_order,
         national_generation,
         national_generation_day_after,
         gsp_forecast_all,
@@ -504,6 +580,7 @@ if __name__ == "__main__":
     check_national_forecast(bearer_token, horizon_minutes=120)
     check_national_forecast_include_metadata(bearer_token)
     check_national_forecast_metadata_true_and_false(bearer_token)
+    check_national_forecast_quantiles_order(bearer_token)
     check_national_pvlive(bearer_token)
     check_national_pvlive_day_after(bearer_token)
     check_gsp_forecast_all(bearer_token)
