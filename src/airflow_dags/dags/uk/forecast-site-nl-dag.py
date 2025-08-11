@@ -32,6 +32,7 @@ site_forecaster = ContainerDefinition(
     container_env={
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
+        "SATELLITE_BACKUP_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest_15.zarr.zip",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
