@@ -23,6 +23,27 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.15.0 - 2025-08-12
+
+NL
+- Update site forecast to `1.1.11`, works with backup satellite data
+
+### 1.14.0 - 2025-08-11
+
+UK
+- PVNet app `2.6.8`, Update Pvnet and PVnet summation models
+- PVLive Consumer gets 12 hours of history. 
+- Add Fix ice chunk location for new satellite consumer
+- Add 0 degree satellite in new satellite consumer
+
+NL
+- Update site forecast to `1.1.10`, read for new satellite consumer
+- Save ML batches
+
+India
+- Run RUVNL forecast every hour
+
+
 ### 1.13.0 - 2025-07-29
 
 India
