@@ -135,7 +135,7 @@ def sat_consumer_dag() -> None:
             + "(data_interval_start - macros.timedelta(minutes=210))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
-            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/testdata/rss",
+            "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/rss",
         },
         task_concurrency=1,
     )
