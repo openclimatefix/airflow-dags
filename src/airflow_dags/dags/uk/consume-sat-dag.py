@@ -164,7 +164,7 @@ def sat_consumer_dag() -> None:
             "which doesn't need satellite data. "
             "Forecast quality may be impacted, "
             "but no out-of-hours support is required. "
-            "Please log in an incident log. ",
+            "Please log in an incident log as needed. "
         ),
     )
 
