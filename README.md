@@ -23,6 +23,11 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.15.0 - 2025-08-12
+
+NL
+- Update site forecast to `1.1.11`, works with backup satellite data
+
 ### 1.14.0 - 2025-08-11
 
 UK
@@ -34,6 +39,9 @@ UK
 NL
 - Update site forecast to `1.1.10`, read for new satellite consumer
 - Save ML batches
+
+India
+- Run RUVNL forecast every hour
 
 
 ### 1.13.0 - 2025-07-29
