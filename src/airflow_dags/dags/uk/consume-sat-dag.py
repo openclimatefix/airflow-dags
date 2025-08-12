@@ -164,7 +164,7 @@ def sat_consumer_dag() -> None:
             "which doesn't need satellite data. "
             "Forecast quality may be impacted, "
             "but no out-of-hours support is required. "
-            "Please log in an incident log as needed. "
+            "Please log in an incident log as needed. ",
         ),
     )
 
@@ -178,6 +178,7 @@ def sat_consumer_dag() -> None:
     latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
     latest_only_op >> consume_rss_op >> extract_latest_rss_op
     consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op
+
 
 
 @dag(
