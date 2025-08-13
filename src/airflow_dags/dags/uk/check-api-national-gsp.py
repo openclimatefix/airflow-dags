@@ -13,6 +13,7 @@ from airflow_dags.plugins.scripts.api_checks import (
     check_key_in_data,
     check_len_equal,
     check_len_ge,
+    check_values_ascending_order,
     get_bearer_token_from_auth0,
 )
 
@@ -140,6 +141,40 @@ def check_national_pvlive_day_after(access_token: str) -> None:
     check_len_ge(data, 2 * 12)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "solarGenerationKw")
+
+
+def check_national_forecast_quantiles_order(access_token: str) -> None:
+    """Check that national forecast quantiles are returned in correct order.
+    This function validates that for each forecast value, plevel_10 <= expectedPowerGenerationMegawatts <= plevel_90.
+    """
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
+    data = call_api(url=full_url, access_token=access_token)
+
+    # Check that we have forecast values
+    check_key_in_data(data, "forecastValues")
+    forecast_values = data["forecastValues"]
+    check_len_ge(forecast_values, 1)
+
+    for i, forecast_value in enumerate(forecast_values):
+        plevels = forecast_value.get("plevels")
+        if not plevels:
+            logger.warning(f"No plevels found for forecast index {i}, targetTime: {forecast_value.get('targetTime', 'unknown')}")
+            continue
+        plevel_10 = plevels.get("plevel_10")
+        plevel_90 = plevels.get("plevel_90")
+        expected = forecast_value.get("expectedPowerGenerationMegawatts")
+        if plevel_10 is None or plevel_90 is None or expected is None:
+            logger.warning(f"Missing quantile or expected value for forecast index {i}, targetTime: {forecast_value.get('targetTime', 'unknown')}")
+            continue
+        if not (plevel_10 <= expected <= plevel_90):
+            raise ValueError(
+                f"Quantiles not in correct order at forecast index {i}. "
+                f"plevel_10={plevel_10} <= expected={expected} <= plevel_90={plevel_90} is not satisfied. "
+                f"Target time: {forecast_value.get('targetTime', 'unknown')}"
+            )
+        logger.debug(f"plevel_10 <= expected <= plevel_90 for forecast {i}: {plevel_10} <= {expected} <= {plevel_90}")
+
+    logger.info("All national forecast quantiles are in correct order (plevel_10 <= expected <= plevel_90)")
 
 
 def check_gsp_forecast_all_compact_false(access_token: str) -> None:
@@ -374,6 +409,16 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    national_forecast_quantiles_order = PythonOperator(
+        task_id="check-api-national-forecast-quantiles-order",
+        python_callable=check_national_forecast_quantiles_order,
+        op_kwargs={"access_token": access_token_str},
+        on_failure_callback=slack_message_callback(
+            "⚠️🇬🇧 National forecast quantiles are not in correct order! "
+            "This may affect probabilistic forecast accuracy. Please check the API response."
+        ),
+    )
+
     gsp_forecast_all = PythonOperator(
         task_id="check-api-gsp-forecast-all",
         python_callable=check_gsp_forecast_all,
@@ -462,6 +507,7 @@ def api_national_gsp_check() -> None:
         ]
     )
     get_bearer_token >> national_generation >> national_generation_day_after
+    get_bearer_token >> national_forecast_quantiles_order
     (
         get_bearer_token
         >> gsp_forecast_all
@@ -479,6 +525,7 @@ def api_national_gsp_check() -> None:
         national_forecast,
         national_forecast_2_hour,
         national_forecast_include_metadata,
+        national_forecast_quantiles_order,
         national_generation,
         national_generation_day_after,
         gsp_forecast_all,
@@ -504,6 +551,7 @@ if __name__ == "__main__":
     check_national_forecast(bearer_token, horizon_minutes=120)
     check_national_forecast_include_metadata(bearer_token)
     check_national_forecast_metadata_true_and_false(bearer_token)
+    check_national_forecast_quantiles_order(bearer_token)
     check_national_pvlive(bearer_token)
     check_national_pvlive_day_after(bearer_token)
     check_gsp_forecast_all(bearer_token)

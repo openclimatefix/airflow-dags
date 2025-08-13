@@ -35,6 +35,24 @@ def check_key_in_data(data: dict, key: str) -> None:
         raise ValueError(f"Key {key} not in data {data}.")
 
 
+def check_values_ascending_order(values: list, labels: list = None) -> None:
+    """Check that values are in ascending order.
+    
+    Args:
+        values: List of numeric values to check
+        labels: Optional list of labels for better error messages
+    """
+    if labels is None:
+        labels = [f"value_{i}" for i in range(len(values))]
+    
+    for i in range(1, len(values)):
+        if values[i-1] > values[i]:
+            raise ValueError(
+                f"Values not in ascending order: "
+                f"{labels[i-1]}={values[i-1]} should be <= {labels[i]}={values[i]}"
+            )
+
+
 def get_bearer_token_from_auth0() -> str:
     """Get bearer token from Auth0."""
     # # if we don't have a token, or its out of date, then lets get a new one
