@@ -28,7 +28,7 @@ default_args = {
 site_forecaster = ContainerDefinition(
     name="forecast-site-nl",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.1.13",
+    container_tag="1.1.14",
     container_env={
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
