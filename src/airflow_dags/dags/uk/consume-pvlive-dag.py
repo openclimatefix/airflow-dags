@@ -31,22 +31,6 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-pvlive_consumer_old = ContainerDefinition(
-    name="pvlive-consumer",
-    container_image="docker.io/openclimatefix/pvliveconsumer",
-    container_tag="1.2.6",
-    container_env={
-        "LOGLEVEL": "DEBUG",
-        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk",
-    },
-    container_secret_env={
-        f"{env}/rds/forecast/": ["DB_URL"],
-    },
-    domain="uk",
-    container_cpu=256,
-    container_memory=512,
-)
-
 pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",

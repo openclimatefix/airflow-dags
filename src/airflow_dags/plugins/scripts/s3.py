@@ -4,6 +4,7 @@ import tempfile
 
 import icechunk
 import xarray as xr
+import yaml
 import zarr
 from airflow.decorators import task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
@@ -81,19 +82,22 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
     desired_image_num: int = window_mins // cadence_mins
     s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
     dataset = store_ds.isel(time=slice(-desired_image_num, None))
-    with tempfile.TemporaryDirectory() as tmpdir:
+    # Data sampler expects a yaml string for the area attribute
+    area_def = yaml.dump(store_ds.attrs["area"])
+    s3hook.log.info("Converting area attribute to YAML string")
+    dataset.attrs["area"] = area_def
+    with tempfile.NamedTemporaryFile(mode="wt", suffix=".zarr.zip") as tmpf:
         # make zarr.zip
-        filename = f"{tmpdir}/temp.zarr.zip"
-        s3hook.log.info(f"Making zarr.zip at {filename}")
-        with zarr.storage.ZipStore(filename, mode="w") as store:
-            dataset.to_zarr(store, mode="w", consolidated=False)
+        s3hook.log.info(f"Making zarr.zip at {tmpf.name}")
+        with zarr.storage.ZipStore(tmpf.name, mode="w") as store:
+            dataset.to_zarr(store, mode="w", consolidated=True, zarr_format=3)
 
         key = f"{prefix.rsplit('/', 1)[0]}/latest.zarr.zip"
-        s3hook.log.info(f"Saving {filename} to s3 {bucket}/{key}")
+        s3hook.log.info(f"Saving {tmpf.name} to s3 {bucket}/{key}")
         s3hook.load_file(
-            filename=filename,
+            filename=tmpf.name,
             bucket_name=bucket,
             replace=True,
             key=key,
         )
-    s3hook.log.info(f"Extracted latest zarr to {bucket}/{prefix}/latest.zarr.zip")
+    s3hook.log.info(f"Extracted latest zarr to {bucket}/{key}")
