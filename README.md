@@ -42,6 +42,7 @@ NL
 
 India
 - Run RUVNL forecast every hour
+- Remove PV from site India-forecast-app, PV is now run in site-forecast-app
 
 
 ### 1.13.0 - 2025-07-29
