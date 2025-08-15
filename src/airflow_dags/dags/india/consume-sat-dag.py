@@ -103,22 +103,22 @@ def sat_consumer_dag() -> None:
     )
 
     consume_iodc_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-rss",
+        airflow_task_id="consume-iodc",
         container_def=sat_consumer,
         env_overrides={
             "SATCONS_TIME": "{{"
             + "(data_interval_start - macros.timedelta(minutes=210))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
-            "SATCONS_WORKDIR": f"s3://india-sat-{env}/iodc",
+            "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
         },
         task_concurrency=1,
     )
     extract_latest_iodc_op = extract_latest_zarr(
-        bucket=f"india-sat-{env}",
-        prefix="iodc/data/rss_iodc3000m.icechunk",
-        window_mins=210,
-        cadence_mins=5,
+        bucket=f"india-satellite-{env}",
+        prefix="iodc/data/iodc_india3000m.icechunk",
+        window_mins=120,
+        cadence_mins=15,
     )
 
     latest_only_op >> consume_sat_op
