@@ -11,6 +11,7 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
+from airflow_dags.plugins.scripts.s3 import extract_latest_zarr
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -25,7 +26,35 @@ default_args = {
     "execution_timeout": dt.timedelta(minutes=45),
 }
 
-satellite_consumer = ContainerDefinition(
+sat_consumer = ContainerDefinition(
+    name="satellite-consumer",
+    container_image="ghcr.io/openclimatefix/satellite-consumer",
+    container_tag="0.3.0",
+    container_env={
+        "LOGLEVEL": "DEBUG",
+        "SATCONS_COMMAND": "consume",
+        "SATCONS_ICECHUNK": "true",
+        "SATCONS_SATELLITE": "iodc",
+        "SATCONS_VALIDATE": "true",
+        "SATCONS_RESOLUTION": "3000",
+        "SATCONS_RESCALE": "true",
+        "SATCONS_WINDOW_MINS": "210",
+        "SATCONS_NUM_WORKERS": "1",
+        "SATCONS_CROP_REGION": "INDIA",
+    },
+    container_secret_env={
+        f"{env}/data/satellite-consumer": [
+            "EUMETSAT_CONSUMER_KEY",
+            "EUMETSAT_CONSUMER_SECRET",
+        ],
+    },
+    domain="uk",
+    container_cpu=1024,
+    container_memory=5120,
+    container_storage=30,
+)
+
+satellite_consumer_old = ContainerDefinition(
     name="satellite-consumer",
     container_image="docker.io/openclimatefix/satip",
     container_tag="2.12.9",
@@ -61,7 +90,7 @@ def sat_consumer_dag() -> None:
 
     consume_sat_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-sat-iodc",
-        container_def=satellite_consumer,
+        container_def=satellite_consumer_old,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()}  failed."
@@ -74,7 +103,27 @@ def sat_consumer_dag() -> None:
         ),
     )
 
+    consume_iodc_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-rss",
+        container_def=sat_consumer,
+        env_overrides={
+            "SATCONS_TIME": "{{"
+            + "(data_interval_start - macros.timedelta(minutes=210))"
+            + ".strftime('%Y-%m-%dT%H:%M')"
+            + "}}",
+            "SATCONS_WORKDIR": f"s3://india-sat-{env}/iodc",
+        },
+        task_concurrency=1,
+    )
+    extract_latest_iodc_op = extract_latest_zarr(
+        bucket=f"india-sat-{env}",
+        prefix="iodc/data/rss_iodc3000m.icechunk",
+        window_mins=210,
+        cadence_mins=5,
+    )
+
     latest_only_op >> consume_sat_op
+    latest_only_op >> consume_iodc_op >> extract_latest_iodc_op
 
 
 sat_consumer_dag()
