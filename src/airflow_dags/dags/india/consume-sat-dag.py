@@ -54,7 +54,7 @@ sat_consumer = ContainerDefinition(
 )
 
 satellite_consumer_old = ContainerDefinition(
-    name="satellite-consumer",
+    name="satellite-consumer-old",
     container_image="docker.io/openclimatefix/satip",
     container_tag="2.12.9",
     container_env={
