@@ -30,11 +30,13 @@ default_args = {
 cloudcasting_app = ContainerDefinition(
     name="cloudcasting-forecast",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
-    container_tag="0.0.8",
+    container_tag="new-satellite",
     container_env={
         "OUTPUT_PREDICTION_DIRECTORY": f"s3://nowcasting-sat-{env}/cloudcasting_forecast",
-        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/data/latest/latest.zarr.zip",
+        "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
+        "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "LOGLEVEL": "INFO",
+        "SATELLITE_SCALE_FACTOR": "1",
     },
     domain="uk",
     container_memory=4096,
