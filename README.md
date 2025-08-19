@@ -23,6 +23,17 @@ and handles the deployment process.
 
 ## Releases
 
+### 1.16.0 - 2025-08-19
+
+UK
+- Remove old PVlive container
+- Update satellite extra latest zarr method
+- UK-PVnet-app to `2.6.12` and use new satellite consumer
+- Cloudcasting app to `0.0.10` and use new satellite consumer
+
+NL
+- Update site forecast to `1.1.16`, use new satellite consumer
+
 ### 1.15.0 - 2025-08-12
 
 NL
