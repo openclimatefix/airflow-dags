@@ -119,7 +119,7 @@ def sat_consumer_dag() -> None:
             "and the 0 degree (15 minute) which we use as a backup is "
             "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
             "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
-            "No out-of-hours support is required, but please log in an incident log.",
+            "No out-of-hours support is required.",
         ),
         max_active_tis_per_dag=10,
     )
@@ -162,9 +162,13 @@ def sat_consumer_dag() -> None:
             f"⚠️🇬🇧 The task {get_task_link()} failed to collect odegree satellite data. "
             "The forecast will automatically move over to PVNET-ECMWF "
             "which doesn't need satellite data. "
-            "Forecast quality may be impacted, "
-            "but no out-of-hours support is required. "
-            "Please log in an incident log as needed. ",
+            "The EUMETSAT status link for the RSS service (5 minute) is "
+            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
+            "=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
+            "and the 0 degree (15 minute) which we use as a backup is "
+            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
+            "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
+            "No out-of-hours support is required.",
         ),
     )
 
