@@ -75,7 +75,7 @@ def sat_consumer_dag() -> None:
         container_def=sat_consumer,
         env_overrides={
             "SATCONS_TIME": "{{"
-            + "(data_interval_end - macros.timedelta(minutes=105))"
+            + "(data_interval_end - macros.timedelta(minutes=120))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
             "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
