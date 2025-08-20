@@ -145,36 +145,8 @@ def sat_consumer_dag() -> None:
     update_15min_op = update_operator(cadence_mins=15)
 
     latest_only_op >> consume_rss_op >> extract_latest_rss_op >> update_5min_op
-    consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op >> update_15min_op 
+    consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op >> update_15min_op
 
-
-
-@dag(
-    dag_id="uk-manage-clean-sat",
-    description=__doc__,
-    schedule="0 */6 * * *",
-    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
-    catchup=False,
-    default_args=default_args,
-)
-def sat_cleanup_dag() -> None:
-    """Cleanup the data tailor."""
-    latest_only_op = LatestOnlyOperator(task_id="latest-only")
-
-    clean_datatailor = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="clean-datatailor",
-        container_def=satip,
-        env_overrides={"CLEANUP": "1"},
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
-            "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
-            "and the satellite consumer should also do this. "
-            "No out-of-hours support is required.",
-        ),
-    )
-
-    latest_only_op >> clean_datatailor
 
 
 sat_consumer_dag()
-sat_cleanup_dag()
