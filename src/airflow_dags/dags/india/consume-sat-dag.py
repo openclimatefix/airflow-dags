@@ -29,13 +29,16 @@ default_args = {
 sat_consumer = ContainerDefinition(
     name="satellite-consumer",
     container_image="ghcr.io/openclimatefix/satellite-consumer",
-    container_tag="0.3.0",
+    container_tag="0.3.3",
     container_env={
         "LOGLEVEL": "DEBUG",
         "SATCONS_COMMAND": "consume",
         "SATCONS_ICECHUNK": "true",
         "SATCONS_SATELLITE": "iodc",
-        "SATCONS_VALIDATE": "false", # TODO
+        # ---
+        # Change to validationg to true once https://github.com/openclimatefix/satellite-consumer/issues/50
+        "SATCONS_VALIDATE": "false", 
+        # ---
         "SATCONS_RESOLUTION": "3000",
         "SATCONS_WINDOW_MINS": "120",
         "SATCONS_NUM_WORKERS": "1",
@@ -107,7 +110,7 @@ def sat_consumer_dag() -> None:
         container_def=sat_consumer,
         env_overrides={
             "SATCONS_TIME": "{{"
-            + "(data_interval_start - macros.timedelta(minutes=210))"
+            + "(data_interval_start - macros.timedelta(minutes=90))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
             "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
