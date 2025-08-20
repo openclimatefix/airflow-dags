@@ -40,7 +40,7 @@ sat_consumer = ContainerDefinition(
         "SATCONS_VALIDATE": "false",
         # ---
         "SATCONS_RESOLUTION": "3000",
-        "SATCONS_WINDOW_MINS": "75",
+        "SATCONS_WINDOW_MINS": "90",
         "SATCONS_NUM_WORKERS": "1",
         "SATCONS_CROP_REGION": "INDIA",
     },
@@ -75,7 +75,7 @@ def sat_consumer_dag() -> None:
         container_def=sat_consumer,
         env_overrides={
             "SATCONS_TIME": "{{"
-            + "(data_interval_start - macros.timedelta(minutes=75))"
+            + "(data_interval_end - macros.timedelta(minutes=105))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
             "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
@@ -95,7 +95,7 @@ def sat_consumer_dag() -> None:
     extract_latest_iodc_op = extract_latest_zarr(
         bucket=f"india-satellite-{env}",
         prefix="iodc/data/iodc_india3000m.icechunk",
-        window_mins=75,
+        window_mins=90,
         cadence_mins=15,
     )
 
