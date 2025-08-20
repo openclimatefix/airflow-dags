@@ -50,7 +50,7 @@ ad_forecaster = ContainerDefinition(
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
-        "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/idoc/data/latest.zarr.zip",
+        "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/iodc/data/latest.zarr.zip",
         "CLIENT_NAME": "ad",
         "COUNTRY": "india",
     },
