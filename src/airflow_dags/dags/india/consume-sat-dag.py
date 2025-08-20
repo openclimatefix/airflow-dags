@@ -37,10 +37,10 @@ sat_consumer = ContainerDefinition(
         "SATCONS_SATELLITE": "iodc",
         # ---
         # Change to validationg to true once https://github.com/openclimatefix/satellite-consumer/issues/50
-        "SATCONS_VALIDATE": "false", 
+        "SATCONS_VALIDATE": "false",
         # ---
         "SATCONS_RESOLUTION": "3000",
-        "SATCONS_WINDOW_MINS": "120",
+        "SATCONS_WINDOW_MINS": "90",
         "SATCONS_NUM_WORKERS": "1",
         "SATCONS_CROP_REGION": "INDIA",
     },
@@ -69,20 +69,6 @@ def sat_consumer_dag() -> None:
     """DAG to consume satellite data."""
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-    consume_sat_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-sat-iodc",
-        container_def=satellite_consumer_old,
-        max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The {get_task_link()}  failed."
-            "The EUMETSAT status link for the IODC satellite is "
-            "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
-            "ossi_level2_filename=seviri_iodc.html|here> "
-            "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
-        ),
-    )
 
     consume_iodc_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-iodc",
@@ -95,6 +81,16 @@ def sat_consumer_dag() -> None:
             "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
         },
         task_concurrency=1,
+        on_failure_callback=slack_message_callback(
+            f"⚠️🇮🇳 The {get_task_link()}  failed."
+            "The EUMETSAT status link for the IODC satellite is "
+            "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
+            "ossi_level2_filename=seviri_iodc.html|here> "
+            "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
+            "No out-of-hours support is required at the moment. "
+            "Please see run book for appropriate actions.",
+        ),
+
     )
     extract_latest_iodc_op = extract_latest_zarr(
         bucket=f"india-satellite-{env}",
@@ -103,7 +99,6 @@ def sat_consumer_dag() -> None:
         cadence_mins=15,
     )
 
-    latest_only_op >> consume_sat_op
     latest_only_op >> consume_iodc_op >> extract_latest_iodc_op
 
 
