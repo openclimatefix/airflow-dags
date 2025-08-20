@@ -61,29 +61,12 @@ sat_consumer = ContainerDefinition(
     container_storage=30,
 )
 
-satip = ContainerDefinition(
-    name="satip",
-    container_image="docker.io/openclimatefix/satip",
-    container_tag="2.12.39",
-    container_env={
-        "SAVE_DIR": f"s3://nowcasting-sat-{env}/data",
-        "SAVE_DIR_NATIVE": f"s3://nowcasting-sat-{env}/raw",
-        "LOGLEVEL": "DEBUG",
-        "HISTORY": "180 minutes",
-    },
-    container_secret_env={
-        f"{env}/data/satellite-consumer": ["API_KEY", "API_SECRET"],
-        f"{env}/rds/forecast/": ["DB_URL"],
-    },
-    domain="uk",
-    container_cpu=1024,
-    container_memory=5120,
-)
-
-
 def update_operator(cadence_mins: int) -> BashOperator:
     """BashOperator to update the API with the latest downloaded file."""
-    file: str = f"s3://nowcasting-sat-{env}/testdata/latest.zarr.zip"
+    if cadence_mins == 5:
+        file: str = f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip"
+    elif cadence_mins == 15:
+        file: str = f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip"
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = (
         f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
@@ -105,27 +88,6 @@ def update_operator(cadence_mins: int) -> BashOperator:
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
     latest_only_op = LatestOnlyOperator(task_id="latest-only")
-
-    satip_consume = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="satip-consume",
-        container_def=satip,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The task {get_task_link()} failed. "
-            "But it's OK, the forecast will automatically move over to PVNET-ECMWF, "
-            "which doesn't need satellite data. "
-            "The EUMETSAT status link for the RSS service (5 minute) is "
-            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
-            "=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
-            "and the 0 degree (15 minute) which we use as a backup is "
-            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
-            "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
-            "No out-of-hours support is required, but please log in an incident log.",
-        ),
-        max_active_tis_per_dag=10,
-    )
-
-    update_5min_op = update_operator(cadence_mins=5)
-    update_15min_op = update_operator(cadence_mins=15)
 
     consume_rss_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-rss",
@@ -162,9 +124,13 @@ def sat_consumer_dag() -> None:
             f"⚠️🇬🇧 The task {get_task_link()} failed to collect odegree satellite data. "
             "The forecast will automatically move over to PVNET-ECMWF "
             "which doesn't need satellite data. "
-            "Forecast quality may be impacted, "
-            "but no out-of-hours support is required. "
-            "Please log in an incident log as needed. ",
+            "The EUMETSAT status link for the RSS service (5 minute) is "
+            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
+            "=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
+            "and the 0 degree (15 minute) which we use as a backup is "
+            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
+            "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
+            "No out-of-hours support is required.",
         ),
     )
 
@@ -175,38 +141,12 @@ def sat_consumer_dag() -> None:
         cadence_mins=15,
     )
 
-    latest_only_op >> satip_consume >> update_5min_op >> update_15min_op
-    latest_only_op >> consume_rss_op >> extract_latest_rss_op
-    consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op
+    update_5min_op = update_operator(cadence_mins=5)
+    update_15min_op = update_operator(cadence_mins=15)
 
+    latest_only_op >> consume_rss_op >> extract_latest_rss_op >> update_5min_op
+    consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op >> update_15min_op
 
-
-@dag(
-    dag_id="uk-manage-clean-sat",
-    description=__doc__,
-    schedule="0 */6 * * *",
-    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
-    catchup=False,
-    default_args=default_args,
-)
-def sat_cleanup_dag() -> None:
-    """Cleanup the data tailor."""
-    latest_only_op = LatestOnlyOperator(task_id="latest-only")
-
-    clean_datatailor = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="clean-datatailor",
-        container_def=satip,
-        env_overrides={"CLEANUP": "1"},
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
-            "But it's OK, this is only used for cleaning up the EUMETSAT customisation, "
-            "and the satellite consumer should also do this. "
-            "No out-of-hours support is required.",
-        ),
-    )
-
-    latest_only_op >> clean_datatailor
 
 
 sat_consumer_dag()
-sat_cleanup_dag()
