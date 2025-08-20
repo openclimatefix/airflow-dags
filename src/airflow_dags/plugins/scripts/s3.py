@@ -80,8 +80,12 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
     session = repo.readonly_session(branch="main")
     store_ds = xr.open_zarr(store=session.store, consolidated=False)
     desired_image_num: int = window_mins // cadence_mins
-    s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes")
+    s3hook.log.info(f"Extracting latest zarr from {prefix} with window of {window_mins} minutes. "
+                    f"There should be {desired_image_num} images in the zarr.")
     dataset = store_ds.isel(time=slice(-desired_image_num, None))
+
+    s3hook.log.info(f"Times are {dataset.time}")
+
     # Data sampler expects a yaml string for the area attribute
     area_def = yaml.dump(store_ds.attrs["area"])
     s3hook.log.info("Converting area attribute to YAML string")

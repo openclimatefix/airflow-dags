@@ -40,7 +40,7 @@ sat_consumer = ContainerDefinition(
         "SATCONS_VALIDATE": "false",
         # ---
         "SATCONS_RESOLUTION": "3000",
-        "SATCONS_WINDOW_MINS": "90",
+        "SATCONS_WINDOW_MINS": "105",
         "SATCONS_NUM_WORKERS": "1",
         "SATCONS_CROP_REGION": "INDIA",
     },
@@ -95,7 +95,7 @@ def sat_consumer_dag() -> None:
     extract_latest_iodc_op = extract_latest_zarr(
         bucket=f"india-satellite-{env}",
         prefix="iodc/data/iodc_india3000m.icechunk",
-        window_mins=90,
+        window_mins=105,
         cadence_mins=15,
     )
 
