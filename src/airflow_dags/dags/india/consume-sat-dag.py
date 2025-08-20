@@ -56,27 +56,6 @@ sat_consumer = ContainerDefinition(
     container_storage=30,
 )
 
-satellite_consumer_old = ContainerDefinition(
-    name="satellite-consumer-old",
-    container_image="docker.io/openclimatefix/satip",
-    container_tag="2.12.9",
-    container_env={
-        "SAVE_DIR": f"s3://india-satellite-{env}/data",
-        "SAVE_DIR_NATIVE": f"s3://india-satellite-{env}/raw",
-        "USE_IODC": "True",
-        "HISTORY": "75 minutes",
-    },
-    container_secret_env={
-        f"{env}/data/satellite-consumer": [
-            "API_KEY",
-            "API_SECRET",
-        ],
-    },
-    container_cpu=1024,
-    container_memory=5120,
-    domain="india",
-)
-
 
 @dag(
     dag_id="india-consume-satellite",
