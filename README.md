@@ -34,10 +34,14 @@ UK
 NL
 - Update site forecast to `1.1.16`, use new satellite consumer
 
-### 1.15.0 - 2025-08-12
+<details><summary><a>
+  <h3>1.15.0 - 2025-08-12</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 NL
 - Update site forecast to `1.1.11`, works with backup satellite data
+
+</details>
 
 ### 1.14.0 - 2025-08-11
 
