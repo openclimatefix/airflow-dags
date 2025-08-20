@@ -23,7 +23,9 @@ and handles the deployment process.
 
 ## Releases
 
-### 1.16.0 - 2025-08-19
+<details><summary><a>
+  <h3>1.16 - 2025-08-19</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 UK
 - Remove old PVlive container
@@ -34,8 +36,10 @@ UK
 NL
 - Update site forecast to `1.1.16`, use new satellite consumer
 
+</details>
+
 <details><summary><a>
-  <h3>1.15.0 - 2025-08-12</h3> <small>[ Click to expand ]</small>
+  <h3>1.15 - 2025-08-12</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
 NL
@@ -43,7 +47,9 @@ NL
 
 </details>
 
-### 1.14.0 - 2025-08-11
+<details><summary><a>
+  <h3>1.14 - 2025-08-11</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 UK
 - PVNet app `2.6.8`, Update Pvnet and PVnet summation models
@@ -59,23 +65,34 @@ India
 - Run RUVNL forecast every hour
 - Remove PV from site India-forecast-app, PV is now run in site-forecast-app
 
+</details>
 
-### 1.13.0 - 2025-07-29
+<details><summary><a>
+  <h3>1.13 - 2025-07-29</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 India
 - Update site forecast app to `1.1.7` with forecast times fix.
 
 NL
-- Update site forecast app to `1.1.7` with forecast times fix. 
+- Update site forecast app to `1.1.7` with forecast times fix.
 
-### 1.12.0 - 2025-07-28
+</details>
+
+<details><summary><a>
+  <h3>1.12 - 2025-07-28</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 All: Add links to airflow in slack messages
 UK:
 - Add new satellite consumer
 - Change Site API not to check generation values
 
-### 1.11.0 - 2025-07-23
+</details>
+
+<details><summary><a>
+  <h3>1.11 - 2025-07-23</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 All: better slack messages with alerts 
 
@@ -84,9 +101,13 @@ India
 - Better alerting for RUVNL consumer. 
 
 NL
-- site forecast app to `1.1.5` to include night clipping fix.  
+- site forecast app to `1.1.5` to include night clipping fix.
 
-### 1.10.0 - 2025-07-17
+</details>
+
+<details><summary><a>
+  <h3>1.10 - 2025-07-17</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 India
 - Database migration is needed
@@ -106,8 +127,11 @@ NL
 - Ned NL consumer to `1.2.1`, use new database schema.
 - Forecast to `1.1.0`, use new database schema.
 
+</details>
 
-### 1.9.0 - 2025-07-10
+<details><summary><a>
+  <h3>1.9 - 2025-07-10</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Add country flags to slack messages
 - PVNet to `2.6.3`, save forecast horizon
@@ -115,7 +139,11 @@ NL
 - NedNL Consumer to `1.1.14` and run every 30 minutes
 - Upgrade NedNl Forecast to `1.1.14`
 
-### 1.8.0 - 2025-07-01
+</details>
+
+<details><summary><a>
+  <h3>1.8 - 2025-07-01</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Remove PVLive on-prem consumer
 - Blend upgrade from `1.1.4` to `1.1.5`, add horizon_minutes to database
@@ -124,19 +152,31 @@ NL
 - Upgrade site database clean up to `1.0.31`, dont delete NL site
 - Upgrade uk site forecast `1.0.32`, only uk sites
 
-### 1.7.0 - 2025-06-16
+</details>
+
+<details><summary><a>
+  <h3>1.7 - 2025-06-16</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Update UK NWP consumer from `v1.1.21` to `v1.1.26`
 - Update UK NWP consumer in NL from `v1.1.23` to `v1.1.26`
 - Add India AD forecast V2
 - Run NL forecast every hour
 
-### 1.6.0 - 2025-06-09
+</details>
+
+<details><summary><a>
+  <h3>1.6 - 2025-06-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Add new API check for national/forecast
-- Update UK PVnet app from `2.5.22` to `2.6.0` - new model for new gsps areas. 
+- Update UK PVnet app from `2.5.22` to `2.6.0` - new model for new gsps areas.
 
-### 1.5.0 - 2025-06-02
+</details>
+
+<details><summary><a>
+  <h3>1.5</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Add new API checks for UK GSP and National
 - Update blend service from `1.1.3` to `1.1.4` - improved logging
@@ -145,7 +185,11 @@ NL
 - Metrics upgrade from `1.2.23` to `1.3.0`, major speed upgrade for ME
 - Scale UK GSP and National API to 2 ec2 instances
 
-### 1.4.0
+</details>
+
+<details><summary><a>
+  <h3>1.4</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Add new NL consumer for Ned-NL forecast, and use version `1.1.12`
 - Add new NL nwp consumer for ECMWF
@@ -156,20 +200,32 @@ note small data migration is needed, where we need to set created_utc times for 
 - Update slack warning maessage for PVnet app
 - Upgrade PVsite database clean up to `1.0.30`
 
-### 1.3.0
+</details>
+
+<details><summary><a>
+  <h3>1.3</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Adding a new NL consumer
 - Update pvnet slack error/warning message logic 
 - Update slack error messages/links for uk and india satellite consumers
 
-### 1.2.0
+</details>
+
+<details><summary><a>
+  <h3>1.2</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Cloudcasting inputs on the intraday forecaster in dev
 - Update forecast_blend `1.0.8` -> `1.1.1`
 - Update metrics `1.2.22` -> `1.2.23`
 - Add DAG to calculate ME
 
-### 1.1.0
+</details>
+
+<details><summary><a>
+  <h3>1.1</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 - Update PVLive consumer to use on prem server - from `1.2.5` to `1.2.6`. 
 - Trigger blend service, even if PVnet fails
@@ -177,9 +233,15 @@ note small data migration is needed, where we need to set created_utc times for 
 - India forecast app to save probabilistic values - `1.1.34` to `1.1.39`
 - Upgrade Cloudcasting app - `0.0.7` to `0.0.8`
 
-### 1.0
+</details>
+
+<details><summary><a>
+  <h3>1.0</h3> <small>[ Click to expand ]</small>
+</a></summary>
 
 Initial release
+
+</details>
 
 ## How to make a release to production
 
