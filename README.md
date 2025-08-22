@@ -24,6 +24,21 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.17 - 2025-08-27</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Change PVlive logs to INFO
+- Remove old Satellite consumer
+- Update blend logs to INFO
+
+India
+- Update to use new satellite consumer
+- Forecast app to `1.1.16` to use new satellite consumer
+
+</details>
+
+<details><summary><a>
   <h3>1.16 - 2025-08-19</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
