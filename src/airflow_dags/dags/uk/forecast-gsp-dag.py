@@ -75,7 +75,7 @@ national_forecaster = ContainerDefinition(
 forecast_blender = ContainerDefinition(
     name="forecast-blend",
     container_image="docker.io/openclimatefix/uk_pv_forecast_blend",
-    container_tag="1.1.5",
+    container_tag="1.1.6",
     container_env={"LOGLEVEL": "INFO"},
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
