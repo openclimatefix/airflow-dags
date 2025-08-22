@@ -30,7 +30,7 @@ site_forecaster = ContainerDefinition(
     container_image="docker.io/openclimatefix/pvsite_forecast",
     container_tag="1.1.0",
     container_env={
-        "LOGLEVEL": "DEBUG",
+        "LOGLEVEL": "INFO",
         "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
         "OCF_ENVIRONMENT": env,
     },
