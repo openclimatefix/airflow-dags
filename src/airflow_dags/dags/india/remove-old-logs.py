@@ -10,9 +10,6 @@ from airflow_dags.plugins.scripts.remove_old_logs import cleanup_logs
 
 logger = logging.getLogger(__name__)
 
-# Constants
-MILLISECONDS_TO_KEEP = 7 * 86400 * 1000  # 7 days
-
 # Define DAG arguments
 default_args = {
     "owner": "airflow",
