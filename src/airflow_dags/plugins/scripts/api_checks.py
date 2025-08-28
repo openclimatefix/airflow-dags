@@ -1,4 +1,5 @@
 """Functions to help checks on apis."""
+
 import json
 import logging
 import os
@@ -18,14 +19,14 @@ logger = logging.getLogger(__name__)
 def check_len_ge(data: list, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
-        raise ValueError(f"Data length {len(data)} is less than {min_len}." f"The data is {data}.")
+        raise ValueError(f"Data length {len(data)} is less than {min_len}.The data is {data}.")
 
 
 def check_len_equal(data: list, equal_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) != equal_len:
         raise ValueError(
-            f"Data length {len(data)} is not equal {equal_len}." f"The data is {data}.",
+            f"Data length {len(data)} is not equal {equal_len}.The data is {data}.",
         )
 
 
