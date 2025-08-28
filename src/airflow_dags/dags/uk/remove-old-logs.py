@@ -27,7 +27,7 @@ default_args = {
 
 # Define the DAG, e.g., runs daily at 3 AM
 @dag(
-    dag_id="clean-up-logs",
+    dag_id="uk-clean-up-logs",
     description="DAG to clean up old logs.",
     schedule="0 3 * * *",  # 03:00 UTC
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
