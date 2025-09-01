@@ -69,6 +69,8 @@ def nwp_consumer_dag() -> None:
             "ECMWF_REALTIME_S3_REGION": "eu-west-1",
             "ZARRDIR": f"s3://india-nwp-{env}/ecmwf/data",
         },
+        cpu_override=1024,
+        memory_override=2048,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed. "
@@ -86,6 +88,7 @@ def nwp_consumer_dag() -> None:
         env_overrides={
             "MODEL_REPOSITORY": "gfs",
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
+            #TODO change nan threshold
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed."
