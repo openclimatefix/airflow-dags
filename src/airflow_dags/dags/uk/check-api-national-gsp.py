@@ -106,8 +106,7 @@ def check_national_forecast_metadata_true_and_false(
 
     if len(diff_values) > 0:
         message = (
-            "Values with include_metadata=true and false are not the same. "
-            "This should not happen. "
+            "Values with include_metadata=true and false are not the same. This should not happen. "
         )
         message += f"The first different values is at {diff_values[0]}."
 
@@ -140,6 +139,64 @@ def check_national_pvlive_day_after(access_token: str) -> None:
     check_len_ge(data, 2 * 12)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "solarGenerationKw")
+
+
+def check_national_forecast_quantiles_order(access_token: str) -> None:
+    """Check that national forecast quantiles are returned in correct order.
+
+    This function validates that for each forecast value,
+    plevel_10 <= expectedPowerGenerationMegawatts <= plevel_90.
+    """
+    full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
+    data = call_api(url=full_url, access_token=access_token)
+
+    # Check that we have forecast values
+    check_key_in_data(data, "forecastValues")
+    forecast_values = data["forecastValues"]
+    check_len_ge(forecast_values, 1)
+
+    for i, forecast_value in enumerate(forecast_values):
+        plevels = forecast_value.get("plevels")
+        if not plevels:
+            target_time = forecast_value.get("targetTime", "unknown")
+            raise ValueError(
+                f"No plevels found for forecast index {i}, targetTime: {target_time}. "
+                "We should always have plevels.",
+            )
+
+        plevel_10 = plevels.get("plevel_10")
+        plevel_90 = plevels.get("plevel_90")
+        expected = forecast_value.get("expectedPowerGenerationMegawatts")
+
+        # Check for missing quantiles and raise error with specific details
+        missing_values = []
+        if plevel_10 is None:
+            missing_values.append("plevel_10")
+        if plevel_90 is None:
+            missing_values.append("plevel_90")
+        if expected is None:
+            missing_values.append("expectedPowerGenerationMegawatts")
+
+        if missing_values:
+            raise ValueError(
+                f"Missing required values {missing_values} for forecast index {i}, "
+                f"targetTime: {forecast_value.get('targetTime', 'unknown')}",
+            )
+
+        if not (plevel_10 <= expected <= plevel_90):
+            raise ValueError(
+                f"Quantiles not in correct order at forecast index {i}. "
+                f"{plevel_10=} <= {expected=} <= {plevel_90=} is not satisfied. "
+                f"Target time: {forecast_value.get('targetTime', 'unknown')}",
+            )
+        logger.debug(
+            f"plevel_10 <= expected <= plevel_90 for forecast {i}: "
+            f"{plevel_10} <= {expected} <= {plevel_90}",
+        )
+
+    logger.info(
+        "All national forecast quantiles are in correct order (plevel_10 <= expected <= plevel_90)",
+    )
 
 
 def check_gsp_forecast_all_compact_false(access_token: str) -> None:
@@ -341,9 +398,7 @@ def api_national_gsp_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = (
-        "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
-    )
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     national_forecast = PythonOperator(
         task_id="check-api-national-forecast",
         python_callable=check_national_forecast,
@@ -371,6 +426,12 @@ def api_national_gsp_check() -> None:
     national_generation_day_after = PythonOperator(
         task_id="check-api-national-pvlive-day-after",
         python_callable=check_national_pvlive_day_after,
+        op_kwargs={"access_token": access_token_str},
+    )
+
+    national_forecast_quantiles_order = PythonOperator(
+        task_id="check-api-national-forecast-quantiles-order",
+        python_callable=check_national_forecast_quantiles_order,
         op_kwargs={"access_token": access_token_str},
     )
 
@@ -461,7 +522,12 @@ def api_national_gsp_check() -> None:
             national_forecast_compare_metadata,
         ]
     )
-    get_bearer_token >> national_generation >> national_generation_day_after
+    (
+        get_bearer_token
+        >> national_generation
+        >> national_generation_day_after
+        >> national_forecast_quantiles_order
+    )
     (
         get_bearer_token
         >> gsp_forecast_all
@@ -479,6 +545,7 @@ def api_national_gsp_check() -> None:
         national_forecast,
         national_forecast_2_hour,
         national_forecast_include_metadata,
+        national_forecast_quantiles_order,
         national_generation,
         national_generation_day_after,
         gsp_forecast_all,
@@ -504,6 +571,7 @@ if __name__ == "__main__":
     check_national_forecast(bearer_token, horizon_minutes=120)
     check_national_forecast_include_metadata(bearer_token)
     check_national_forecast_metadata_true_and_false(bearer_token)
+    check_national_forecast_quantiles_order(bearer_token)
     check_national_pvlive(bearer_token)
     check_national_pvlive_day_after(bearer_token)
     check_gsp_forecast_all(bearer_token)
