@@ -28,7 +28,7 @@ default_args = {
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.30",
+    container_tag="1.1.31",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
@@ -88,7 +88,8 @@ def nwp_consumer_dag() -> None:
         env_overrides={
             "MODEL_REPOSITORY": "gfs",
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
-            #TODO change nan threshold
+            # SDE has nans
+            "IMAGES_FAILING_NAN_CHECK_THRESHOLD": "0.07" 
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed."
