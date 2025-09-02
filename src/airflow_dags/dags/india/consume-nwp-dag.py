@@ -97,7 +97,7 @@ def nwp_consumer_dag() -> None:
             "MODEL_REPOSITORY": "gfs",
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
             # SDE has nans
-            "ALLOWED_VALIDATION_FAILURE_PERCENTAGE": "0.07" 
+            "ALLOWED_VALIDATION_FAILURE_PERCENTAGE": "0.07",
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed."
