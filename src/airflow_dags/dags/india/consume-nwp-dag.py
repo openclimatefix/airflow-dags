@@ -25,7 +25,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-nwp_consumer = ContainerDefinition(
+default_args = dict(
     name="nwp-consumer",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
     container_tag="1.1.31",
@@ -46,6 +46,16 @@ nwp_consumer = ContainerDefinition(
     domain="india",
 )
 
+# GFS and MetOffice consumers
+nwp_consumer = ContainerDefinition(**default_args)
+
+# ECWMF consumer
+ecmwf_args = default_args.copy()
+ecmwf_args["name"] = "nwp-consumer-ecmwf"
+ecmwf_args["container_memory"] = 2048
+ecmwf_args["container_cpu"] = 1024
+nwp_consumer_ecwmf = ContainerDefinition(**ecmwf_args)
+
 
 @dag(
     dag_id="india-consume-nwp",
@@ -61,7 +71,7 @@ def nwp_consumer_dag() -> None:
 
     consume_ecmwf_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-ecmwf-nwp",
-        container_def=nwp_consumer,
+        container_def=nwp_consumer_ecwmf,
         env_overrides={
             "MODEL_REPOSITORY": "ecmwf-realtime",
             "MODEL": "hres-ifs-india",
@@ -69,8 +79,6 @@ def nwp_consumer_dag() -> None:
             "ECMWF_REALTIME_S3_REGION": "eu-west-1",
             "ZARRDIR": f"s3://india-nwp-{env}/ecmwf/data",
         },
-        cpu_override=1024,
-        memory_override=2048,
         max_active_tis_per_dag=10,
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed. "
@@ -89,7 +97,7 @@ def nwp_consumer_dag() -> None:
             "MODEL_REPOSITORY": "gfs",
             "ZARRDIR": f"s3://india-nwp-{env}/gfs/data",
             # SDE has nans
-            "IMAGES_FAILING_NAN_CHECK_THRESHOLD": "0.07" 
+            "ALLOWED_VALIDATION_FAILURE_PERCENTAGE": "0.07" 
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed."
