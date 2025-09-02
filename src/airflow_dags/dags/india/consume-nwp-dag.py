@@ -117,7 +117,8 @@ def nwp_consumer_dag() -> None:
             "MODEL_REPOSITORY": "metoffice-datahub",
             "METOFFICE_ORDER_ID": "india-11params-54steps",
             "ZARRDIR": f"s3://india-nwp-{env}/metoffice/data",
-            "METOFFICE_DELAY_MINUTES":"300",
+            "METOFFICE_DELAY_MINUTES":"360",  # 6 hours
+            "MODEL": "um-global-10km-india-0-12",
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed. "
