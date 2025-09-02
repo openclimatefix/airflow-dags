@@ -25,26 +25,26 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-default_args = dict(
-    name="nwp-consumer",
-    container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.31",
-    container_env={
+default_args = {
+    "name":"nwp-consumer",
+    "container_image":"ghcr.io/openclimatefix/nwp-consumer",
+    "container_tag":"no-results",
+    "container_env":{
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
     },
-    container_secret_env={
+    "container_secret_env":{
         f"{env}/data/nwp-consumer": [
             "ECMWF_REALTIME_S3_ACCESS_KEY",
             "ECMWF_REALTIME_S3_ACCESS_SECRET",
             "METOFFICE_API_KEY",
         ],
     },
-    container_command=["consume"],
-    container_cpu=512,
-    container_memory=1024,
-    domain="india",
-)
+    "container_command":["consume"],
+    "container_cpu":512,
+    "container_memory":1024,
+    "domain":"india",
+}
 
 # GFS and MetOffice consumers
 nwp_consumer = ContainerDefinition(**default_args)
@@ -117,6 +117,7 @@ def nwp_consumer_dag() -> None:
             "MODEL_REPOSITORY": "metoffice-datahub",
             "METOFFICE_ORDER_ID": "india-11params-54steps",
             "ZARRDIR": f"s3://india-nwp-{env}/metoffice/data",
+            "METOFFICE_DELAY_MINUTES":"300",
         },
         on_failure_callback=slack_message_callback(
             f"⚠️🇮🇳 The {get_task_link()} failed. "
