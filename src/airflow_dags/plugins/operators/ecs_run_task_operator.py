@@ -30,8 +30,6 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
         container_def: "ContainerDefinition",
         env_overrides: dict[str, str] | None = None,
         command_override: list[str] | None = None,
-        cpu_override: int | None = None,
-        memory_override: int | None = None,
         **kwargs: int | bool | str | dict[str, str] | list[str],
     ) -> None:
         """Create a new instance of the class."""
@@ -44,12 +42,6 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
             ]
         if command_override:
             overrides_dict["command"] = command_override
-
-        if cpu_override:
-            overrides_dict["cpu"] = cpu_override
-
-        if memory_override:
-            overrides_dict["memory"] = memory_override
 
         networks_dict: dict[str, dict[str, list[str] | str]] = {
             "awsvpcConfiguration": {
