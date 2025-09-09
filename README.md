@@ -24,6 +24,21 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.18 - 2025-09-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Clean up airflow logs after 7 days
+
+NL
+- Forecast app to `1.1.18`, tidy old code up
+
+India
+- Forecast app to `1.1.18`, tidy old code up
+
+</details>
+
+<details><summary><a>
   <h3>1.17 - 2025-08-27</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
