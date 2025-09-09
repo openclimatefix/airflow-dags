@@ -35,6 +35,7 @@ NL
 
 India
 - Forecast app to `1.1.18`, tidy old code up
+- Clean up airflow logs after 7 days
 
 </details>
 
