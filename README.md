@@ -24,6 +24,15 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.19 - 2025-09-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Fix bug with duplicate timestamps in satellite
+
+</details>
+
+<details><summary><a>
   <h3>1.18 - 2025-09-09</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
