@@ -34,7 +34,7 @@ default_args = {
 pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",
-    container_tag="1.3.1",
+    container_tag="1.3.2",
     container_env={
         "LOGLEVEL": "INFO",
         "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
