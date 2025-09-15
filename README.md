@@ -24,6 +24,23 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.20 - 2025-09-15</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- PVLive consumer to 1.3.2, using `uv`
+- Blend from `1.1.7` to `1.1.9`, ready for cloudcasting service
+
+NL
+- Upgrade forecast from `1.1.18` to `1.1.19`, upgrade requirements. 
+
+India
+- Remove warning from RUVNL Consumer failure
+- Upgrade Site Forecast, `1.1.19`, new model, and retry in ariflow twice
+
+</details>
+
+<details><summary><a>
   <h3>1.19 - 2025-09-09</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
