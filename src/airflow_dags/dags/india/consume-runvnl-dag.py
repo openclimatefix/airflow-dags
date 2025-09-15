@@ -54,9 +54,8 @@ def ruvnl_consumer_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
     consume_ruvnl_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-runvl",
+        airflow_task_id="consume-ruvnl",
         container_def=ruvnl_consumer,
-        on_failure_callback=get_slack_message_callback_no_action_required("in"),
         max_active_tis_per_dag=10,
     )
 
