@@ -84,6 +84,10 @@ def extract_latest_zarr(bucket: str, prefix: str, window_mins: int, cadence_mins
         f"Extracting latest zarr from {prefix} with window of {window_mins} minutes. "
         f"There should be {desired_image_num} images in the zarr.",
     )
+    # remove any time duplicates
+    store_ds = store_ds.drop_duplicates(dim="time")
+
+    # select the last desired_image_num time steps
     dataset = store_ds.isel(time=slice(-desired_image_num, None))
 
     s3hook.log.info(f"Times are {dataset.time}")

@@ -18,7 +18,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
-    "retries": 1,
+    "retries": 2,
     "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
@@ -46,7 +46,7 @@ india_forecaster = ContainerDefinition(
 ad_forecaster = ContainerDefinition(
     name="forecast-ad",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.1.18",
+    container_tag="1.1.19",
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",

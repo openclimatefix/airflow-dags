@@ -24,6 +24,48 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.20 - 2025-09-15</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- PVLive consumer to 1.3.2, using `uv`
+- Blend from `1.1.7` to `1.1.9`, ready for cloudcasting service
+
+NL
+- Upgrade forecast from `1.1.18` to `1.1.19`, upgrade requirements. 
+
+India
+- Remove warning from RUVNL Consumer failure
+- Upgrade Site Forecast, `1.1.19`, new model, and retry in ariflow twice
+
+</details>
+
+<details><summary><a>
+  <h3>1.19 - 2025-09-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Fix bug with duplicate timestamps in satellite
+
+</details>
+
+<details><summary><a>
+  <h3>1.18 - 2025-09-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Clean up airflow logs after 7 days
+
+NL
+- Forecast app to `1.1.18`, tidy old code up
+
+India
+- Forecast app to `1.1.18`, tidy old code up
+- Clean up airflow logs after 7 days
+
+</details>
+
+<details><summary><a>
   <h3>1.17 - 2025-08-27</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
