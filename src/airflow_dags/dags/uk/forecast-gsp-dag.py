@@ -30,7 +30,7 @@ default_args = {
 gsp_forecaster_args = dict(  # noqa: C408
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.6.14",
+    container_tag="2.6.18",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -43,8 +43,6 @@ gsp_forecaster_args = dict(  # noqa: C408
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
-        "SATELLITE_SCALE_FACTOR": "1",
-
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
