@@ -102,47 +102,56 @@ def check_forecast_status() -> str:
 
     pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
     pvnet_ecmwf_last_run = get_forecast_last_run_from_api("pvnet_ecmwf")
+    pvnet_da_last_run = get_forecast_last_run_from_api("pvnet_da")
 
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
+    pvnet_da_delay = now - pvnet_da_last_run
 
     pvnet_last_run_str = pvnet_last_run.strftime("%Y-%m-%d %H:%M")
     pvnet_ecmwf_last_run_str = pvnet_ecmwf_last_run.strftime("%Y-%m-%d %H:%M")
+    pvnet_da_last_run_str = pvnet_da_last_run.strftime("%Y-%m-%d %H:%M")
 
     hours = 2
-
-    if (pvnet_delay <= dt.timedelta(hours=hours)) and (
-        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+    
+    #all models ran recently
+    if (
+        pvnet_delay <= dt.timedelta(hours=hours)
+        and pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
+        and pvnet_da_delay <= dt.timedelta(hours=hours)
     ):
         message = (
             f"⚠️🇬🇧 The {get_task_link()} has failed, "
-            f"but PVNet and PVNet ECMWF only model have run within the last {hours} hours. "
+            f"but PVNet, PVNet ECMWF-only, and PVNet DA have run within the last {hours} hours. "
             "No actions is required. "
         )
-
-    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
-        pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
-    ):
+    
+    #PVNet late, but PVNet DA ran
+    elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay <= dt.timedelta(hours=hours):
         message = (
             f"⚠️🇬🇧 The {get_task_link()} failed. "
             f"This means in the last {hours} hours, PVNet has failed to run "
-            "but PVNet ECMWF only model has run. "
+            "but PVNet DA model has run. "
             "Please see run book for appropriate actions."
         )
-    elif (pvnet_delay > dt.timedelta(hours=hours)) and (
-        pvnet_ecmwf_delay > dt.timedelta(hours=hours)
-    ):
+
+    #PVNet + PVNet DA both late
+    elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay > dt.timedelta(hours=hours):
         message = (
             f"❌🇬🇧 The {get_task_link()} failed. "
-            f"This means PVNet and PVNET_ECMWF has failed to run in the last {hours} hours. "
+            f"This means PVNet and PVNET_DA has failed to run in the last {hours} hours. "
             f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
             "Please see run book for appropriate actions."
         )
+
+    #fallback (catch-all)
     else:
         message = (
             f"❌🇬🇧 The {get_task_link()} failed. "
             f" Last success run of PVNet was {pvnet_last_run_str} "
+            f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
             "Please see run book for appropriate actions."
         )
