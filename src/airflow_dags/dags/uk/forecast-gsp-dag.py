@@ -113,7 +113,7 @@ def check_forecast_status() -> str:
     pvnet_da_last_run_str = pvnet_da_last_run.strftime("%Y-%m-%d %H:%M")
 
     hours = 2
-    
+
     #all models ran recently
     if (
         pvnet_delay <= dt.timedelta(hours=hours)
@@ -125,7 +125,7 @@ def check_forecast_status() -> str:
             f"but PVNet, PVNet ECMWF-only, and PVNet DA have run within the last {hours} hours. "
             "No actions is required. "
         )
-    
+
     #PVNet late, but PVNet DA ran
     elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay <= dt.timedelta(hours=hours):
         message = (

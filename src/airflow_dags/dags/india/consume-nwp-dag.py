@@ -26,24 +26,24 @@ default_args = {
 }
 
 default_args = {
-    "name":"nwp-consumer",
-    "container_image":"ghcr.io/openclimatefix/nwp-consumer",
-    "container_tag":"1.1.32",
-    "container_env":{
+    "name": "nwp-consumer",
+    "container_image": "ghcr.io/openclimatefix/nwp-consumer",
+    "container_tag": "1.1.32",
+    "container_env": {
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
     },
-    "container_secret_env":{
+    "container_secret_env": {
         f"{env}/data/nwp-consumer": [
             "ECMWF_REALTIME_S3_ACCESS_KEY",
             "ECMWF_REALTIME_S3_ACCESS_SECRET",
             "METOFFICE_API_KEY",
         ],
     },
-    "container_command":["consume"],
-    "container_cpu":512,
-    "container_memory":1024,
-    "domain":"india",
+    "container_command": ["consume"],
+    "container_cpu": 512,
+    "container_memory": 1024,
+    "domain": "india",
 }
 
 # GFS and MetOffice consumers
