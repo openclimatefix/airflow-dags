@@ -27,16 +27,15 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-gsp_forecaster_args = dict(  # noqa: C408
+gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.6.18",
+    container_tag="2.6.19",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
         "ALLOW_ADJUSTER": "true",
         "ALLOW_SAVE_GSP_SUM": "true",
-        "DAY_AHEAD_MODEL": "false",
         "SAVE_BATCHES_DIR": f"s3://uk-national-forecaster-models-{env}/pvnet_batches",
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf/data/latest.zarr",
         "NWP_UKV_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
@@ -51,8 +50,6 @@ gsp_forecaster_args = dict(  # noqa: C408
     container_cpu=2048,
     container_memory=12288,
 )
-gsp_forecaster = ContainerDefinition(**gsp_forecaster_args)
-
 
 national_forecaster = ContainerDefinition(
     name="forecast-national",
@@ -169,7 +166,6 @@ def gsp_forecast_pvnet_dag() -> None:
         container_def=gsp_forecaster,
         env_overrides={
             "RUN_CRITICAL_MODELS_ONLY": str(env == "production").lower(),
-            "DAY_AHEAD_MODEL": "false",
             "FILTER_BAD_FORECASTS": str(env == "production").lower(),
         },
     )
@@ -199,48 +195,6 @@ def gsp_forecast_pvnet_dag() -> None:
     )
 
     latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
-
-
-@dag(
-    dag_id="uk-forecast-gsp-dayahead",
-    description=__doc__,
-    schedule="45 * * * *",
-    start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
-    catchup=False,
-    default_args=default_args,
-)
-def gsp_forecast_pvnet_dayahead_dag() -> None:
-    """DAG to forecast GSPs using PVNet."""
-    latest_only_op = LatestOnlyOperator(task_id="latest_only")
-
-    forecast_pvnet_day_ahead_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="forecast-dayahead-gsps",
-        container_def=gsp_forecaster,
-        max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 the {get_task_link()} failed. "
-            "This would ideally be fixed for da actions at 09.00. "
-            "Please see run book for appropriate actions.",
-        ),
-        env_overrides={
-            "DAY_AHEAD_MODEL": "true",
-            "USE_OCF_DATA_SAMPLER": "true",  # Note this setting is ignored by the dev image
-            "FILTER_BAD_FORECASTS": str(env == "production").lower(),
-        },
-    )
-
-    blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="blend-forecasts",
-        container_def=forecast_blender,
-        max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 The {get_task_link()} failed. "
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
-        ),
-    )
-
-    latest_only_op >> forecast_pvnet_day_ahead_op >> blend_forecasts_op
 
 
 @dag(
@@ -282,5 +236,4 @@ def national_forecast_dayahead_dag() -> None:
 
 
 gsp_forecast_pvnet_dag()
-gsp_forecast_pvnet_dayahead_dag()
 national_forecast_dayahead_dag()
