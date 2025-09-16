@@ -18,7 +18,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
-    "retries": 1,
+    "retries": 2,
     "retry_delay": dt.timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
