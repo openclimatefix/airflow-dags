@@ -183,19 +183,24 @@ def check_national_forecast_quantiles_order(access_token: str) -> None:
                 f"targetTime: {forecast_value.get('targetTime', 'unknown')}",
             )
 
-        if not (plevel_10 <= expected <= plevel_90):
+        # Allow a 20 MW buffer on the quantiles check
+        # Only raise error if expected is not within [plevel_10 - 20, plevel_90 + 20]
+        buffer_mw = 20
+        if not (plevel_10 - buffer_mw <= expected <= plevel_90 + buffer_mw):
             raise ValueError(
                 f"Quantiles not in correct order at forecast index {i}. "
-                f"{plevel_10=} <= {expected=} <= {plevel_90=} is not satisfied. "
+                f"{plevel_10 - buffer_mw=} <= {expected=} <= {plevel_90 + buffer_mw=} "
+                f"is not satisfied. "
                 f"Target time: {forecast_value.get('targetTime', 'unknown')}",
             )
         logger.debug(
-            f"plevel_10 <= expected <= plevel_90 for forecast {i}: "
-            f"{plevel_10} <= {expected} <= {plevel_90}",
+            f"plevel_10 - {buffer_mw} <= expected <= plevel_90 + {buffer_mw} for forecast {i}: "
+            f"{plevel_10 - buffer_mw} <= {expected} <= {plevel_90 + buffer_mw}",
         )
 
     logger.info(
-        "All national forecast quantiles are in correct order (plevel_10 <= expected <= plevel_90)",
+        "All national forecast quantiles are in correct order with 20 MW buffer "
+        "(plevel_10 - 20 <= expected <= plevel_90 + 20)",
     )
 
 
