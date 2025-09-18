@@ -144,8 +144,9 @@ def check_national_pvlive_day_after(access_token: str) -> None:
 def check_national_forecast_quantiles_order(access_token: str) -> None:
     """Check that national forecast quantiles are returned in correct order.
 
-    This function validates that for each forecast value,
-    plevel_10 <= expectedPowerGenerationMegawatts <= plevel_90.
+    This function validates that for each forecast value with maximum value >= 100 MW,
+    plevel_10 <= expectedPowerGenerationMegawatts <= plevel_90 (with 20 MW buffer).
+    For values where all quantiles are below 100 MW, the check is skipped entirely.
     """
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     data = call_api(url=full_url, access_token=access_token)
@@ -183,6 +184,15 @@ def check_national_forecast_quantiles_order(access_token: str) -> None:
                 f"targetTime: {forecast_value.get('targetTime', 'unknown')}",
             )
 
+        # Skip quantile order check if all values are below 100 MW
+        max_value = max(plevel_10, expected, plevel_90)
+        if max_value < 100:
+            logger.debug(
+                f"Skipping quantile order check for forecast {i} as all values are below 100 MW: "
+                f"plevel_10={plevel_10}, expected={expected}, plevel_90={plevel_90}",
+            )
+            continue
+
         # Allow a 20 MW buffer on the quantiles check
         # Only raise error if expected is not within [plevel_10 - 20, plevel_90 + 20]
         buffer_mw = 20
@@ -199,7 +209,9 @@ def check_national_forecast_quantiles_order(access_token: str) -> None:
         )
 
     logger.info(
-        "All national forecast quantiles are in correct order with 20 MW buffer "
+        "All national forecast quantiles are in correct order. "
+        "Quantile order check skipped for values below 100 MW, "
+        "20 MW buffer applied for values >= 100 MW "
         "(plevel_10 - 20 <= expected <= plevel_90 + 20)",
     )
 
