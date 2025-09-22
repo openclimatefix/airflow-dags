@@ -1,4 +1,4 @@
-"""DAG to produce forecasts of satellite imagery and score them against the ground truths.
+"""DAGs to produce forecasts of satellite imagery and score them against the ground truths.
 
 Uses data from the satellite consumer to predict future satellite images.
 """
