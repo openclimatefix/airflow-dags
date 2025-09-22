@@ -96,7 +96,7 @@ def cloudcasting_metrics_dag() -> None:
         airflow_task_id="run-cloudcasting-metrics",
         container_def=cloudcasting_metrics,
         on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. Metrics do not require out of hours support.",
+            f"⚠️🇬🇧 The {get_task_link()} failed. This does not require out of hours support.",
         ),
     )
 
