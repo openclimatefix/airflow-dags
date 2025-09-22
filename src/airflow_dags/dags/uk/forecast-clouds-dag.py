@@ -1,6 +1,6 @@
-"""DAG to produce forecasts of cloud movement.
+"""DAG to produce forecasts of satellite imagery and score them against the ground truths.
 
-Uses data from the satellite consumer to predict future cloud patterns.
+Uses data from the satellite consumer to predict future satellite images.
 """
 
 import datetime as dt
@@ -27,16 +27,18 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-cloudcasting_app = ContainerDefinition(
-    name="cloudcasting-forecast",
+PREDICTION_SAVE_DIRECTORY = f"s3://nowcasting-sat-{env}/cloudcasting_forecast"
+
+cloudcasting_inference = ContainerDefinition(
+    name="cloudcasting-inference",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
-    container_tag="0.0.10",
+    container_tag="1.0.0",
+    command=["inference"],
     container_env={
-        "OUTPUT_PREDICTION_DIRECTORY": f"s3://nowcasting-sat-{env}/cloudcasting_forecast",
+        "PREDICTION_SAVE_DIRECTORY": PREDICTION_SAVE_DIRECTORY,
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "LOGLEVEL": "INFO",
-        "SATELLITE_SCALE_FACTOR": "1",
     },
     domain="uk",
     container_memory=4096,
@@ -45,17 +47,17 @@ cloudcasting_app = ContainerDefinition(
 
 
 @dag(
-    dag_id="uk-forecast-clouds",
+    dag_id="uk-cloudcating-inference",
     description=__doc__,
     schedule="12,42 * * * *",
     default_args=default_args,
     catchup=False,
 )
-def cloudcasting_dag() -> None:
-    """Dag to forecast upcoming cloud patterns."""
+def cloudcasting_inference_dag() -> None:
+    """Dag to run the satellite forecast."""
     EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="run-cloudcasting-app",
-        container_def=cloudcasting_app,
+        airflow_task_id="run-cloudcasting-inference",
+        container_def=cloudcasting_inference,
         on_failure_callback=slack_message_callback(
             f"⚠️🇬🇧 The {get_task_link()} failed, "
             "but its ok. The cloudcasting is currently not critical. "
@@ -64,4 +66,40 @@ def cloudcasting_dag() -> None:
     )
 
 
-cloudcasting_dag()
+cloudcasting_metrics = ContainerDefinition(
+    name="cloudcasting-metrics",
+    container_image="ghcr.io/openclimatefix/cloudcasting-app",
+    container_tag="1.0.0",
+    command=["metrics"],
+    container_env={
+        "PREDICTION_SAVE_DIRECTORY": PREDICTION_SAVE_DIRECTORY,
+        "SATELLITE_ICECHUNK_ARCHIVE": f"s3://nowcasting-sat-{env}/rss/data/rss_uk3000m.icechunk",
+        "METRIC_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/metrics.zarr",
+        "LOGLEVEL": "INFO",
+    },
+    domain="uk",
+    container_memory=4096,
+    container_cpu=1024,
+)
+
+
+@dag(
+    dag_id="uk-cloudcasting-metrics",
+    description=__doc__,
+    schedule="0 6 * * *",
+    default_args=default_args,
+    catchup=False,
+)
+def cloudcasting_metrics_dag() -> None:
+    """Dag to score previous day's satellite forecasts."""
+    EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="run-cloudcasting-metrics",
+        container_def=cloudcasting_metrics,
+        on_failure_callback=slack_message_callback(
+            f"⚠️🇬🇧 The {get_task_link()} failed. Metrics do not require out of hours support.",
+        ),
+    )
+
+
+cloudcasting_inference_dag()
+cloudcasting_metrics_dag()
