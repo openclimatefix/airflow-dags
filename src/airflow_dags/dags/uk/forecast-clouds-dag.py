@@ -33,7 +33,7 @@ cloudcasting_inference = ContainerDefinition(
     name="cloudcasting-inference",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
     container_tag="1.0.0",
-    command=["inference"],
+    container_command=["inference"],
     container_env={
         "PREDICTION_SAVE_DIRECTORY": PREDICTION_SAVE_DIRECTORY,
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
@@ -70,7 +70,7 @@ cloudcasting_metrics = ContainerDefinition(
     name="cloudcasting-metrics",
     container_image="ghcr.io/openclimatefix/cloudcasting-app",
     container_tag="1.0.0",
-    command=["metrics"],
+    container_command=["metrics"],
     container_env={
         "PREDICTION_SAVE_DIRECTORY": PREDICTION_SAVE_DIRECTORY,
         "SATELLITE_ICECHUNK_ARCHIVE": f"s3://nowcasting-sat-{env}/rss/data/rss_uk3000m.icechunk",
