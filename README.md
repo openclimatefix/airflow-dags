@@ -24,6 +24,20 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.21 - 2025-09-22</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Add 50 MW buffer to qunailte order check, and ignore for low power
+- Update warnings and errors for PVNet-app by including DA. 
+- Merge Intraday and Day-ahead into the same app, and use version `2.6.18`
+
+India
+- Update nwp-consumers to `1.1.32`
+
+</details>
+
+<details><summary><a>
   <h3>1.20 - 2025-09-15</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
