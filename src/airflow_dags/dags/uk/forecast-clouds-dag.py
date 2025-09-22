@@ -47,7 +47,7 @@ cloudcasting_inference = ContainerDefinition(
 
 
 @dag(
-    dag_id="uk-cloudcating-inference",
+    dag_id="uk-forecast-clouds",
     description=__doc__,
     schedule="12,42 * * * *",
     default_args=default_args,
@@ -84,7 +84,7 @@ cloudcasting_metrics = ContainerDefinition(
 
 
 @dag(
-    dag_id="uk-cloudcasting-metrics",
+    dag_id="uk-analysis-clouds",
     description=__doc__,
     schedule="0 6 * * *",
     default_args=default_args,
