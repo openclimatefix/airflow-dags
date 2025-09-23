@@ -78,8 +78,8 @@ cloudcasting_metrics = ContainerDefinition(
         "LOGLEVEL": "INFO",
     },
     domain="uk",
-    container_memory=4096,
-    container_cpu=1024,
+    container_memory=10240,
+    container_cpu=2048,
 )
 
 
