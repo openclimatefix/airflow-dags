@@ -24,6 +24,18 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.22 - 2025-09-25</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Add airflow deployment for cloudcasting metrics
+
+India
+- Update ad forecaster to site-forecast-app to `1.1.22`
+
+</details>
+
+<details><summary><a>
   <h3>1.21 - 2025-09-22</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
