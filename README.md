@@ -24,6 +24,15 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.23 - 2025-09-30</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+India
+- Update ad forecaster to site-forecast-app `1.1.24`
+
+</details>
+
+<details><summary><a>
   <h3>1.22 - 2025-09-25</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
