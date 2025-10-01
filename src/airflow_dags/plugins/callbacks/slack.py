@@ -30,7 +30,7 @@ def get_slack_message_callback(
     country: str = "gb",
     urgency_level: str = "non_critical",
 ) -> list[BaseNotifier]:
-    """Send a slack message to channels based on ."""
+    """Send a slack message via the slack notifier to channels based on urgency and country."""
     flags = {
         "gb": "🇬🇧",
         "nl": "🇳🇱",
