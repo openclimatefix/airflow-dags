@@ -40,7 +40,7 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
-def _build_default_callback_message(task_link: str, flag: str, urgency: Urgency) -> str:
+def _build_default_message(task_link: str, flag: str, urgency: Urgency) -> str:
     """Return a sensible default message for the given urgency."""
     if urgency == Urgency.CRITICAL:
         return (
@@ -74,7 +74,7 @@ def get_slack_message_callback(
 
     # if no message provided provide default
     if not message:
-        message = _build_default_callback_message(task_link=task_link, flag=flag, urgency=urgency)
+        message = _build_default_message(task_link=task_link, flag=flag, urgency=urgency)
 
     channel = f"tech-ops-airflow-{env}-{urgency.value}"
 
