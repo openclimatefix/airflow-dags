@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -116,11 +116,7 @@ def ad_forecast_dag() -> None:
             "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/iodc/data/latest.zarr.zip",
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The {get_task_link()} failed. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
-        ),
+        on_failure_callback=get_slack_message_callback(country="in", urgency_level="non_critical")
         max_active_tis_per_dag=10,
     )
 

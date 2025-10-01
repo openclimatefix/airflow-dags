@@ -16,25 +16,6 @@ def get_task_link() -> str:
     return f"<https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>"
 
 
-# declare on_failure_callback
-on_failure_callback = [
-    send_slack_notification(
-        text=f"The {get_task_link()} failed",
-        channel=f"tech-ops-airflow-{env}",
-        username="Airflow",
-    ),
-]
-
-slack_message_callback_no_action_required = [
-    send_slack_notification(
-        text=f"⚠️ The {get_task_link()}  failed,"
-        " but its ok. No out of hours support is required.",
-        channel=f"tech-ops-airflow-{env}",
-        username="Airflow",
-    ),
-]
-
-
 def slack_message_callback(message: str) -> list[BaseNotifier]:
     """Send a slack message via the slack notifier."""
     return [
@@ -45,24 +26,36 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
-
-def get_slack_message_callback_no_action_required(
+def get_slack_message_callback(
     country: str = "gb",
+    urgency_level: str = "non_critical",
 ) -> list[BaseNotifier]:
-    """Send a slack message with a country flag, depending on the country code."""
+    """Send a slack message to channels based on ."""
     flags = {
         "gb": "🇬🇧",
         "nl": "🇳🇱",
         "in": "🇮🇳",
     }
     flag = flags.get(country.lower(), "🏳️")
-    return [
-        send_slack_notification(
-            text=(
-                f"⚠️{flag} The {get_task_link()} failed, but its ok. "
-                "No out of hours support is required."
-            ),
-            channel=f"tech-ops-airflow-{env}",
+    if urgency_level == "critical":
+        return [send_slack_notification(
+            text=(f"❌{flag} The {get_task_link()} failed. "
+            "Please see run book for appropriate actions. "),
+            channel=f"tech-ops-airflow-{env}-{urgency_level}",
             username="Airflow",
         ),
-    ]
+        ]
+
+    elif urgency_level == "non_critical":
+        return [
+            send_slack_notification(
+                text=(
+                    f"⚠️{flag} The {get_task_link()} failed, but its ok. "
+                    "No out of hours support is required."
+                ),
+                channel=f"tech-ops-airflow-{env}-{urgency_level}",
+                username="Airflow",
+            ),
+        ]
+    else:
+        raise ValueError("urgency_level must be either 'critical' or 'non_critical'")
