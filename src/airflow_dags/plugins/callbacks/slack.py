@@ -67,7 +67,7 @@ def get_slack_message_callback(
     Returns:
         A list containing the result(s) of `send_slack_notification(...)` calls.
     """
-    # Get message content
+    # get message content
     country_code = country.lower()
     flag = FLAGS.get(country_code, DEFAULT_FLAG)
     task_link = get_task_link()
