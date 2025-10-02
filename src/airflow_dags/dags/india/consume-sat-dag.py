@@ -82,6 +82,7 @@ def sat_consumer_dag() -> None:
         },
         task_concurrency=1,
         on_failure_callback=get_slack_message_callback(
+            country="in",
             additional_message_context=(
                 "The EUMETSAT status link for the IODC satellite is "
                 "<https://masif.eumetsat.int/ossi/webpages/level2.html?"
