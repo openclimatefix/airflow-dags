@@ -82,7 +82,7 @@ def sat_consumer_dag() -> None:
         },
         task_concurrency=1,
         on_failure_callback=get_slack_message_callback(
-            message=f"⚠️🇮🇳 The {get_task_link()}  failed."
+            message=f"⚠️🇮🇳 The {get_task_link()} failed."
             "The EUMETSAT status link for the IODC satellite is "
             "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
             "ossi_level2_filename=seviri_iodc.html|here> "
