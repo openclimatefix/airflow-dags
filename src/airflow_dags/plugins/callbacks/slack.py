@@ -40,31 +40,34 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
-def _build_message(task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "") -> str:
-    """Return a sensible default message for the given urgency."""
+def _build_message(
+    task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "",
+) -> str:
+    """Return a sensible message for the given urgency."""
     if urgency == Urgency.CRITICAL:
         return (
-            f"❌{flag} The {task_link} failed. " +
-            additional_message_context +
-            "Please see run book for appropriate actions."
+            f"❌{flag} The {task_link} failed. "
+            + additional_message_context
+            + " Please see run book for appropriate actions."
         )
+
     return (
-        f"⚠️{flag} The {task_link} failed, but it's ok. " + 
-        additional_message_context +
-        "No out of hours support is required."
+        f"⚠️{flag} The {task_link} failed, but it's ok. "
+        + additional_message_context
+        + " No out of hours support is required."
     )
 
 def get_slack_message_callback(
     country: str = "gb",
     urgency: Urgency = Urgency.CRITICAL,
-    additional_message_context: str = ""
+    additional_message_context: str = "",
 ) -> list["BaseNotifier"]:
     """Send a slack message via the slack notifier to channels based on urgency and country.
 
     Args:
-        message: Optional custom message. If None a default message will be used.
         country: Country code used to prefix the message with a flag (default: "gb").
         urgency: Urgency enum ("critical" | "non_critical").
+        additional_message_context: Optional additional message.
 
     Returns:
         A list containing the result(s) of `send_slack_notification(...)` calls.

@@ -85,7 +85,9 @@ def ruvnl_forecast_dag() -> None:
         },
         on_failure_callback=get_slack_message_callback(
             country="in",
-            additional_message_context= "This would ideally be fixed before for DA actions at 09.00 IST. ",
+            additional_message_context=(
+                "This would ideally be fixed before for DA actions at 09.00 IST."
+            ),
             urgency=Urgency.NON_CRITICAL,
         ),
     )
