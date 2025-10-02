@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback, get_task_link
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -84,10 +84,8 @@ def ruvnl_forecast_dag() -> None:
             "USE_SATELLITE": "False",
         },
         on_failure_callback=get_slack_message_callback(
-            message=f"⚠️🇮🇳 The task {get_task_link()} failed."
-            "This would ideally be fixed before for DA actions at 09.00 IST. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+            country="in",
+            additional_message_context= "This would ideally be fixed before for DA actions at 09.00 IST. ",
             urgency=Urgency.NON_CRITICAL,
         ),
     )
@@ -128,9 +126,7 @@ def ad_forecast_dag() -> None:
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad-v2",
         },
         on_failure_callback=get_slack_message_callback(
-            message=f"⚠️🇮🇳 The {get_task_link()} failed. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+            country="in",
             urgency=Urgency.NON_CRITICAL,
         ),
         max_active_tis_per_dag=10,

@@ -1,7 +1,7 @@
 """Helper functions for sending notifications via slack."""
 
 import os
-from enum import Enum
+from enum import Enum, auto
 
 from airflow.notifications.basenotifier import BaseNotifier
 from airflow.providers.slack.notifications.slack import send_slack_notification
@@ -20,8 +20,8 @@ DEFAULT_FLAG = "🏳️"
 
 class Urgency(str, Enum):
     """Urgency levels for notifications."""
-    CRITICAL = "critical"
-    NON_CRITICAL = "non_critical"
+    CRITICAL = auto()
+    NON_CRITICAL = auto()
 
 
 def get_task_link() -> str:
@@ -40,22 +40,24 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
-def _build_default_message(task_link: str, flag: str, urgency: Urgency) -> str:
+def _build_message(task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "") -> str:
     """Return a sensible default message for the given urgency."""
     if urgency == Urgency.CRITICAL:
         return (
-            f"❌{flag} The {task_link} failed. "
+            f"❌{flag} The {task_link} failed. " +
+            additional_message_context +
             "Please see run book for appropriate actions."
         )
     return (
-        f"⚠️{flag} The {task_link} failed, but it's ok. "
+        f"⚠️{flag} The {task_link} failed, but it's ok. " + 
+        additional_message_context +
         "No out of hours support is required."
     )
 
 def get_slack_message_callback(
-    message: str | None = None,
     country: str = "gb",
     urgency: Urgency = Urgency.CRITICAL,
+    additional_message_context: str = ""
 ) -> list["BaseNotifier"]:
     """Send a slack message via the slack notifier to channels based on urgency and country.
 
@@ -68,13 +70,11 @@ def get_slack_message_callback(
         A list containing the result(s) of `send_slack_notification(...)` calls.
     """
     # get message content
-    country_code = country.lower()
-    flag = FLAGS.get(country_code, DEFAULT_FLAG)
+    flag = FLAGS.get(country.lower(), DEFAULT_FLAG)
     task_link = get_task_link()
 
-    # if no message provided provide default
-    if not message:
-        message = _build_default_message(task_link=task_link, flag=flag, urgency=urgency)
+    message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
+                             additional_message_context=additional_message_context)
 
     channel = f"tech-ops-airflow-{env}-{urgency.value}"
 

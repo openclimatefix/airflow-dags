@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback, get_task_link
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -82,13 +82,12 @@ def sat_consumer_dag() -> None:
         },
         task_concurrency=1,
         on_failure_callback=get_slack_message_callback(
-            message=f"⚠️🇮🇳 The {get_task_link()} failed."
-            "The EUMETSAT status link for the IODC satellite is "
-            "here <https://masif.eumetsat.int/ossi/webpages/level2.html?"
-            "ossi_level2_filename=seviri_iodc.html|here> "
-            "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+            additional_message_context=(
+                "The EUMETSAT status link for the IODC satellite is "
+                "<https://masif.eumetsat.int/ossi/webpages/level2.html?"
+                "ossi_level2_filename=seviri_iodc.html|here> "
+                "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
+            ),
             urgency=Urgency.NON_CRITICAL,
         ),
 
