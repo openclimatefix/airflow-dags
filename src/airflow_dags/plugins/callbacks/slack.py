@@ -79,7 +79,7 @@ def get_slack_message_callback(
     message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
                              additional_message_context=additional_message_context)
 
-    channel = f"tech-ops-airflow-{env}-{urgency.value}"
+    channel = f"tech-ops-airflow-{env}-{urgency.name.lower()}"
 
     notifier = send_slack_notification(
         text=message,
