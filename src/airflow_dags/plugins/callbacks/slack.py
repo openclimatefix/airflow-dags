@@ -1,7 +1,7 @@
 """Helper functions for sending notifications via slack."""
 
 import os
-from enum import Enum, auto
+from enum import StrEnum, auto
 
 from airflow.notifications.basenotifier import BaseNotifier
 from airflow.providers.slack.notifications.slack import send_slack_notification
@@ -18,7 +18,7 @@ FLAGS = {
 }
 DEFAULT_FLAG = "🏳️"
 
-class Urgency(str, Enum):
+class Urgency(StrEnum):
     """Urgency levels for notifications."""
     CRITICAL = auto()
     NON_CRITICAL = auto()
@@ -79,7 +79,7 @@ def get_slack_message_callback(
     message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
                              additional_message_context=additional_message_context)
 
-    channel = f"tech-ops-airflow-{env}-{urgency.name.lower()}"
+    channel = f"tech-ops-airflow-{env}-{urgency.value}"
 
     notifier = send_slack_notification(
         text=message,
