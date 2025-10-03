@@ -8,7 +8,12 @@ import os
 
 from airflow.decorators import dag
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import (
+    Urgency,
+    get_slack_message_callback,
+    get_task_link,
+    slack_message_callback,
+)
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -58,11 +63,7 @@ def cloudcasting_inference_dag() -> None:
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="run-cloudcasting-inference",
         container_def=cloudcasting_inference,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed, "
-            "but its ok. The cloudcasting is currently not critical. "
-            "No out of hours support is required.",
-        ),
+        on_failure_callback=get_slack_message_callback(urgency=Urgency.NON_CRITICAL),
     )
 
 

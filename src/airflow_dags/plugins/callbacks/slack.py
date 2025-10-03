@@ -1,6 +1,7 @@
 """Helper functions for sending notifications via slack."""
 
 import os
+from enum import StrEnum, auto
 
 from airflow.notifications.basenotifier import BaseNotifier
 from airflow.providers.slack.notifications.slack import send_slack_notification
@@ -9,30 +10,24 @@ from airflow.providers.slack.notifications.slack import send_slack_notification
 env = os.getenv("ENVIRONMENT", "development")
 url = os.getenv("URL", "airflow-dev.quartz.energy")
 
+# Constants
+FLAGS = {
+    "gb": "🇬🇧",
+    "nl": "🇳🇱",
+    "in": "🇮🇳",
+}
+DEFAULT_FLAG = "🏳️"
+
+class Urgency(StrEnum):
+    """Urgency levels for notifications."""
+    CRITICAL = auto()
+    NON_CRITICAL = auto()
+
 
 def get_task_link() -> str:
     """Get a link to the task in Airflow."""
     # note we need 4 { so that after f-string its 2 { which is needed for airflow
     return f"<https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>"
-
-
-# declare on_failure_callback
-on_failure_callback = [
-    send_slack_notification(
-        text=f"The {get_task_link()} failed",
-        channel=f"tech-ops-airflow-{env}",
-        username="Airflow",
-    ),
-]
-
-slack_message_callback_no_action_required = [
-    send_slack_notification(
-        text=f"⚠️ The {get_task_link()}  failed,"
-        " but its ok. No out of hours support is required.",
-        channel=f"tech-ops-airflow-{env}",
-        username="Airflow",
-    ),
-]
 
 
 def slack_message_callback(message: str) -> list[BaseNotifier]:
@@ -45,24 +40,51 @@ def slack_message_callback(message: str) -> list[BaseNotifier]:
         ),
     ]
 
+def _build_message(
+    task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "",
+) -> str:
+    """Return a sensible message for the given urgency."""
+    if urgency == Urgency.CRITICAL:
+        return (
+            f"❌{flag} The {task_link} failed. "
+            + additional_message_context
+            + " Please see run book for appropriate actions."
+        )
 
-def get_slack_message_callback_no_action_required(
+    return (
+        f"⚠️{flag} The {task_link} failed, but it's ok. "
+        + additional_message_context
+        + " No out of hours support is required."
+    )
+
+def get_slack_message_callback(
     country: str = "gb",
-) -> list[BaseNotifier]:
-    """Send a slack message with a country flag, depending on the country code."""
-    flags = {
-        "gb": "🇬🇧",
-        "nl": "🇳🇱",
-        "in": "🇮🇳",
-    }
-    flag = flags.get(country.lower(), "🏳️")
-    return [
-        send_slack_notification(
-            text=(
-                f"⚠️{flag} The {get_task_link()} failed, but its ok. "
-                "No out of hours support is required."
-            ),
-            channel=f"tech-ops-airflow-{env}",
-            username="Airflow",
-        ),
-    ]
+    urgency: Urgency = Urgency.CRITICAL,
+    additional_message_context: str = "",
+) -> list["BaseNotifier"]:
+    """Send a slack message via the slack notifier to channels based on urgency and country.
+
+    Args:
+        country: Country code used to prefix the message with a flag (default: "gb").
+        urgency: Urgency enum ("critical" | "non_critical").
+        additional_message_context: Optional additional message.
+
+    Returns:
+        A list containing the result(s) of `send_slack_notification(...)` calls.
+    """
+    # get message content
+    flag = FLAGS.get(country.lower(), DEFAULT_FLAG)
+    task_link = get_task_link()
+
+    message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
+                             additional_message_context=additional_message_context)
+
+    channel = f"tech-ops-airflow-{env}-{urgency.value}"
+
+    notifier = send_slack_notification(
+        text=message,
+        channel=channel,
+        username="Airflow",
+    )
+
+    return [notifier]
