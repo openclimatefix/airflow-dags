@@ -192,8 +192,11 @@ def gsp_forecast_pvnet_dag() -> None:
             "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}",
         ),
         on_failure_callback=get_slack_message_callback(
-            additional_message_context="This was trying to check when PVNet and PVNet ECMWF only last ran ",
-            urgency=Urgency.SUBCRITICAL
+            additional_message_context=(
+             "This was trying to check when PVNet and "
+             "PVNet ECMWF only last ran ",
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
