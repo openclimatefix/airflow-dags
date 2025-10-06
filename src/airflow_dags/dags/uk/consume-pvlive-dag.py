@@ -94,7 +94,6 @@ def pvlive_intraday_consumer_dag() -> None:
 )
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""
-
     consume_pvlive_national = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-pvlive-dayafter-national",
         container_def=pvlive_consumer,

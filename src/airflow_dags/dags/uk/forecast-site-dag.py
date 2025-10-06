@@ -95,7 +95,7 @@ def clean_site_db_dag() -> None:
     database_clean_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="uk-clean-sitedb",
         container_def=sitedb_cleaner,
-        on_failure_callback=get_slack_message_callback(urgency=Urgency.SUBCRITICAL)
+        on_failure_callback=get_slack_message_callback(urgency=Urgency.SUBCRITICAL),
     )
 
     latest_only_op >> database_clean_op

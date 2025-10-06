@@ -63,7 +63,7 @@ def pv_consumer_dag() -> None:
         max_active_tis_per_dag=10,
         on_failure_callback=get_slack_message_callback(
             additional_message_context="This isn't needed for any production services. ",
-            urgency=Urgency.SUBCRITICAL
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 

@@ -68,7 +68,7 @@ def nl_forecast_dag() -> None:
         },
         on_failure_callback=get_slack_message_callback(
             country="nl",
-            urgency=Urgency.SUBCRITICAL
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 

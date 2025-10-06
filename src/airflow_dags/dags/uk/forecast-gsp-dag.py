@@ -8,7 +8,12 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import Urgency, get_task_link, get_slack_message_callback, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import (
+    Urgency,
+    get_slack_message_callback,
+    get_task_link,
+    slack_message_callback,
+)
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -225,7 +230,7 @@ def national_forecast_dayahead_dag() -> None:
                 "This forecast is only a backup "
                 "Only needed if other forecasts have failed "
             ),
-            urgency=Urgency.SUBCRITICAL,                        
+            urgency=Urgency.SUBCRITICAL,
     ),
 )
 
