@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -74,10 +74,7 @@ def site_forecast_dag() -> None:
     forecast_sites_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="forecast-sites",
         container_def=site_forecaster,
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 The {get_task_link()} failed. "
-            "Please see run book for appropriate actions. ",
-        ),
+        on_failure_callback=get_slack_message_callback(),
     )
 
     latest_only_op >> forecast_sites_op
@@ -98,10 +95,7 @@ def clean_site_db_dag() -> None:
     database_clean_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="uk-clean-sitedb",
         container_def=sitedb_cleaner,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed, but it is non-critical. "
-            "No out of hours support is required.",
-        ),
+        on_failure_callback=get_slack_message_callback(urgency=Urgency.SUBCRITICAL)
     )
 
     latest_only_op >> database_clean_op

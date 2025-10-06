@@ -8,7 +8,7 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_task_link, get_slack_message_callback, slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -196,10 +196,8 @@ def gsp_forecast_pvnet_dag() -> None:
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         trigger_rule="all_done",
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧  The {get_task_link()} failed. "
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="The blending of forecasts has failed. ",
         ),
     )
 
@@ -222,22 +220,22 @@ def national_forecast_dayahead_dag() -> None:
         airflow_task_id="forecast-national",
         container_def=national_forecaster,
         max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
-            "But its ok, this forecast is only a backup. "
-            "No out of office hours support is required, unless other forecasts are failing",
-        ),
-    )
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context=(
+                "This forecast is only a backup "
+                "Only needed if other forecasts have failed "
+            ),
+            urgency=Urgency.SUBCRITICAL,                        
+    ),
+)
 
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
         env_overrides={"N_GSP": "1"},
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 The {get_task_link()} failed. "
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="The blending of forecasts has failed. ",
         ),
     )
 

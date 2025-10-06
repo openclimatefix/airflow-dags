@@ -12,7 +12,7 @@ from datetime import timedelta
 from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -66,12 +66,13 @@ def pvlive_intraday_consumer_dag() -> None:
             "REGIME": "in-day",
             "BACKFILL_HOURS": "12",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context= (
             "This is needed for the adjuster in the Forecast."
-            "No out of office hours support needed."
             "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
-            "to see if its working. ",
+            "to see if it's working. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -93,11 +94,6 @@ def pvlive_intraday_consumer_dag() -> None:
 )
 def pvlive_dayafter_consumer_dag() -> None:
     """Dag to download pvlive-dayafter data."""
-    error_message: str = (
-        f"⚠️🇬🇧 The {get_task_link()} failed, "
-        "but its ok. This task is not critical for live services. "
-        "No out of hours support is required."
-    )
 
     consume_pvlive_national = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-pvlive-dayafter-national",
@@ -107,7 +103,10 @@ def pvlive_dayafter_consumer_dag() -> None:
             "INCLUDE_NATIONAL": "True",
             "REGIME": "day-after",
         },
-        on_failure_callback=slack_message_callback(error_message),
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="This task is not critical for live services. ",
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
     consume_pvlive_gsps = EcsAutoRegisterRunTaskOperator(
@@ -117,7 +116,10 @@ def pvlive_dayafter_consumer_dag() -> None:
             "N_GSPS": "342",
             "REGIME": "day-after",
         },
-        on_failure_callback=slack_message_callback(error_message),
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="This task is not critical for live services. ",
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
     consume_pvlive_national >> consume_pvlive_gsps

@@ -21,7 +21,7 @@ DEFAULT_FLAG = "🏳️"
 class Urgency(StrEnum):
     """Urgency levels for notifications."""
     CRITICAL = auto()
-    NON_CRITICAL = auto()
+    SUBCRITICAL = auto()
 
 
 def get_task_link() -> str:
@@ -54,7 +54,7 @@ def _build_message(
     return (
         f"⚠️{flag} The {task_link} failed, but it's ok. "
         + additional_message_context
-        + " No out of hours support is required."
+        + "No out of hours support is required."
     )
 
 def get_slack_message_callback(
@@ -79,7 +79,11 @@ def get_slack_message_callback(
     message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
                              additional_message_context=additional_message_context)
 
-    channel = f"tech-ops-airflow-{env}-{urgency.value}"
+    # Split channels by urgency for prod
+    if env == "production":
+        channel = f"tech-ops-airflow-{env}-{urgency.value}"
+    else:
+        channel = f"tech-ops-airflow-{env}"
 
     notifier = send_slack_notification(
         text=message,

@@ -87,9 +87,9 @@ def sat_consumer_dag() -> None:
                 "The EUMETSAT status link for the IODC satellite is "
                 "<https://masif.eumetsat.int/ossi/webpages/level2.html?"
                 "ossi_level2_filename=seviri_iodc.html|here> "
-                "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>."
+                "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
             ),
-            urgency=Urgency.NON_CRITICAL,
+            urgency=Urgency.SUBCRITICAL,
         ),
 
     )

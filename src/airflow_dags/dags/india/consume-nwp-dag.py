@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -80,12 +80,13 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://india-nwp-{env}/ecmwf/data",
         },
         max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The {get_task_link()} failed. "
-            "The forecast will continue running until it runs out of data. "
-            "ECMWF status link is <https://status.ecmwf.int/|here>. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+        on_failure_callback=get_slack_message_callback(
+            country="in",
+            additional_message_context=(
+                "The forecast will continue running until it runs out of data. "
+                "ECMWF status link is <https://status.ecmwf.int/|here>. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -99,13 +100,14 @@ def nwp_consumer_dag() -> None:
             # SDE has nans
             "ALLOWED_VALIDATION_FAILURE_PERCENTAGE": "0.07",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The {get_task_link()} failed."
-            "The forecast will continue running until it runs out of data. "
-            "GFS status link is "
-            "<https://www.nco.ncep.noaa.gov/pmb/nwprod/prodstat/|here>. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+        on_failure_callback=get_slack_message_callback(
+            country="in",
+            additional_message_context=(
+                "The forecast will continue running until it runs out of data. "
+                "GFS status link is "
+                "<https://www.nco.ncep.noaa.gov/pmb/nwprod/prodstat/|here>. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -118,13 +120,14 @@ def nwp_consumer_dag() -> None:
             "METOFFICE_ORDER_ID": "india-11params-54steps",
             "ZARRDIR": f"s3://india-nwp-{env}/metoffice/data",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇮🇳 The {get_task_link()} failed. "
-            "The forecast will continue running until it runs out of data. "
-            "Metoffice status link is "
-            "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
-            "No out-of-hours support is required at the moment. "
-            "Please see run book for appropriate actions.",
+        on_failure_callback=get_slack_message_callback(
+            country="in",
+            additional_message_context=(
+                "The forecast will continue running until it runs out of data. "
+                "Metoffice status link is "
+                "<https://datahub.metoffice.gov.uk/support/service-status|here>. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
