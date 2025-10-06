@@ -7,7 +7,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
     call_api,
     check_key_in_data,
@@ -156,10 +156,13 @@ def api_site_check() -> None:
         task_id="api-uk-national-gsp-check-if-any-task-failed",
         python_callable=lambda: None,
         trigger_rule="one_failed",
-        on_success_callback=slack_message_callback(
-            "⚠️🇮🇳 One of the API checks has failed. "
-            "See which ones have failed on airflow, to help debug the issue. "
-            "No out-of-hours support is required.",
+        on_success_callback=get_slack_message_callback(
+            country="in",
+            additional_message_context=(
+                "One of the API checks has failed. "
+                "See which ones have failed on airflow, to help debug the issue. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
