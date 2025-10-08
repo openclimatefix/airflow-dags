@@ -29,17 +29,6 @@ def get_task_link() -> str:
     # note we need 4 { so that after f-string its 2 { which is needed for airflow
     return f"<https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>"
 
-
-def slack_message_callback(message: str) -> list[BaseNotifier]:
-    """Send a slack message via the slack notifier."""
-    return [
-        send_slack_notification(
-            text=message,
-            channel=f"tech-ops-airflow-{env}",
-            username="Airflow",
-        ),
-    ]
-
 def _build_message(
     task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "",
 ) -> str:
@@ -61,7 +50,7 @@ def get_slack_message_callback(
     country: str = "gb",
     urgency: Urgency = Urgency.CRITICAL,
     additional_message_context: str = "",
-) -> list["BaseNotifier"]:
+) -> list[BaseNotifier]:
     """Send a slack message via the slack notifier to channels based on urgency and country.
 
     Args:
