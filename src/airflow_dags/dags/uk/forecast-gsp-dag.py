@@ -179,7 +179,7 @@ def gsp_forecast_pvnet_dag() -> None:
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
         on_success_callback=get_slack_message_callback(
-            flag="gb",
+            country="gb",
             additional_message_context="{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}",
             urgency=Urgency.CRITICAL,
         ),
