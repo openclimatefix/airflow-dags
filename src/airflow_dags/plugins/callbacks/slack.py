@@ -34,7 +34,6 @@ def _build_message(
 ) -> str:
     """Return a sensible message for the given urgency."""
     if urgency == Urgency.CRITICAL:
-        print(additional_message_context, "additional_message_context!")
         return (
             f"❌{flag} The {task_link} failed. "
             + additional_message_context
