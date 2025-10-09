@@ -7,7 +7,7 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.elastic_beanstalk import (
     scale_elastic_beanstalk_instance,
     terminate_any_old_instances,
@@ -26,9 +26,7 @@ default_args = {
 }
 
 elb_error_message = (
-    "⚠️ The task {{ ti.task_id }} failed,"
-    " but its ok. This task tried to reset the Elastic Beanstalk instances. "
-    "No out of hours support is required."
+    "This task tried to reset the Elastic Beanstalk instances. "
 )
 
 names = [
@@ -63,7 +61,10 @@ def elb_reset_dag() -> None:
                 "sleep_seconds": 60 * 5,
             },
             max_active_tis_per_dag=2,
-            on_failure_callback=slack_message_callback(elb_error_message),
+            on_failure_callback=get_slack_message_callback(
+                additional_message_context=elb_error_message,
+                urgency=Urgency.SUBCRITICAL,
+                ),
         )
 
         elb_1 = PythonOperator(
@@ -71,7 +72,10 @@ def elb_reset_dag() -> None:
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": number_of_instances, "days_limit": 3},
             max_active_tis_per_dag=2,
-            on_failure_callback=slack_message_callback(elb_error_message),
+            on_failure_callback=get_slack_message_callback(
+                additional_message_context=elb_error_message,
+                urgency=Urgency.SUBCRITICAL,
+                ),
         )
 
         if "api" in name:
@@ -83,7 +87,10 @@ def elb_reset_dag() -> None:
                     "sleep_seconds": 60 * 5,
                 },
                 max_active_tis_per_dag=2,
-                on_failure_callback=slack_message_callback(elb_error_message),
+                on_failure_callback=get_slack_message_callback(
+                additional_message_context=elb_error_message,
+                urgency=Urgency.SUBCRITICAL,
+                ),
             )
             latest_only >> elb_2 >> elb_terminate >> elb_1
         else:

@@ -13,7 +13,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.utils.trigger_rule import TriggerRule
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -120,9 +120,8 @@ def sat_consumer_dag() -> None:
                             + "}}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/odegree",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The task {get_task_link()} failed to collect odegree satellite data. "
-            "The forecast will automatically move over to PVNET-ECMWF "
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context=("The forecast will automatically move over to PVNET-ECMWF "
             "which doesn't need satellite data. "
             "The EUMETSAT status link for the RSS service (5 minute) is "
             "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
@@ -130,7 +129,8 @@ def sat_consumer_dag() -> None:
             "and the 0 degree (15 minute) which we use as a backup is "
             "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
             "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
-            "No out-of-hours support is required.",
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 

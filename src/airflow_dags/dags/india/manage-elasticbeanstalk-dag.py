@@ -7,7 +7,7 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.elastic_beanstalk import scale_elastic_beanstalk_instance
 
 env = os.getenv("ENVIRONMENT", "development")
@@ -23,9 +23,7 @@ default_args = {
 }
 
 elb_error_message = (
-    f"⚠️🇮🇳 The {get_task_link()} failed,"
-    " but its ok. This task tried to reset the Elastic Beanstalk instances. "
-    "No out of hours support is required."
+    "This task tried to reset the Elastic Beanstalk instances. "
 )
 
 names = [
@@ -54,7 +52,11 @@ def elb_reset_dag() -> None:
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 2, "sleep_seconds": 60 * 5},
             max_active_tis_per_dag=2,
-            on_failure_callback=slack_message_callback(elb_error_message),
+            on_failure_callback=get_slack_message_callback(
+                country="in",
+                additional_message_context=elb_error_message,
+                urgency=Urgency.SUBCRITICAL,
+                ),
         )
 
         elb_1 = PythonOperator(
@@ -62,7 +64,11 @@ def elb_reset_dag() -> None:
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={"name": name, "number_of_instances": 1},
             max_active_tis_per_dag=2,
-            on_failure_callback=slack_message_callback(elb_error_message),
+            on_failure_callback=get_slack_message_callback(
+                country="in",
+                additional_message_context=elb_error_message,
+                urgency=Urgency.SUBCRITICAL,
+                ),
         )
 
         latest_only >> elb_2 >> elb_1

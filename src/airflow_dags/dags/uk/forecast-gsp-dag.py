@@ -8,7 +8,10 @@ from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import (
+    Urgency,
+    get_slack_message_callback,
+)
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -121,39 +124,31 @@ def check_forecast_status() -> str:
         and pvnet_da_delay <= dt.timedelta(hours=hours)
     ):
         message = (
-            f"⚠️🇬🇧 The {get_task_link()} has failed, "
             f"but PVNet, PVNet ECMWF-only, and PVNet DA have run within the last {hours} hours. "
-            "No actions is required. "
         )
 
     #PVNet late, but PVNet DA ran
     elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay <= dt.timedelta(hours=hours):
         message = (
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
             f"This means in the last {hours} hours, PVNet has failed to run "
             "but PVNet DA model has run. "
-            "Please see run book for appropriate actions."
         )
 
     #PVNet + PVNet DA both late
     elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay > dt.timedelta(hours=hours):
         message = (
-            f"❌🇬🇧 The {get_task_link()} failed. "
             f"This means PVNet and PVNET_DA has failed to run in the last {hours} hours. "
             f" Last success run of PVNet was {pvnet_last_run_str} "
             f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
-            "Please see run book for appropriate actions."
         )
 
     #fallback (catch-all)
     else:
         message = (
-            f"❌🇬🇧 The {get_task_link()} failed. "
             f" Last success run of PVNet was {pvnet_last_run_str} "
             f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
-            "Please see run book for appropriate actions."
         )
 
     return message
@@ -183,12 +178,15 @@ def gsp_forecast_pvnet_dag() -> None:
         task_id="check-forecast-gsps-last-run",
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
-        on_success_callback=slack_message_callback(
-            "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}",
+        on_success_callback=get_slack_message_callback(
+            additional_message_context="{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')}}",
         ),
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The task {get_task_link()} failed. "
-            "This was trying to check when PVNet and PVNet ECMWF only last ran",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context=(
+             "This was trying to check when PVNet and "
+             "PVNet ECMWF only last ran "
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -196,10 +194,8 @@ def gsp_forecast_pvnet_dag() -> None:
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         trigger_rule="all_done",
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧  The {get_task_link()} failed. "
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="The blending of forecasts has failed. ",
         ),
     )
 
@@ -222,22 +218,22 @@ def national_forecast_dayahead_dag() -> None:
         airflow_task_id="forecast-national",
         container_def=national_forecaster,
         max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
-            "But its ok, this forecast is only a backup. "
-            "No out of office hours support is required, unless other forecasts are failing",
-        ),
-    )
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context=(
+                "This forecast is only a backup "
+                "Only needed if other forecasts have failed "
+            ),
+            urgency=Urgency.SUBCRITICAL,
+    ),
+)
 
     blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="blend-forecasts",
         container_def=forecast_blender,
         max_active_tis_per_dag=10,
         env_overrides={"N_GSP": "1"},
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 The {get_task_link()} failed. "
-            "The blending of forecast has failed. "
-            "Please see run book for appropriate actions. ",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="The blending of forecasts has failed. ",
         ),
     )
 

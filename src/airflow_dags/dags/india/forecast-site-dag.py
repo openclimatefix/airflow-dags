@@ -86,9 +86,9 @@ def ruvnl_forecast_dag() -> None:
         on_failure_callback=get_slack_message_callback(
             country="in",
             additional_message_context=(
-                "This would ideally be fixed before for DA actions at 09.00 IST."
+                "This would ideally be fixed before for DA actions at 09.00 IST. "
             ),
-            urgency=Urgency.NON_CRITICAL,
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -117,7 +117,7 @@ def ad_forecast_dag() -> None:
             "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/iodc/data/latest.zarr.zip",
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/ad",
         },
-        on_failure_callback=get_slack_message_callback(country="in", urgency=Urgency.NON_CRITICAL),
+        on_failure_callback=get_slack_message_callback(country="in", urgency=Urgency.SUBCRITICAL),
         max_active_tis_per_dag=10,
     )
 
@@ -129,7 +129,7 @@ def ad_forecast_dag() -> None:
         },
         on_failure_callback=get_slack_message_callback(
             country="in",
-            urgency=Urgency.NON_CRITICAL,
+            urgency=Urgency.SUBCRITICAL,
         ),
         max_active_tis_per_dag=10,
     )

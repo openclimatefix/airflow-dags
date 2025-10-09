@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from airflow.decorators import dag
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -60,11 +60,10 @@ def metrics_dag() -> None:
             "RUN_ME": "false",  # Disable ME calculations
             "LOGLEVEL": "DEBUG",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed, "
-            "but its ok. This task is not critical for live services. "
-            "No out of hours support is required.",
-        ),
+        on_failure_callback=get_slack_message_callback(
+                additional_message_context="This task is not critical for live services. ",
+                urgency=Urgency.SUBCRITICAL,
+                ),
     )
 
 
@@ -87,11 +86,10 @@ def me_dag() -> None:
             "RUN_ME": "true",  # Enable ME calculations
             "LOGLEVEL": "DEBUG",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed, "
-            "but its ok. This task is not critical for live services. "
-            "No out of hours support is required.",
-        ),
+        on_failure_callback=get_slack_message_callback(
+                additional_message_context="This task is not critical for live services. ",
+                urgency=Urgency.SUBCRITICAL,
+                ),
     )
 
 

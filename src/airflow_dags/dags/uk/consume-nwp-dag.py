@@ -7,7 +7,7 @@ from airflow.decorators import dag
 from airflow.operators.bash import BashOperator
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -82,13 +82,13 @@ def nwp_consumer_dag() -> None:
             "METOFFICE_ORDER_ID": "uk-12params-42steps",
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/data-metoffice",
         },
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context= (
             "This is non-critical; the forecast will move to ECMWF-only, "
             "Metoffice status link is "
             "<https://datahub.metoffice.gov.uk/support/service-status|here> "
-            "No out of office hours support is required, "
-            "but please log in an incident log. ",
+            ),
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -102,11 +102,11 @@ def nwp_consumer_dag() -> None:
             "ECMWF_REALTIME_S3_REGION": "eu-west-1",
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/ecmwf/data",
         },
-        on_failure_callback=slack_message_callback(
-            f"❌🇬🇧 The {get_task_link()} failed.  "
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context= (
             "The forecast will continue running until it runs out of data. "
             "ECMWF status link is <https://status.ecmwf.int/|here> "
-            "Please see run book for appropriate actions. ",
+            ),
         ),
     )
 

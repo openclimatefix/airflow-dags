@@ -5,7 +5,7 @@ import os
 
 from airflow.decorators import dag
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -57,10 +57,10 @@ def ned_nl_consumer_dag() -> None:
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="nl-consume-ned-nl-generation",
         container_def=ned_nl_consumer,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇳🇱 The {get_task_link()} failed."
-            "But its ok, this only used for comparison. "
-            "No out of office hours support is required.",
+        on_failure_callback=get_slack_message_callback(
+            country="nl",
+            additional_message_context="But its ok, this only used for comparison. ",
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
@@ -78,10 +78,10 @@ def ned_nl_forecast_dag() -> None:
     EcsAutoRegisterRunTaskOperator(
         airflow_task_id="nl-forecast-ned-nl",
         container_def=ned_nl_consumer,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇳🇱 The {get_task_link()} failed. "
-            "But its ok, this only used for comparison. "
-            "No out of office hours support is required.",
+        on_failure_callback=get_slack_message_callback(
+            country="nl",
+            additional_message_context="But its ok, this only used for comparison. ",
+            urgency=Urgency.SUBCRITICAL,
         ),
         env_overrides={
             "HISTORIC_OR_FORECAST": "forecast",

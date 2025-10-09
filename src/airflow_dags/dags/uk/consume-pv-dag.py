@@ -6,7 +6,7 @@ import os
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
 
-from airflow_dags.plugins.callbacks.slack import get_task_link, slack_message_callback
+from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
@@ -61,10 +61,9 @@ def pv_consumer_dag() -> None:
         airflow_task_id="consume-passiv-pv-data",
         container_def=pv_consumer,
         max_active_tis_per_dag=10,
-        on_failure_callback=slack_message_callback(
-            f"⚠️🇬🇧 The {get_task_link()} failed. "
-            "But its ok, this isnt needed for any production services. "
-            "No out of office hours support is required.",
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="This isn't needed for any production services. ",
+            urgency=Urgency.SUBCRITICAL,
         ),
     )
 
