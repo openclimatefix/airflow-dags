@@ -24,6 +24,15 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.24 - 2025-10-09</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK & India
+- Split slack alerting channels in prod
+
+</details>
+
+<details><summary><a>
   <h3>1.23 - 2025-09-30</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
