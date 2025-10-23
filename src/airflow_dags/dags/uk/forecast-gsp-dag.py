@@ -33,7 +33,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.7.5",
+    container_tag="2.7.6",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
