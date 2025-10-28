@@ -109,15 +109,6 @@
       "contributions": [
         "code"
       ]
-    },
-    {
-      "login": "zak",
-      "name": "Колесников Андрей",
-      "avatar_url": "https://avatars.githubusercontent.com/u/16280?v=4",
-      "profile": "http://devilonrails.ru",
-      "contributions": [
-        "review"
-      ]
     }
   ],
   "contributorsPerLine": 7,
