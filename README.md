@@ -30,6 +30,7 @@ and handles the deployment process.
 UK 
 - Update uk-pvnet-app to `2.7.6`, adds new summation models in
 - Upgrade blend to `1.1.10`, moves blend docker image to ghcr
+- Update pv-site-production to use ghcr
 
 NL
 - Upgrade forecast to `1.1.29`, adds new models in. 
