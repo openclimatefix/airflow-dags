@@ -27,8 +27,8 @@ default_args = {
 
 site_forecaster = ContainerDefinition(
     name="forecast-site",
-    container_image="docker.io/openclimatefix/pvsite_forecast",
-    container_tag="1.1.0",
+    container_image="ghcr.io/openclimatefix/pv-site-production",
+    container_tag="1.1.3",
     container_env={
         "LOGLEVEL": "INFO",
         "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",
