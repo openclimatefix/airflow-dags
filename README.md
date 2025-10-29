@@ -24,7 +24,7 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
-  <h3>1.25 - 2025-11-XX</h3> <small>[ Click to expand ]</small>
+  <h3>1.25 - 2025-10-29</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
 UK 
@@ -33,12 +33,14 @@ UK
 - Update pv-site-production to use ghcr
 
 NL
-- Upgrade forecast to `1.1.31`, adds new models in, and fixed t0 bug
-- Run NL forecast every 15 minutes.
+- Upgrade site-forecast-app to `1.1.32`, add the new model in, and satellite padding to fix t0 bug
+- Run NL forecast every 15 minutes
 - Migrate all models to the new HuggingFace repo
 
 India
 - Migrate all models to the new HuggingFace repo
+- Upgrade site-forecast-app to `1.1.32`
+- Upgrade india_forecast_app to `1.2.2`
 
 </details>
 
