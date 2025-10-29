@@ -24,6 +24,27 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.25 - 2025-10-29</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK 
+- Update uk-pvnet-app to `2.7.6`, adds new summation models in
+- Upgrade blend to `1.1.10`, moves blend docker image to ghcr
+- Update pv-site-production to use ghcr
+
+NL
+- Upgrade site-forecast-app to `1.1.32`, add the new model in, and satellite padding to fix t0 bug
+- Run NL forecast every 15 minutes
+- Migrate all models to the new HuggingFace repo
+
+India
+- Migrate all models to the new HuggingFace repo
+- Upgrade site-forecast-app to `1.1.32`
+- Upgrade india_forecast_app to `1.2.2`
+
+</details>
+
+<details><summary><a>
   <h3>1.24 - 2025-10-09</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
