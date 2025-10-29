@@ -33,7 +33,8 @@ UK
 - Update pv-site-production to use ghcr
 
 NL
-- Upgrade forecast to `1.1.29`, adds new models in. 
+- Upgrade forecast to `1.1.31`, adds new models in, and fixed t0 bug
+- Run NL forecast every 15 minutes.  
 
 </details>
 
