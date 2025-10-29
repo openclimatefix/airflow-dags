@@ -62,7 +62,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/47150349?v=4",
       "profile": "https://github.com/zakwatts",
       "contributions": [
-        "code"
+        "code",
+        "review"
       ]
     },
     {
@@ -97,6 +98,15 @@
       "name": "Pradyumn Prasad",
       "avatar_url": "https://avatars.githubusercontent.com/u/183612033?v=4",
       "profile": "https://github.com/Pradyumn-cloud",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "AUdaltsova",
+      "name": "Alexandra Udaltsova",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43303448?v=4",
+      "profile": "https://github.com/AUdaltsova",
       "contributions": [
         "code"
       ]
