@@ -34,7 +34,11 @@ UK
 
 NL
 - Upgrade forecast to `1.1.31`, adds new models in, and fixed t0 bug
-- Run NL forecast every 15 minutes.  
+- Run NL forecast every 15 minutes.
+- Migrate the last model to the new HuggingFace repo
+
+India
+- Migrate all models to the new HuggingFace repo
 
 </details>
 
