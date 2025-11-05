@@ -24,6 +24,15 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.26 - 2025-11-05</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK 
+- Update uk-pvnet-app to `2.7.7`, sets satellite-only model to critical so we can serve via API/UI
+
+</details>
+
+<details><summary><a>
   <h3>1.25 - 2025-10-29</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
