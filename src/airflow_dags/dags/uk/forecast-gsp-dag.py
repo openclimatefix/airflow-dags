@@ -33,7 +33,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.7.7",
+    container_tag="data-platform-save",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -45,6 +45,7 @@ gsp_forecaster = ContainerDefinition(
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
+        "DATA_PLATFORM_HOST": "10.0.21.163", # TODO get from secrets manager
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
