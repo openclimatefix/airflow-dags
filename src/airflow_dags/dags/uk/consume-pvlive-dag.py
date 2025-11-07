@@ -55,7 +55,7 @@ pvlive_consumer_data_platform = ContainerDefinition(
         "LOGURU_LEVEL": "INFO",
         "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
         "SAVE_METHOD": "data-platform",
-        "DATA_PLATFORM_HOST": "10.0.21.163", # TODO get from secrets manager
+        "DATA_PLATFORM_HOST": "10.0.21.150", # TODO get from secrets manager
         "UK_PVLIVE_N_GSPS": "342",
         "UK_PVLIVE_REGIME": "in-day",
         "UK_PVLIVE_BACKFILL_HOURS": "12",
