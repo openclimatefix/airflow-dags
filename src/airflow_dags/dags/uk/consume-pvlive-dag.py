@@ -47,6 +47,28 @@ pvlive_consumer = ContainerDefinition(
     container_memory=512,
 )
 
+pvlive_consumer_data_platform = ContainerDefinition(
+    name="pvlive-consumer-data-platform",
+    container_image="ghcr.io/openclimatefix/solar-consumer",
+    container_tag="1.4.0",
+    container_env={
+        "LOGURU_LEVEL": "INFO",
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
+        "SAVE_METHOD": "data-platform",
+        "DATA_PLATFORM_HOST": "10.0.21.150", # TODO get from secrets manager
+        "UK_PVLIVE_N_GSPS": "342",
+        "UK_PVLIVE_REGIME": "in-day",
+        "UK_PVLIVE_BACKFILL_HOURS": "12",
+        "COUNTRY": "gb",
+    },
+    container_secret_env={
+        f"{env}/rds/forecast/": ["DB_URL"],
+    },
+    domain="uk",
+    container_cpu=256,
+    container_memory=512,
+)
+
 
 @dag(
     dag_id="uk-consume-pvlive-intraday",
@@ -83,6 +105,13 @@ def pvlive_intraday_consumer_dag() -> None:
 
     consume_pvlive_gsps >> update_api_last_gsp_data
 
+    if env == "development":
+        consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
+            airflow_task_id="pvlive-intraday-consumer-data-platform",
+            container_def=pvlive_consumer_data_platform,
+        )
+
+        consume_pvlive_gsps_data_platform  # noqa: B018
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -122,6 +151,18 @@ def pvlive_dayafter_consumer_dag() -> None:
     )
 
     consume_pvlive_national >> consume_pvlive_gsps
+
+    if env == "development":
+        consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
+            airflow_task_id="pvlive-dayafter-consumer-data-platform",
+            container_def=pvlive_consumer_data_platform,
+            env_overrides={
+                "UK_PVLIVE_REGIME": "day-after",
+            },
+        )
+
+        consume_pvlive_gsps_data_platform  # noqa: B018
+
 
 
 pvlive_intraday_consumer_dag()
