@@ -111,7 +111,7 @@ def pvlive_intraday_consumer_dag() -> None:
             container_def=pvlive_consumer_data_platform,
         )
 
-        consume_pvlive_gsps >> consume_pvlive_gsps_data_platform
+        consume_pvlive_gsps_data_platform
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -161,7 +161,7 @@ def pvlive_dayafter_consumer_dag() -> None:
             },
         )
 
-        consume_pvlive_national >> consume_pvlive_gsps_data_platform
+        consume_pvlive_gsps_data_platform
 
 
 
