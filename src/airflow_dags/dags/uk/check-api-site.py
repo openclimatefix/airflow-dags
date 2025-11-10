@@ -86,7 +86,7 @@ def check_forecast(access_token: str) -> None:
 
         # should have data point for 36 hours in the future.
         # We just check for the next 30 hours though
-        # date is in 15 min intervals
+        # data is in 15 min intervals
         check_len_ge(forecast_values, 30 * 4)
         check_key_in_data(forecast_values[0], "target_datetime_utc")
         check_key_in_data(forecast_values[0], "expected_generation_kw")
