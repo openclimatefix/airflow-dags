@@ -67,7 +67,6 @@ def check_forecast(access_token: str) -> None:
     """Check the forecast."""
     sites = call_api(url=f"{base_url}/sites", access_token=access_token)
     for site in sites["site_list"]:
-
         site_uuid = site["site_uuid"]
 
         full_url = f"{base_url}/sites/{site_uuid}/pv_forecast"
@@ -77,10 +76,18 @@ def check_forecast(access_token: str) -> None:
         check_key_in_data(data, "forecast_values")
         forecast_values = data["forecast_values"]
 
-        # should have data point for 2 days in the past + 36 hours in the future.
+        # remove any past timestamps
+        forecast_values = [
+            fv
+            for fv in forecast_values
+            if dt.datetime.fromisoformat(fv["target_datetime_utc"]).replace(tzinfo=dt.UTC)
+            > dt.datetime.now(dt.UTC)
+        ]
+
+        # should have data point for 36 hours in the future.
         # We just check for the next 30 hours though
-        # date is in 30 min intervals
-        check_len_ge(forecast_values, 2 * 24 * 2 + 30 * 2)
+        # date is in 15 min intervals
+        check_len_ge(forecast_values, 30 * 4)
         check_key_in_data(forecast_values[0], "target_datetime_utc")
         check_key_in_data(forecast_values[0], "expected_generation_kw")
 
@@ -110,9 +117,7 @@ def api_site_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = (
-        "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
-    )
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     sites = PythonOperator(
         task_id="check-sites",
         python_callable=check_forecast,
@@ -130,9 +135,9 @@ def api_site_check() -> None:
         python_callable=lambda: None,
         trigger_rule="one_failed",
         on_success_callback=get_slack_message_callback(
-            additional_message_context= (
-            "One of the API Site checks has failed. "
-            "See which ones have failed on airflow, to help debug the issue. "
+            additional_message_context=(
+                "One of the API Site checks has failed. "
+                "See which ones have failed on airflow, to help debug the issue. "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
