@@ -62,7 +62,7 @@ pvlive_consumer_data_platform = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
-        f"{env}/rds/dataplatform/": ["DATA_PLATFORM_HOST"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     domain="uk",
     container_cpu=256,
