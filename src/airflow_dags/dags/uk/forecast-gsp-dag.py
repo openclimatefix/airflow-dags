@@ -45,10 +45,10 @@ gsp_forecaster = ContainerDefinition(
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
-        "DATA_PLATFORM_HOST": "10.0.21.150", # TODO get from secrets manager
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     domain="uk",
     container_cpu=2048,
