@@ -24,6 +24,15 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.27 - 2025-11-17</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK and NL 
+- Upgrade API site check, to just check forecasts. 
+
+</details>
+
+<details><summary><a>
   <h3>1.26 - 2025-11-05</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
