@@ -131,7 +131,7 @@ def api_site_check() -> None:
     )
 
     if_any_task_failed = PythonOperator(
-        task_id="api-uk-national-gsp-check-if-any-task-failed",
+        task_id="api-site-check-if-any-task-failed",
         python_callable=lambda: None,
         trigger_rule="one_failed",
         on_success_callback=get_slack_message_callback(
