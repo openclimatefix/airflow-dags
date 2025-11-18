@@ -49,7 +49,9 @@ gsp_forecaster = ContainerDefinition(
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
         f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
-    },
+    }
+    if env == "development"
+    else {f"{env}/rds/forecast/": ["DB_URL"]},
     domain="uk",
     container_cpu=2048,
     container_memory=12288,
