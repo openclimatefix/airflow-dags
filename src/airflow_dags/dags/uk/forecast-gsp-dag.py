@@ -33,7 +33,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.7.7",
+    container_tag="2.7.8",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -48,7 +48,10 @@ gsp_forecaster = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
-    },
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
+    }
+    if env == "development"
+    else {f"{env}/rds/forecast/": ["DB_URL"]},
     domain="uk",
     container_cpu=2048,
     container_memory=12288,
