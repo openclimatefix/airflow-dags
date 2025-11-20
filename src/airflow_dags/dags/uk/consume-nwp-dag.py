@@ -83,10 +83,9 @@ def nwp_consumer_dag() -> None:
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/data-metoffice",
         },
         on_failure_callback=get_slack_message_callback(
-            additional_message_context= (
-            "This is non-critical; the forecast will move to ECMWF-only, "
-            "Metoffice status link is "
-            "<https://datahub.metoffice.gov.uk/support/service-status|here> "
+            additional_message_context=(
+                """The forecast blend service automatically merges the best forecasts together. This takes into consideration the forecasts being delayed. For example, if the Met Office data drops out for long enough, the PVNet ECMWF only or other back-up model may be used.
+            Met Office status link is https://datahub.metoffice.gov.uk/support/service-status. No out of hours support is required."""
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
