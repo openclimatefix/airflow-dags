@@ -121,14 +121,15 @@ def sat_consumer_dag() -> None:
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/odegree",
         },
         on_failure_callback=get_slack_message_callback(
-            additional_message_context=("The forecast will automatically move over to PVNET-ECMWF "
-            "which doesn't need satellite data. "
-            "The EUMETSAT status link for the RSS service (5 minute) is "
-            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
-            "=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
-            "and the 0 degree (15 minute) which we use as a backup is "
-            "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename"
-            "=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
+            additional_message_context=(
+                "The forecast blend service automatically merges the best forecasts together. "
+                "This takes into consideration the forecasts being delayed. For example, if the satellite data drops out for long enough, "
+                "the DA (ECMWF and UKV) or other back-up model may be used.\n\n"
+                "The EUMETSAT status link for the RSS service (5 minute) is "
+                "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html|here> "
+                "and the 0 degree (15 minute) which we use as a backup is "
+                "<https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html|here>. "
+                "No out of hours support is required."
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
