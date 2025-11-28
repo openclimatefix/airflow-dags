@@ -45,13 +45,11 @@ gsp_forecaster = ContainerDefinition(
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
+        "DATA_PLATFORM_HOST": os.getenv("DATA_PLATFORM_HOST", "127.0.0.1"),
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
-        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
-    }
-    if env == "development"
-    else {f"{env}/rds/forecast/": ["DB_URL"]},
+    },
     domain="uk",
     container_cpu=2048,
     container_memory=12288,
