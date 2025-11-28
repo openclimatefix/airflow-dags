@@ -59,10 +59,10 @@ pvlive_consumer_data_platform = ContainerDefinition(
         "UK_PVLIVE_REGIME": "in-day",
         "UK_PVLIVE_BACKFILL_HOURS": "12",
         "COUNTRY": "gb",
+        "DATA_PLATFORM_HOST": os.getenv("DATA_PLATFORM_HOST", "127.0.0.1"),
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
-        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     domain="uk",
     container_cpu=256,
