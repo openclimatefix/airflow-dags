@@ -24,6 +24,22 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.28 - 2025-12-03</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Add initial support for Data Platform
+  - Upgrade solar-consumer `1.4.9` for pvlive consumer
+  - Upgrade uk-pvnet-app to `2.7.13`
+  - Upgrade uk-pv-forecast-blend to `1.2.2`
+- Updates to slack messages
+
+NL
+- Upgrade site-forecast-app to `1.1.33` to add summation model
+
+</details>
+
+<details><summary><a>
   <h3>1.27 - 2025-11-17</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
