@@ -88,7 +88,8 @@ def nwp_consumer_dag() -> None:
                  "This takes into consideration the forecasts being delayed. "
                  "For example, if the Met Office data drops out for long enough, "
                  "the PVNet ECMWF only or other back-up model may be used. "
-                 "Met Office status link is https://datahub.metoffice.gov.uk/support/service-status. "
+                 "Met Office status link is "
+                 "https://datahub.metoffice.gov.uk/support/service-status. "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
