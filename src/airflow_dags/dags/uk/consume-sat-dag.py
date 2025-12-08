@@ -133,8 +133,7 @@ def sat_consumer_dag() -> None:
                 "and the 0 degree (15 minute) which we use as a backup is "
                 "<https://masif.eumetsat.int/ossi/webpages/level3.html?"
                 "ossi_level3_filename=seviri_0deg_hr.json.html&"
-                "ossi_level2_filename=seviri_0deg.html|here>. "
-                "No out of hours support is required."
+                "ossi_level2_filename=seviri_0deg.html|here>."
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
