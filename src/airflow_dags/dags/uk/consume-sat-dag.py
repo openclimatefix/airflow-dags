@@ -84,6 +84,11 @@ def update_operator(cadence_mins: int) -> BashOperator:
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
+    user_defined_macros={
+        "starting_datetime": (
+            dt.datetime.now(tz=dt.UTC) - dt.timedelta(minutes=210)
+        ).strftime("%Y-%m-%dT%H:%M"),
+    },
 )
 def sat_consumer_dag() -> None:
     """Dag to download and process satellite data from EUMETSAT."""
@@ -93,10 +98,7 @@ def sat_consumer_dag() -> None:
         airflow_task_id="consume-rss",
         container_def=sat_consumer,
         env_overrides={
-            "SATCONS_TIME": "{{"
-            + "(start_date - macros.timedelta(minutes=210))"
-            + ".strftime('%Y-%m-%dT%H:%M')"
-            + "}}",
+            "SATCONS_TIME": "{{ starting_datetime }}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/rss",
         },
         task_concurrency=1,
@@ -114,10 +116,7 @@ def sat_consumer_dag() -> None:
         trigger_rule=TriggerRule.ALL_FAILED,  # Only run if rss fails
         env_overrides={
             "SATCONS_SATELLITE": "odegree",
-            "SATCONS_TIME": "{{" \
-                            + "(start_date - macros.timedelta(minutes=210))" \
-                            + ".strftime('%Y-%m-%dT%H:%M')" \
-                            + "}}",
+            "SATCONS_TIME": "{{ starting_datetime }}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/odegree",
         },
         on_failure_callback=get_slack_message_callback(
