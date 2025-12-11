@@ -94,7 +94,7 @@ def sat_consumer_dag() -> None:
         container_def=sat_consumer,
         env_overrides={
             "SATCONS_TIME": "{{"
-            + "(data_interval_start - macros.timedelta(minutes=210))"
+            + "(start_date - macros.timedelta(minutes=210))"
             + ".strftime('%Y-%m-%dT%H:%M')"
             + "}}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/rss",
@@ -115,7 +115,7 @@ def sat_consumer_dag() -> None:
         env_overrides={
             "SATCONS_SATELLITE": "odegree",
             "SATCONS_TIME": "{{" \
-                            + "(data_interval_start - macros.timedelta(minutes=210))" \
+                            + "(start_date - macros.timedelta(minutes=210))" \
                             + ".strftime('%Y-%m-%dT%H:%M')" \
                             + "}}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/odegree",
