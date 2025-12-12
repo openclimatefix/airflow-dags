@@ -24,7 +24,7 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
-  <h3>1.29 - 2025-12-12</h3> <small>[ Click to expand ]</small>
+  <h3>1.29 - 2025-12-15</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
 General
@@ -33,6 +33,7 @@ General
 UK 
 - Upgrade uk-pvnet-app to `2.7.15`
 - Upgrade solar-consumer to `1.4.11`
+- Improve satellite-consumer start times
 
 
 NL & India
