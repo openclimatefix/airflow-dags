@@ -24,6 +24,23 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.29 - 2025-12-12</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+General
+- Improve slack error messages for NWP consumer and satellite consumer
+
+UK 
+- Upgrade uk-pvnet-app to 2.7.15.
+- Upgrade solar-consumer to 1.4.11
+
+
+NL & India
+- Upgrade site-forecast-app to `1.2.0` to support v1 ocf-data-sampler
+
+</details>
+
+<details><summary><a>
   <h3>1.28 - 2025-12-03</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
