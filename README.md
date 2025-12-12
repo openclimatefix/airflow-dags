@@ -31,8 +31,8 @@ General
 - Improve slack error messages for NWP consumer and satellite consumer
 
 UK 
-- Upgrade uk-pvnet-app to 2.7.15.
-- Upgrade solar-consumer to 1.4.11
+- Upgrade uk-pvnet-app to `2.7.15`
+- Upgrade solar-consumer to `1.4.11`
 
 
 NL & India
