@@ -109,7 +109,7 @@ def check_forecast_status() -> str:
 
     pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
     pvnet_ecmwf_last_run = get_forecast_last_run_from_api("pvnet_ecmwf")
-    pvnet_da_last_run = get_forecast_last_run_from_api("pvnet_da")
+    pvnet_da_last_run = get_forecast_last_run_from_api("pvnet_day_ahead")
 
     pvnet_delay = now - pvnet_last_run
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
