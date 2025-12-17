@@ -241,7 +241,7 @@ def national_forecast_dayahead_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_national_op >> blend_forecasts_op
+    latest_only_op >> forecast_national_op
 
 
 gsp_forecast_pvnet_dag()
