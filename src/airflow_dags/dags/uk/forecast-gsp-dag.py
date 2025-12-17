@@ -228,20 +228,10 @@ def national_forecast_dayahead_dag() -> None:
                 "Only needed if other forecasts have failed "
             ),
             urgency=Urgency.SUBCRITICAL,
-    ),
-)
-
-    blend_forecasts_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="blend-forecasts",
-        container_def=forecast_blender,
-        max_active_tis_per_dag=10,
-        env_overrides={"N_GSP": "1"},
-        on_failure_callback=get_slack_message_callback(
-            additional_message_context="The blending of forecasts has failed. ",
         ),
     )
 
-    latest_only_op >> forecast_national_op >> blend_forecasts_op
+    latest_only_op >> forecast_national_op
 
 
 gsp_forecast_pvnet_dag()
