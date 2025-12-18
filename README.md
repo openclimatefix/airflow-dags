@@ -24,6 +24,20 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.30 - 2025-12-18</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK 
+- Fix forecast status check for `pvnet_day_ahead`
+- Remove blend after national-xg
+
+
+NL
+- Upgrade solar-consumer to `1.14.14` to only save pv history up to 15 minutes before "now"
+
+</details>
+
+<details><summary><a>
   <h3>1.29 - 2025-12-15</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
