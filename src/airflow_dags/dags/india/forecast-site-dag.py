@@ -64,7 +64,7 @@ ad_forecaster = ContainerDefinition(
 )
 
 ruvnl_forecaster_v2 = ContainerDefinition(
-    name="forecast-ruvnl",
+    name="forecast-ruvnl-v2",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
     container_tag="add-gencast-support" if env=="development" else "1.2.0",
     container_env={
@@ -72,7 +72,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/iodc/data/latest.zarr.zip",
         "NWP_GENCAST_GCS_BUCKET_PATH": "gs://weathernext/126478713_1_0/zarr/126478713_2024_to_present/",
-        "NWP_GENCAST_ZARR_PATH": "/tmp/nwp_gencast_out.zarr",
+        "NWP_GENCAST_ZARR_PATH": "/tmp/nwp_gencast_out.zarr", # noqa: S108
         "CLIENT_NAME": "ruvnl",
         "COUNTRY": "india",
     },
@@ -172,12 +172,11 @@ def ruvnl_forecast_v2_dag() -> None:
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
     forecast_ruvnl_v2_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="forecast-ruvnl",
+        airflow_task_id="forecast-ruvnl-v2",
         container_def=ruvnl_forecaster_v2,
         env_overrides={
             "CLIENT_NAME": "ruvnl",
             "USE_SATELLITE": "False",
-            # TODO check if this is acyually used
             "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/RUVNL-v2",
         },
         on_failure_callback=get_slack_message_callback(country="in", urgency=Urgency.SUBCRITICAL),
