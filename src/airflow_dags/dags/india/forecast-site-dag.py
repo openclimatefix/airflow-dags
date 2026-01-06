@@ -79,7 +79,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
     container_secret_env={
         f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
-        # TODO add gcs credentials secrets here or need to mount a volume?
+        f"{env}/forecast/site": ["GCLOUD_SERVICE_ACCOUNT_JSON"],
     },
     container_cpu=1024,
     container_memory=3072,
