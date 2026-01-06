@@ -28,7 +28,7 @@ default_args = {
 default_args = {
     "name": "nwp-consumer",
     "container_image": "ghcr.io/openclimatefix/nwp-consumer",
-    "container_tag": "1.1.32",
+    "container_tag": "1.1.33",
     "container_env": {
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
