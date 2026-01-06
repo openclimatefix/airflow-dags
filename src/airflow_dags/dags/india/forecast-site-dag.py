@@ -25,6 +25,12 @@ default_args = {
     "max_active_tasks": 10,
 }
 
+common_container_params = {
+    "container_cpu": 1024,
+    "container_memory": 3072,
+    "domain": "india",
+}
+
 india_forecaster = ContainerDefinition(
     name="forecast",
     container_image="docker.io/openclimatefix/india_forecast_app",
@@ -38,9 +44,7 @@ india_forecaster = ContainerDefinition(
         f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
-    container_cpu=1024,
-    container_memory=3072,
-    domain="india",
+    **common_container_params,
 )
 
 ad_forecaster = ContainerDefinition(
@@ -58,9 +62,7 @@ ad_forecaster = ContainerDefinition(
         f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
-    container_cpu=1024,
-    container_memory=3072,
-    domain="india",
+    **common_container_params,
 )
 
 ruvnl_forecaster_v2 = ContainerDefinition(
@@ -81,9 +83,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
         f"{env}/forecast/site": ["GCLOUD_SERVICE_ACCOUNT_JSON"],
     },
-    container_cpu=1024,
-    container_memory=3072,
-    domain="india",
+    **common_container_params,
 )
 
 @dag(
