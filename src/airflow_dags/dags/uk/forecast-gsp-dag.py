@@ -16,8 +16,13 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
+from airflow_dags.plugins.scripts.api_checks import (
+    get_bearer_token_from_auth0,
+)
 
 env = os.getenv("ENVIRONMENT", "development")
+
+base_url = "https://api-dev1.quartz.solar/"
 
 default_args = {
     "owner": "airflow",
@@ -85,6 +90,14 @@ forecast_blender = ContainerDefinition(
     container_cpu=512,
     container_memory=1024,
 )
+
+def reset_cache_on_forecast_all(access_token: str) -> None:
+    """Reset the cache on the API."""
+    url = f"{base_url}/v0/solar/GB/gsp/forecast/all/"
+    headers = {"Authorization": f"Bearer {access_token}", "Cache-Control": "no-cache"}
+    response = requests.post(url, headers=headers, timeout=30)
+    if response.status_code != 200:
+        raise ValueError(f"Failed to reset cache: {response.text}")
 
 
 def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
@@ -203,7 +216,20 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
+    get_bearer_token = PythonOperator(
+        task_id="check-api-get-bearer-token",
+        python_callable=get_bearer_token_from_auth0,
+    )
+
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
+    reset_cache_forecast_all = PythonOperator(
+        task_id="check-api-national-forecast",
+        python_callable=reset_cache_on_forecast_all,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
+    latest_only_op >> get_bearer_token >> reset_cache_forecast_all
 
 
 @dag(
