@@ -60,11 +60,13 @@ def get_bearer_token_from_auth0() -> str:
     return access_token
 
 
-def call_api(url: str, access_token: str | None = None) -> dict | list:
+def call_api(url: str, access_token: str | None = None, no_cache: bool = False) -> dict | list:
     """General function to call the API."""
     logger.info(f"Checking: {url}")
 
     headers = {"Authorization": "Bearer " + access_token} if access_token else {}
+    if no_cache:
+        headers["Cache-Control"] = "no-cache"
 
     t = time.time()
     response = requests.get(url, headers=headers, timeout=30)

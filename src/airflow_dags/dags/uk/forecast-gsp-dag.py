@@ -1,6 +1,7 @@
 """DAGs to forecast generation values using PVNet."""
 
 import datetime as dt
+import numpy as np
 import os
 
 import requests
@@ -18,11 +19,12 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
 )
 from airflow_dags.plugins.scripts.api_checks import (
     get_bearer_token_from_auth0,
+    call_api
 )
 
 env = os.getenv("ENVIRONMENT", "development")
 
-base_url = "https://api-dev1.quartz.solar/"
+base_url = "http://api-dev1.quartz.solar"
 
 default_args = {
     "owner": "airflow",
@@ -91,13 +93,71 @@ forecast_blender = ContainerDefinition(
     container_memory=1024,
 )
 
-def reset_cache_on_forecast_all(access_token: str) -> None:
+def floor_30_minutes_dt(ts):
+    """
+    Floor a datetime by 30 mins.
+
+    For example:
+    2021-01-01 17:01:01 --> 2021-01-01 17:00:00
+    2021-01-01 17:35:01 --> 2021-01-01 17:30:00
+
+    :param ts: datetime
+    :return:
+    """
+    approx = np.floor(ts.minute / 30.0) * 30
+    ts = ts.replace(minute=0)
+    ts = ts.replace(second=0)
+    ts = ts.replace(microsecond=0)
+    ts += dt.timedelta(minutes=approx)
+
+    return ts
+
+def floor_6_hours_dt(ts: dt.datetime):
+    """
+    Floor a datetime by 6 hours.
+
+    For example:
+    2021-01-01 17:01:01 --> 2021-01-01 12:00:00
+    2021-01-01 19:35:01 --> 2021-01-01 18:00:00
+
+    :param ts: datetime
+    :return: datetime rounded to lowest 6 hours
+    """
+    approx = np.floor(ts.hour / 6.0) * 6.0
+    ts = ts.replace(hour=0)
+    ts = ts.replace(minute=0)
+    ts = ts.replace(second=0)
+    ts = ts.replace(microsecond=0)
+    ts += dt.timedelta(hours=approx)
+
+    return ts
+
+def reset_cache_on_forecast_all(access_token: str, now: dt.datetime) -> None:
     """Reset the cache on the API."""
     url = f"{base_url}/v0/solar/GB/gsp/forecast/all/"
-    headers = {"Authorization": f"Bearer {access_token}", "Cache-Control": "no-cache"}
-    response = requests.post(url, headers=headers, timeout=30)
-    if response.status_code != 200:
-        raise ValueError(f"Failed to reset cache: {response.text}")
+
+    # get 30 mins before now
+    dt_30_floor = floor_30_minutes_dt(now).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
+    url_future = url + f"?start_datetime_utc={dt_30_floor}"
+
+    call_api(url_past, access_token=access_token, no_cache=True)
+    call_api(url_future, access_token=access_token, no_cache=True)
+
+
+def reset_cache_on_pvlive_all(access_token: str, now: dt.datetime) -> None:
+    """Reset the cache on the API."""
+    url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
+
+    # get 30 mins before now
+    dt_30_floor = floor_30_minutes_dt(now).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
+
+    call_api(url_past, access_token=access_token, no_cache=True)
+
+
 
 
 def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
@@ -216,20 +276,38 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
+
     get_bearer_token = PythonOperator(
-        task_id="check-api-get-bearer-token",
+        task_id="api-get-bearer-token",
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
+    # reset cache on api routes
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='api-get-bearer-token') }}"  # noqa: S105
     reset_cache_forecast_all = PythonOperator(
-        task_id="check-api-national-forecast",
+        task_id="reset-cache-forecast",
         python_callable=reset_cache_on_forecast_all,
-        op_kwargs={"access_token": access_token_str},
+        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC)},
+    )
+    reset_cache_forecast_all_next_30 = PythonOperator(
+        task_id="reset-cache-forecast-next-30",
+        python_callable=reset_cache_on_forecast_all,
+        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
+    )
+    reset_cache_pvlive_all = PythonOperator(
+        task_id="reset-cache-pvlive",
+        python_callable=reset_cache_on_pvlive_all,
+        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC)},
+    )
+    reset_cache_pvlive_all_next_30 = PythonOperator(
+        task_id="reset-cache-pvlive-next-30",
+        python_callable=reset_cache_on_pvlive_all,
+        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
     )
 
     latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
-    latest_only_op >> get_bearer_token >> reset_cache_forecast_all
+    blend_forecasts_op >> get_bearer_token >> reset_cache_forecast_all 
+    reset_cache_forecast_all >> reset_cache_forecast_all_next_30 >> reset_cache_pvlive_all >> reset_cache_pvlive_all_next_30
 
 
 @dag(
