@@ -182,30 +182,16 @@ def gsp_forecast_pvnet_dag() -> None:
         },
     )
 
-    def send_forecast_check_notification(context: dict) -> None:
-        """Callback to send Slack notification with dynamically from XCom."""
-        ti = context["ti"]
-        result = ti.xcom_pull(task_ids=ti.task_id)
-        message = result.get("message", "") if isinstance(result, dict) else str(result)
-        if isinstance(result, dict):
-            urgency_value = result.get("urgency", Urgency.CRITICAL)
-        else:
-            urgency_value = Urgency.CRITICAL
-        #convert to enum to handle values from XCom(handles both string and enum values from XCom)
-        urgency = Urgency(urgency_value) if isinstance(urgency_value, str) else urgency_value
-        # send notification
-        notifiers = get_slack_message_callback(
-            additional_message_context=message,
-            urgency=urgency,
-        )
-        for notifier in notifiers:
-            notifier.notify(context=context)
-
     check_forecasts_op = PythonOperator(
         task_id="check-forecast-gsps-last-run",
         trigger_rule="one_failed",
         python_callable=check_forecast_status,
-        on_success_callback=send_forecast_check_notification,
+        on_success_callback=get_slack_message_callback(
+            additional_message_context=(
+                "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')['message']}}"
+            ),
+            urgency="{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')['urgency']}}",
+        ),
         on_failure_callback=get_slack_message_callback(
             additional_message_context=(
              "This was trying to check when PVNet and "
