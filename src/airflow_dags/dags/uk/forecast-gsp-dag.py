@@ -90,7 +90,7 @@ forecast_blender = ContainerDefinition(
     container_memory=1024,
 )
 
-def floor_30_minutes_dt(ts):
+def floor_30_minutes_dt(ts: dt.datetime) -> dt.datetime:
     """Floor a datetime by 30 mins.
 
     For example:
@@ -108,7 +108,7 @@ def floor_30_minutes_dt(ts):
 
     return ts
 
-def floor_6_hours_dt(ts: dt.datetime):
+def floor_6_hours_dt(ts: dt.datetime) -> dt.datetime:
     """Floor a datetime by 6 hours.
 
     For example:
@@ -133,7 +133,8 @@ def reset_cache_on_forecast_all(access_token: str, now: dt.datetime) -> None:
 
     # get 30 mins before now
     dt_30_floor = floor_30_minutes_dt(now).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    dt_6h_floor_2days_ago \
+        = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
     url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
     url_future = url + f"?start_datetime_utc={dt_30_floor}"
 
@@ -290,22 +291,26 @@ def gsp_forecast_pvnet_dag() -> None:
     reset_cache_forecast_all_next_30 = PythonOperator(
         task_id="reset-cache-forecast-next-30",
         python_callable=reset_cache_on_forecast_all,
-        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
+        op_kwargs={"access_token": access_token_str,
+                   "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
     )
     reset_cache_pvlive_all = PythonOperator(
         task_id="reset-cache-pvlive",
         python_callable=reset_cache_on_pvlive_all,
-        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC)},
+        op_kwargs={"access_token": access_token_str,
+                   "now": dt.datetime.now(tz=dt.UTC)},
     )
     reset_cache_pvlive_all_next_30 = PythonOperator(
         task_id="reset-cache-pvlive-next-30",
         python_callable=reset_cache_on_pvlive_all,
-        op_kwargs={"access_token": access_token_str, "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
+        op_kwargs={"access_token": access_token_str,
+                   "now": dt.datetime.now(tz=dt.UTC) + dt.timedelta(minutes=30)},
     )
 
     latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
     blend_forecasts_op >> get_bearer_token >> reset_cache_forecast_all
-    reset_cache_forecast_all >> reset_cache_forecast_all_next_30 >> reset_cache_pvlive_all >> reset_cache_pvlive_all_next_30
+    reset_cache_forecast_all >> reset_cache_forecast_all_next_30 \
+        >> reset_cache_pvlive_all >> reset_cache_pvlive_all_next_30
 
 
 @dag(
