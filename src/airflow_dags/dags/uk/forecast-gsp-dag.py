@@ -1,9 +1,9 @@
 """DAGs to forecast generation values using PVNet."""
 
 import datetime as dt
-import numpy as np
 import os
 
+import numpy as np
 import requests
 from airflow.decorators import dag
 from airflow.operators.latest_only import LatestOnlyOperator
@@ -17,10 +17,7 @@ from airflow_dags.plugins.operators.ecs_run_task_operator import (
     ContainerDefinition,
     EcsAutoRegisterRunTaskOperator,
 )
-from airflow_dags.plugins.scripts.api_checks import (
-    get_bearer_token_from_auth0,
-    call_api
-)
+from airflow_dags.plugins.scripts.api_checks import call_api, get_bearer_token_from_auth0
 
 env = os.getenv("ENVIRONMENT", "development")
 
@@ -94,8 +91,7 @@ forecast_blender = ContainerDefinition(
 )
 
 def floor_30_minutes_dt(ts):
-    """
-    Floor a datetime by 30 mins.
+    """Floor a datetime by 30 mins.
 
     For example:
     2021-01-01 17:01:01 --> 2021-01-01 17:00:00
@@ -113,8 +109,7 @@ def floor_30_minutes_dt(ts):
     return ts
 
 def floor_6_hours_dt(ts: dt.datetime):
-    """
-    Floor a datetime by 6 hours.
+    """Floor a datetime by 6 hours.
 
     For example:
     2021-01-01 17:01:01 --> 2021-01-01 12:00:00
@@ -137,10 +132,13 @@ def reset_cache_on_forecast_all(access_token: str, now: dt.datetime) -> None:
     url = f"{base_url}/v0/solar/GB/gsp/forecast/all/"
 
     # get 30 mins before now
-    dt_30_floor = floor_30_minutes_dt(now).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    dt_30_floor = floor_30_minutes_dt(now).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
     url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
     url_future = url + f"?start_datetime_utc={dt_30_floor}"
+
+    url_past = url_past.replace("+", "%2B")
+    url_future = url_future.replace("+", "%2B")
 
     call_api(url_past, access_token=access_token, no_cache=True)
     call_api(url_future, access_token=access_token, no_cache=True)
@@ -151,9 +149,11 @@ def reset_cache_on_pvlive_all(access_token: str, now: dt.datetime) -> None:
     url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
 
     # get 30 mins before now
-    dt_30_floor = floor_30_minutes_dt(now).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    dt_30_floor = floor_30_minutes_dt(now).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
     url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
+
+    url_past = url_past.replace("+", "%2B")
 
     call_api(url_past, access_token=access_token, no_cache=True)
 
@@ -276,7 +276,6 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-
     get_bearer_token = PythonOperator(
         task_id="api-get-bearer-token",
         python_callable=get_bearer_token_from_auth0,
@@ -306,7 +305,7 @@ def gsp_forecast_pvnet_dag() -> None:
     )
 
     latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
-    blend_forecasts_op >> get_bearer_token >> reset_cache_forecast_all 
+    blend_forecasts_op >> get_bearer_token >> reset_cache_forecast_all
     reset_cache_forecast_all >> reset_cache_forecast_all_next_30 >> reset_cache_pvlive_all >> reset_cache_pvlive_all_next_30
 
 
