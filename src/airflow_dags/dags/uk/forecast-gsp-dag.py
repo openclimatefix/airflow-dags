@@ -187,7 +187,10 @@ def gsp_forecast_pvnet_dag() -> None:
         ti = context["ti"]
         result = ti.xcom_pull(task_ids=ti.task_id)
         message = result.get("message", "") if isinstance(result, dict) else str(result)
-        urgency_value = result.get("urgency", Urgency.CRITICAL) if isinstance(result, dict) else Urgency.CRITICAL
+        if isinstance(result, dict):
+            urgency_value = result.get("urgency", Urgency.CRITICAL)
+        else:
+            urgency_value = Urgency.CRITICAL
         #convert to enum to handle values from XCom(handles both string and enum values from XCom)
         urgency = Urgency(urgency_value) if isinstance(urgency_value, str) else urgency_value
         # send notification
