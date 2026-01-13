@@ -150,8 +150,7 @@ def reset_cache_on_pvlive_all(access_token: str, now: dt.datetime) -> None:
 
     # get 30 mins before now
     dt_30_floor = floor_30_minutes_dt(now).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-    dt_6h_floor_2days_ago = floor_6_hours_dt(now - dt.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-    url_past = url + f"?start_datetime_utc={dt_6h_floor_2days_ago}&end_datetime_utc={dt_30_floor}"
+    url_past = url + f"?end_datetime_utc={dt_30_floor}"
 
     url_past = url_past.replace("+", "%2B")
 
