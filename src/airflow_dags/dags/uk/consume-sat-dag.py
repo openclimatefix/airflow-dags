@@ -125,14 +125,8 @@ def sat_consumer_dag() -> None:
                 "This takes into consideration the forecasts being delayed. "
                 "For example, if the satellite data drops out "
                 "for long enough, the DA (ECMWF and UKV) or other back-up model may be used.\n\n"
-                "The EUMETSAT status link for the RSS service (5 minute) is "
-                "<https://masif.eumetsat.int/ossi/webpages/level3.html?"
-                "ossi_level3_filename=seviri_rss_hr.json.html&"
-                "ossi_level2_filename=seviri_rss.html|here> "
-                "and the 0 degree (15 minute) which we use as a backup is "
-                "<https://masif.eumetsat.int/ossi/webpages/level3.html?"
-                "ossi_level3_filename=seviri_0deg_hr.json.html&"
-                "ossi_level2_filename=seviri_0deg.html|here>."
+                "The EUMETSAT status page is "
+                "<https://uns.eumetsat.int/uns/index.html?filter=currentalerts|here>."
             ),
             urgency=Urgency.SUBCRITICAL,
         ),

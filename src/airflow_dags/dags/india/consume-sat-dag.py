@@ -84,10 +84,8 @@ def sat_consumer_dag() -> None:
         on_failure_callback=get_slack_message_callback(
             country="in",
             additional_message_context=(
-                "The EUMETSAT status link for the IODC satellite is "
-                "<https://masif.eumetsat.int/ossi/webpages/level2.html?"
-                "ossi_level2_filename=seviri_iodc.html|here> "
-                "and the general EUMETSAT status link is <https://uns.eumetsat.int/uns/|here>. "
+                "The EUMETSAT status page is "
+                "<https://uns.eumetsat.int/uns/index.html?filter=currentalerts|here>."
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
