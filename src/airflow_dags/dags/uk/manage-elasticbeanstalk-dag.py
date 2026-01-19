@@ -40,7 +40,7 @@ names = [
 @dag(
     dag_id="uk-manage-elb",
     description=__doc__,
-    schedule="0 0 1 * *",
+    schedule="0 0 */5 * *",
     start_date=dt.datetime(2025, 3, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
