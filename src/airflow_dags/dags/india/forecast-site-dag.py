@@ -25,6 +25,12 @@ default_args = {
     "max_active_tasks": 10,
 }
 
+common_container_params = {
+    "container_cpu": 1024,
+    "container_memory": 3072,
+    "domain": "india",
+}
+
 india_forecaster = ContainerDefinition(
     name="forecast",
     container_image="docker.io/openclimatefix/india_forecast_app",
@@ -38,9 +44,7 @@ india_forecaster = ContainerDefinition(
         f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
-    container_cpu=1024,
-    container_memory=3072,
-    domain="india",
+    **common_container_params,
 )
 
 ad_forecaster = ContainerDefinition(
@@ -58,9 +62,28 @@ ad_forecaster = ContainerDefinition(
         f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
-    container_cpu=1024,
-    container_memory=3072,
-    domain="india",
+    **common_container_params,
+)
+
+ruvnl_forecaster_v2 = ContainerDefinition(
+    name="forecast-ruvnl-v2",
+    container_image="ghcr.io/openclimatefix/site-forecast-app",
+    container_tag="add-gencast-support" if env=="development" else "1.2.0",
+    container_env={
+        "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
+        "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
+        "SATELLITE_ZARR_PATH": f"s3://india-satellite-{env}/iodc/data/latest.zarr.zip",
+        "NWP_GENCAST_GCS_BUCKET_PATH": "gs://weathernext/126478713_1_0/zarr/126478713_2024_to_present/",
+        "NWP_GENCAST_ZARR_PATH": "/tmp/nwp_gencast_out.zarr", # noqa: S108
+        "CLIENT_NAME": "ruvnl",
+        "COUNTRY": "india",
+    },
+    container_secret_env={
+        f"{env}/rds/indiadb": ["DB_URL"],
+        f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
+        f"{env}/forecast/site": ["GCLOUD_SERVICE_ACCOUNT_JSON"],
+    },
+    **common_container_params,
 )
 
 @dag(
@@ -136,6 +159,33 @@ def ad_forecast_dag() -> None:
 
     latest_only_op >> [forecast_ad_op, forecast_ad_v2_op]
 
+@dag(
+    dag_id="india-forecast-ruvnl-v2",
+    description=__doc__,
+    schedule="0 * * * *",
+    start_date=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
+    catchup=False,
+    default_args=default_args,
+)
+def ruvnl_forecast_v2_dag() -> None:
+    """Create RUVNL forecasts."""
+    latest_only_op = LatestOnlyOperator(task_id="latest_only")
+
+    forecast_ruvnl_v2_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="forecast-ruvnl-v2",
+        container_def=ruvnl_forecaster_v2,
+        env_overrides={
+            "CLIENT_NAME": "ruvnl",
+            "USE_SATELLITE": "False",
+            "SAVE_BATCHES_DIR": f"s3://india-forecast-{env}/RUVNL-v2",
+        },
+        on_failure_callback=get_slack_message_callback(country="in", urgency=Urgency.SUBCRITICAL),
+        max_active_tis_per_dag=10,
+    )
+
+    latest_only_op >> forecast_ruvnl_v2_op
+
 
 ruvnl_forecast_dag()
 ad_forecast_dag()
+ruvnl_forecast_v2_dag()
