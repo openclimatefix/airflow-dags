@@ -24,6 +24,27 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.31 - 2026-01-22</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK 
+- NWP consumer changed from `1.1.30` to `1.1.33` (fix for extra steps in data)
+- PVLive consumer updated from `1.4.9` to `1.4.15` (fix for version in logs)
+- Satellie conusmer slack message updated
+- Upgrade `check_forecast_status`, provide urgency for slack messages. 
+
+NL
+- Ned NL consumer changed from `1.4.14` to `1.4.15`
+- NWP consumer changed from `1.1.26` to `1.1.33` (fix for extra steps in data)
+
+IN
+- NWP consumer changed from `1.1.32` to `1.1.33` (fix for extra steps in data))
+- Satellie conusmer slack message updated
+- New Development forecaster with GenCast 
+
+</details>
+
+<details><summary><a>
   <h3>1.30 - 2025-12-18</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
