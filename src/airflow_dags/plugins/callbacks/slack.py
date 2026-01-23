@@ -63,7 +63,7 @@ def get_slack_message_callback(
     """
     # change string to enum
     if isinstance(urgency, str) and urgency.upper() in Urgency.__members__:
-        urgency = Urgency[urgency.upper()]  
+        urgency = Urgency[urgency.upper()]
 
     try:
         urgency_value = urgency.value
