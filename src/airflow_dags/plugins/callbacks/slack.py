@@ -48,7 +48,7 @@ def _build_message(
 
 def get_slack_message_callback(
     country: str = "gb",
-    urgency: Urgency = Urgency.CRITICAL,
+    urgency: Urgency | str = Urgency.CRITICAL,
     additional_message_context: str = "",
 ) -> list[BaseNotifier]:
     """Send a slack message via the slack notifier to channels based on urgency and country.
@@ -61,6 +61,15 @@ def get_slack_message_callback(
     Returns:
         A list containing the result(s) of `send_slack_notification(...)` calls.
     """
+    # change string to enum
+    if isinstance(urgency, str) and urgency.upper() in Urgency.__members__:
+        urgency = Urgency[urgency.upper()]
+
+    try:
+        urgency_value = urgency.value
+    except AttributeError:
+        urgency_value = Urgency.CRITICAL
+
     # get message content
     flag = FLAGS.get(country.lower(), DEFAULT_FLAG)
     task_link = get_task_link()
@@ -70,7 +79,7 @@ def get_slack_message_callback(
 
     # Split channels by urgency for prod
     if env == "production":
-        channel = f"tech-ops-airflow-{env}-{urgency.value}"
+        channel = f"tech-ops-airflow-{env}-{urgency_value}"
     else:
         channel = f"tech-ops-airflow-{env}"
 
