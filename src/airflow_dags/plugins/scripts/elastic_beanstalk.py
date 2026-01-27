@@ -1,4 +1,5 @@
 """Functions for elastic beanstalk environment."""
+
 import logging
 import time
 from datetime import UTC, datetime

@@ -12,7 +12,7 @@ jobs:
     secrets: inherit
     with:
       enable_linting: true
-      enable_typechecking: false
+      enable_typechecking: true
       tests_folder: "tests"
       tests_runner: "unittest"
       tests_conda_deps: "xmlsec=1.3.14"

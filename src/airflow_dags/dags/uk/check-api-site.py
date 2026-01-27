@@ -1,3 +1,7 @@
+# type: ignore
+# NOTE: I don't like having to ignore type checking here, but the call_api function and subsequent
+# checks on it are very dynamic. I think there's something to be said for moving these sort of
+# tests the api itself.
 """General checks on Uk Site API."""
 
 import datetime as dt

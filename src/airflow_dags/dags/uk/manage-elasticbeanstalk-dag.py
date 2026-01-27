@@ -25,9 +25,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-elb_error_message = (
-    "This task tried to reset the Elastic Beanstalk instances. "
-)
+elb_error_message = "This task tried to reset the Elastic Beanstalk instances. "
 
 names = [
     f"uk-{env}-airflow",
@@ -64,7 +62,7 @@ def elb_reset_dag() -> None:
             on_failure_callback=get_slack_message_callback(
                 additional_message_context=elb_error_message,
                 urgency=Urgency.SUBCRITICAL,
-                ),
+            ),
         )
 
         elb_1 = PythonOperator(
@@ -75,7 +73,7 @@ def elb_reset_dag() -> None:
             on_failure_callback=get_slack_message_callback(
                 additional_message_context=elb_error_message,
                 urgency=Urgency.SUBCRITICAL,
-                ),
+            ),
         )
 
         if "api" in name:
@@ -88,13 +86,12 @@ def elb_reset_dag() -> None:
                 },
                 max_active_tis_per_dag=2,
                 on_failure_callback=get_slack_message_callback(
-                additional_message_context=elb_error_message,
-                urgency=Urgency.SUBCRITICAL,
+                    additional_message_context=elb_error_message,
+                    urgency=Urgency.SUBCRITICAL,
                 ),
             )
             latest_only >> elb_2 >> elb_terminate >> elb_1
         else:
-
             latest_only >> elb_2 >> elb_1
 
 

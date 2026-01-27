@@ -1,5 +1,6 @@
 """DAG to download and process NWP data from various sources."""
 
+import dataclasses
 import datetime as dt
 import os
 
@@ -25,36 +26,35 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-default_args = {
-    "name": "nwp-consumer",
-    "container_image": "ghcr.io/openclimatefix/nwp-consumer",
-    "container_tag": "1.1.33",
-    "container_env": {
+# GFS and MetOffice consumers
+nwp_consumer: ContainerDefinition = ContainerDefinition(
+    name="nwp-consumer",
+    container_image="ghcr.io/openclimatefix/nwp-consumer",
+    container_tag="1.1.33",
+    container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
     },
-    "container_secret_env": {
+    container_secret_env={
         f"{env}/data/nwp-consumer": [
             "ECMWF_REALTIME_S3_ACCESS_KEY",
             "ECMWF_REALTIME_S3_ACCESS_SECRET",
             "METOFFICE_API_KEY",
         ],
     },
-    "container_command": ["consume"],
-    "container_cpu": 512,
-    "container_memory": 1024,
-    "domain": "india",
-}
-
-# GFS and MetOffice consumers
-nwp_consumer = ContainerDefinition(**default_args)
+    container_command=["consume"],
+    container_cpu=512,
+    container_memory=1024,
+    domain="india",
+)
 
 # ECWMF consumer
-ecmwf_args = default_args.copy()
-ecmwf_args["name"] = "nwp-consumer-ecmwf"
-ecmwf_args["container_memory"] = 2048
-ecmwf_args["container_cpu"] = 1024
-nwp_consumer_ecwmf = ContainerDefinition(**ecmwf_args)
+nwp_consumer_ecwmf: ContainerDefinition = dataclasses.replace(
+    nwp_consumer,
+    name="nwp-consumer-ecmwf",
+    container_memory=2048,
+    container_cpu=1024,
+)
 
 
 @dag(

@@ -85,11 +85,11 @@ def nwp_consumer_dag() -> None:
         on_failure_callback=get_slack_message_callback(
             additional_message_context=(
                 "The forecast blend service automatically merges the best forecasts together. "
-                 "This takes into consideration the forecasts being delayed. "
-                 "For example, if the Met Office data drops out for long enough, "
-                 "the PVNet ECMWF only or other back-up model may be used. "
-                 "Met Office status link is "
-                 "https://datahub.metoffice.gov.uk/support/service-status. "
+                "This takes into consideration the forecasts being delayed. "
+                "For example, if the Met Office data drops out for long enough, "
+                "the PVNet ECMWF only or other back-up model may be used. "
+                "Met Office status link is "
+                "https://datahub.metoffice.gov.uk/support/service-status. "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
