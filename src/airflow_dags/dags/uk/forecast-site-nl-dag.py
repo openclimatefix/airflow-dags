@@ -37,6 +37,7 @@ site_forecaster = ContainerDefinition(
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
+        f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
     },
     container_cpu=1024,
     container_memory=6144,
