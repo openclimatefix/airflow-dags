@@ -89,10 +89,10 @@ def pvlive_intraday_consumer_dag() -> None:
             "BACKFILL_HOURS": "12",
         },
         on_failure_callback=get_slack_message_callback(
-            additional_message_context= (
-            "This is needed for the adjuster in the Forecast."
-            "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
-            "to see if it's working. "
+            additional_message_context=(
+                "This is needed for the adjuster in the Forecast."
+                "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
+                "to see if it's working. "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
@@ -112,6 +112,7 @@ def pvlive_intraday_consumer_dag() -> None:
         )
 
         consume_pvlive_gsps_data_platform  # noqa: B018
+
 
 @dag(
     dag_id="uk-consume-pvlive-dayafter",
@@ -162,7 +163,6 @@ def pvlive_dayafter_consumer_dag() -> None:
         )
 
         consume_pvlive_gsps_data_platform  # noqa: B018
-
 
 
 pvlive_intraday_consumer_dag()

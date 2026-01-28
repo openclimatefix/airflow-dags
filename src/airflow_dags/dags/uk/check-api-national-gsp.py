@@ -1,3 +1,7 @@
+# type: ignore
+# NOTE: I don't like having to ignore type checking here, but the call_api function and subsequent
+# checks on it are very dynamic. I think there's something to be said for moving these sort of
+# tests the api itself.
 """General checks on Uk National/GSP API."""
 
 import datetime as dt
@@ -524,9 +528,9 @@ def api_national_gsp_check() -> None:
         python_callable=lambda: None,
         trigger_rule="one_failed",
         on_success_callback=get_slack_message_callback(
-            additional_message_context= (
-            "One of the API checks has failed. "
-            "See which ones have failed on airflow, to help debug the issue. "
+            additional_message_context=(
+                "One of the API checks has failed. "
+                "See which ones have failed on airflow, to help debug the issue. "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),

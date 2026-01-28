@@ -2,6 +2,7 @@
 
 import dataclasses
 import os
+from collections.abc import Callable
 from typing import Any, override
 
 from airflow.providers.amazon.aws.operators.ecs import (
@@ -30,7 +31,10 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
         container_def: "ContainerDefinition",
         env_overrides: dict[str, str] | None = None,
         command_override: list[str] | None = None,
-        **kwargs: int | bool | str | dict[str, str] | list[str],
+        max_active_tis_per_dag: int | None = None,
+        on_failure_callback: Callable[[Context], None] | None = None,
+        trigger_rule: str = "all_success",
+        default_args: dict[str, Any] | None = None,
     ) -> None:
         """Create a new instance of the class."""
         self.container_def = container_def
@@ -62,7 +66,10 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
             awslogs_group=f"/aws/ecs/{cluster}",
             awslogs_stream_prefix="airflow",
             awslogs_region=region,
-            **kwargs,
+            max_active_tis_per_dag=max_active_tis_per_dag,
+            on_failure_callback=[on_failure_callback] if on_failure_callback else None,
+            trigger_rule=trigger_rule,
+            default_args=default_args,
         )
 
     def _determine_outdated(self) -> bool:
@@ -138,7 +145,7 @@ class EcsAutoRegisterRunTaskOperator(EcsRunTaskOperator):
             )
             context["ti"].xcom_push(key="task_definition_arn", value=task_definition_arn)
 
-        return super().execute(context=context)
+        return super().execute(context=context)  # type: ignore
 
 
 @dataclasses.dataclass

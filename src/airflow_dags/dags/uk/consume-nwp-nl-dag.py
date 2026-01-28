@@ -84,9 +84,9 @@ def nl_nwp_consumer_dag() -> None:
         },
         on_failure_callback=get_slack_message_callback(
             country="nl",
-            additional_message_context= (
-            "The forecast will continue running until it runs out of data. "
-            "ECMWF status link is <https://status.ecmwf.int/|here> "
+            additional_message_context=(
+                "The forecast will continue running until it runs out of data. "
+                "ECMWF status link is <https://status.ecmwf.int/|here> "
             ),
         ),
     )

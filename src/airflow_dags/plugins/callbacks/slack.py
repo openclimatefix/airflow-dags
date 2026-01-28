@@ -3,8 +3,7 @@
 import os
 from enum import StrEnum, auto
 
-from airflow.notifications.basenotifier import BaseNotifier
-from airflow.providers.slack.notifications.slack import send_slack_notification
+from airflow.providers.slack.notifications.slack import SlackNotifier, send_slack_notification
 
 # get the env
 env = os.getenv("ENVIRONMENT", "development")
@@ -18,8 +17,10 @@ FLAGS = {
 }
 DEFAULT_FLAG = "🏳️"
 
+
 class Urgency(StrEnum):
     """Urgency levels for notifications."""
+
     CRITICAL = auto()
     SUBCRITICAL = auto()
 
@@ -29,8 +30,12 @@ def get_task_link() -> str:
     # note we need 4 { so that after f-string its 2 { which is needed for airflow
     return f"<https://{url}/dags/{{{{ ti.dag_id }}}}|task {{{{ ti.task_id }}}}>"
 
+
 def _build_message(
-    task_link: str, flag: str, urgency: Urgency, additional_message_context: str = "",
+    task_link: str,
+    flag: str,
+    urgency: Urgency,
+    additional_message_context: str = "",
 ) -> str:
     """Return a sensible message for the given urgency."""
     if urgency == Urgency.CRITICAL:
@@ -46,11 +51,12 @@ def _build_message(
         + "No out of hours support is required."
     )
 
+
 def get_slack_message_callback(
     country: str = "gb",
-    urgency: Urgency | str = Urgency.CRITICAL,
+    urgency: Urgency = Urgency.CRITICAL,
     additional_message_context: str = "",
-) -> list[BaseNotifier]:
+) -> SlackNotifier:
     """Send a slack message via the slack notifier to channels based on urgency and country.
 
     Args:
@@ -61,32 +67,25 @@ def get_slack_message_callback(
     Returns:
         A list containing the result(s) of `send_slack_notification(...)` calls.
     """
-    # change string to enum
-    if isinstance(urgency, str) and urgency.upper() in Urgency.__members__:
-        urgency = Urgency[urgency.upper()]
-
-    try:
-        urgency_value = urgency.value
-    except AttributeError:
-        urgency_value = Urgency.CRITICAL
-
     # get message content
     flag = FLAGS.get(country.lower(), DEFAULT_FLAG)
     task_link = get_task_link()
 
-    message = _build_message(task_link=task_link, flag=flag, urgency=urgency,
-                             additional_message_context=additional_message_context)
+    message = _build_message(
+        task_link=task_link,
+        flag=flag,
+        urgency=urgency,
+        additional_message_context=additional_message_context,
+    )
 
     # Split channels by urgency for prod
     if env == "production":
-        channel = f"tech-ops-airflow-{env}-{urgency_value}"
+        channel = f"tech-ops-airflow-{env}-{urgency.value}"
     else:
         channel = f"tech-ops-airflow-{env}"
 
-    notifier = send_slack_notification(
+    return send_slack_notification(
         text=message,
         channel=channel,
         username="Airflow",
     )
-
-    return [notifier]

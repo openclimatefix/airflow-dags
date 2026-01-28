@@ -1,4 +1,5 @@
 """Functionts to clean up logs."""
+
 import logging
 import os
 import time
@@ -8,12 +9,12 @@ logger = logging.getLogger(__name__)
 # Constants
 MILLISECONDS_TO_KEEP = 7 * 86400 * 1000  # 7 days
 
-def delete_old_logs_and_empty_dirs(log_base_path:str, age_threshold_ms:int) -> None:
+
+def delete_old_logs_and_empty_dirs(log_base_path: str, age_threshold_ms: int) -> None:
     """Delete old log files and empty directories."""
     now_ms = time.time() * 1000
 
     for root, _dirs, files in os.walk(log_base_path, topdown=False):
-
         logger.info(f"Checking directory: {root}")
 
         if "dag_processor_manager" in root:
@@ -35,6 +36,7 @@ def delete_old_logs_and_empty_dirs(log_base_path:str, age_threshold_ms:int) -> N
                 os.rmdir(root)
         except Exception as e:
             logger.error(f"Error removing directory {root}: {e}")
+
 
 def cleanup_logs() -> None:
     """Clean up airflow logs."""

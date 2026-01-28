@@ -69,7 +69,6 @@ def sat_consumer_dag() -> None:
     """DAG to consume satellite data."""
     latest_only_op = LatestOnlyOperator(task_id="latest_only")
 
-
     consume_iodc_op = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="consume-iodc",
         container_def=sat_consumer,
@@ -80,7 +79,7 @@ def sat_consumer_dag() -> None:
             + "}}",
             "SATCONS_WORKDIR": f"s3://india-satellite-{env}/iodc",
         },
-        task_concurrency=1,
+        max_active_tis_per_dag=1,
         on_failure_callback=get_slack_message_callback(
             country="in",
             additional_message_context=(
@@ -89,7 +88,6 @@ def sat_consumer_dag() -> None:
             ),
             urgency=Urgency.SUBCRITICAL,
         ),
-
     )
     extract_latest_iodc_op = extract_latest_zarr(
         bucket=f"india-satellite-{env}",

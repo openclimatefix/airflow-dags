@@ -22,9 +22,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-elb_error_message = (
-    "This task tried to reset the Elastic Beanstalk instances. "
-)
+elb_error_message = "This task tried to reset the Elastic Beanstalk instances. "
 
 names = [
     f"india-{env}-airflow",
@@ -46,7 +44,6 @@ def elb_reset_dag() -> None:
     latest_only = LatestOnlyOperator(task_id="latest_only")
 
     for name in names:
-
         elb_2 = PythonOperator(
             task_id=f"scale_elb_2_{name}",
             python_callable=scale_elastic_beanstalk_instance,
@@ -56,7 +53,7 @@ def elb_reset_dag() -> None:
                 country="in",
                 additional_message_context=elb_error_message,
                 urgency=Urgency.SUBCRITICAL,
-                ),
+            ),
         )
 
         elb_1 = PythonOperator(
@@ -68,7 +65,7 @@ def elb_reset_dag() -> None:
                 country="in",
                 additional_message_context=elb_error_message,
                 urgency=Urgency.SUBCRITICAL,
-                ),
+            ),
         )
 
         latest_only >> elb_2 >> elb_1

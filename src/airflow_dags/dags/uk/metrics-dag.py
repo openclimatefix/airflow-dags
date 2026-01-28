@@ -61,9 +61,9 @@ def metrics_dag() -> None:
             "LOGLEVEL": "DEBUG",
         },
         on_failure_callback=get_slack_message_callback(
-                additional_message_context="This task is not critical for live services. ",
-                urgency=Urgency.SUBCRITICAL,
-                ),
+            additional_message_context="This task is not critical for live services. ",
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
 
@@ -87,9 +87,9 @@ def me_dag() -> None:
             "LOGLEVEL": "DEBUG",
         },
         on_failure_callback=get_slack_message_callback(
-                additional_message_context="This task is not critical for live services. ",
-                urgency=Urgency.SUBCRITICAL,
-                ),
+            additional_message_context="This task is not critical for live services. ",
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
 
