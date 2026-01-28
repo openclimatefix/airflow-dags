@@ -1,3 +1,7 @@
+# type: ignore
+# NOTE: I don't like having to ignore type checking here, but the call_api function and subsequent
+# checks on it are very dynamic. I think there's something to be said for moving these sort of
+# tests the api itself.
 """General checks on Uk National/GSP API."""
 
 import datetime as dt
@@ -62,7 +66,6 @@ def check_forecast(access_token: str) -> None:
     """Check the forecast."""
     sites = call_api(url=f"{base_url}/sites", access_token=access_token)
     for site in sites:
-
         site_uuid = site["site_uuid"]
 
         full_url = f"{base_url}/sites/{site_uuid}/forecast"
@@ -93,7 +96,6 @@ def check_generation(access_token: str) -> None:
 
         # only check this for non ruvnl sites
         if "ruvnl" not in site["client_site_name"]:
-
             # check that the last datetime is within the last hour
             last_datetime = max([d["Time"] for d in pv_actual_values])
             # convert last_datetime to a datetime object
@@ -131,9 +133,7 @@ def api_site_check() -> None:
         python_callable=get_bearer_token_from_auth0,
     )
 
-    access_token_str = (
-        "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
-    )
+    access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     sites = PythonOperator(
         task_id="check-sites",
         python_callable=check_forecast,

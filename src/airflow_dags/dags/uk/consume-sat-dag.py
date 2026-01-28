@@ -61,12 +61,13 @@ sat_consumer = ContainerDefinition(
     container_storage=30,
 )
 
+
 def update_operator(cadence_mins: int) -> BashOperator:
     """BashOperator to update the API with the latest downloaded file."""
     if cadence_mins == 5:
         file: str = f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip"
     elif cadence_mins == 15:
-        file: str = f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip"
+        file = f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip"
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = (
         f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=satellite&file={file}"'
@@ -85,9 +86,9 @@ def update_operator(cadence_mins: int) -> BashOperator:
     catchup=False,
     default_args=default_args,
     user_defined_macros={
-        "starting_datetime": (
-            dt.datetime.now(tz=dt.UTC) - dt.timedelta(minutes=210)
-        ).strftime("%Y-%m-%dT%H:%M"),
+        "starting_datetime": (dt.datetime.now(tz=dt.UTC) - dt.timedelta(minutes=210)).strftime(
+            "%Y-%m-%dT%H:%M",
+        ),
     },
 )
 def sat_consumer_dag() -> None:
@@ -101,7 +102,7 @@ def sat_consumer_dag() -> None:
             "SATCONS_TIME": "{{ starting_datetime }}",
             "SATCONS_WORKDIR": f"s3://nowcasting-sat-{env}/rss",
         },
-        task_concurrency=1,
+        max_active_tis_per_dag=1,
     )
     extract_latest_rss_op = extract_latest_zarr(
         bucket=f"nowcasting-sat-{env}",
@@ -144,7 +145,6 @@ def sat_consumer_dag() -> None:
 
     latest_only_op >> consume_rss_op >> extract_latest_rss_op >> update_5min_op
     consume_rss_op >> consume_odegree_op >> extract_latest_odegree_op >> update_15min_op
-
 
 
 sat_consumer_dag()

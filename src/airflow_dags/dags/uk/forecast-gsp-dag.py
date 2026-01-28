@@ -102,9 +102,8 @@ def get_forecast_last_run_from_api(model_name: str) -> dt.datetime:
     return pvnet_last_run
 
 
-def check_forecast_status() -> dict[str, str]:
-    """Check the status of the forecast models."""
-    # check api for forecast models pvnet_v2 and pvnet_ecmwf
+def check_forecast_failure_is_subcritical() -> str:
+    """Check the subcritical status of the forecast models."""
     now = dt.datetime.now(tz=dt.UTC)
 
     pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
@@ -115,13 +114,8 @@ def check_forecast_status() -> dict[str, str]:
     pvnet_ecmwf_delay = now - pvnet_ecmwf_last_run
     pvnet_da_delay = now - pvnet_da_last_run
 
-    pvnet_last_run_str = pvnet_last_run.strftime("%Y-%m-%d %H:%M")
-    pvnet_ecmwf_last_run_str = pvnet_ecmwf_last_run.strftime("%Y-%m-%d %H:%M")
-    pvnet_da_last_run_str = pvnet_da_last_run.strftime("%Y-%m-%d %H:%M")
-
     hours = 2
 
-    #all models ran recently
     if (
         pvnet_delay <= dt.timedelta(hours=hours)
         and pvnet_ecmwf_delay <= dt.timedelta(hours=hours)
@@ -130,36 +124,52 @@ def check_forecast_status() -> dict[str, str]:
         message = (
             f"but PVNet, PVNet ECMWF-only, and PVNet DA have run within the last {hours} hours. "
         )
-        urgency = Urgency.SUBCRITICAL
-
-    #PVNet late, but PVNet DA ran
+    # PVNet late, but PVNet DA ran
     elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay <= dt.timedelta(hours=hours):
         message = (
             f"This means in the last {hours} hours, PVNet has failed to run "
             "but PVNet DA model has run. "
         )
-        urgency = Urgency.SUBCRITICAL
+    else:
+        # Handover to critical failure checks
+        raise Exception("Failure indicates critical issue")
 
-    #PVNet + PVNet DA both late
-    elif pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay > dt.timedelta(hours=hours):
+    return message
+
+
+def check_forecast_failure_is_critical() -> str:
+    """Check the critical status of the forecast models."""
+    now = dt.datetime.now(tz=dt.UTC)
+
+    pvnet_last_run = get_forecast_last_run_from_api("pvnet_v2")
+    pvnet_ecmwf_last_run = get_forecast_last_run_from_api("pvnet_ecmwf")
+    pvnet_da_last_run = get_forecast_last_run_from_api("pvnet_day_ahead")
+
+    pvnet_delay = now - pvnet_last_run
+    pvnet_da_delay = now - pvnet_da_last_run
+
+    pvnet_last_run_str = pvnet_last_run.strftime("%Y-%m-%d %H:%M")
+    pvnet_ecmwf_last_run_str = pvnet_ecmwf_last_run.strftime("%Y-%m-%d %H:%M")
+    pvnet_da_last_run_str = pvnet_da_last_run.strftime("%Y-%m-%d %H:%M")
+
+    hours = 2
+
+    if pvnet_delay > dt.timedelta(hours=hours) and pvnet_da_delay > dt.timedelta(hours=hours):
         message = (
             f"This means PVNet and PVNET_DA has failed to run in the last {hours} hours. "
             f" Last success run of PVNet was {pvnet_last_run_str} "
             f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
         )
-        urgency = Urgency.CRITICAL
 
-    #fallback (catch-all)
     else:
         message = (
             f" Last success run of PVNet was {pvnet_last_run_str} "
             f"and PVNet DA was {pvnet_da_last_run_str}. "
             f"and PVNet ECMWF was {pvnet_ecmwf_last_run_str}. "
         )
-        urgency = Urgency.CRITICAL
 
-    return {"message": message, "urgency": urgency}
+    return message
 
 
 @dag(
@@ -182,22 +192,27 @@ def gsp_forecast_pvnet_dag() -> None:
         },
     )
 
-    check_forecasts_op = PythonOperator(
-        task_id="check-forecast-gsps-last-run",
+    check_subcritical_op = PythonOperator(
+        task_id="check-forecast-gsps-last-run-subcritical",
         trigger_rule="one_failed",
-        python_callable=check_forecast_status,
+        python_callable=check_forecast_failure_is_subcritical,
         on_success_callback=get_slack_message_callback(
             additional_message_context=(
-                "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')['message']}}"
-            ),
-            urgency="{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run')['urgency']}}",
-        ),
-        on_failure_callback=get_slack_message_callback(
-            additional_message_context=(
-             "This was trying to check when PVNet and "
-             "PVNet ECMWF only last ran "
+                "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run-subcritical')['message']}}"
             ),
             urgency=Urgency.SUBCRITICAL,
+        ),
+    )
+
+    check_critical_op = PythonOperator(
+        task_id="check-forecast-gsps-last-run-critical",
+        trigger_rule="one_failed",
+        python_callable=check_forecast_failure_is_critical,
+        on_success_callback=get_slack_message_callback(
+            additional_message_context=(
+                "{{ti.xcom_pull(task_ids='check-forecast-gsps-last-run-critical')['message']}}"
+            ),
+            urgency=Urgency.CRITICAL,
         ),
     )
 
@@ -210,7 +225,14 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-    latest_only_op >> forecast_gsps_op >> [blend_forecasts_op, check_forecasts_op]
+    (
+        latest_only_op
+        >> forecast_gsps_op
+        >> [
+            blend_forecasts_op,
+            check_subcritical_op >> check_critical_op,
+        ]
+    )
 
 
 @dag(
@@ -231,8 +253,7 @@ def national_forecast_dayahead_dag() -> None:
         max_active_tis_per_dag=10,
         on_failure_callback=get_slack_message_callback(
             additional_message_context=(
-                "This forecast is only a backup "
-                "Only needed if other forecasts have failed "
+                "This forecast is only a backup Only needed if other forecasts have failed "
             ),
             urgency=Urgency.SUBCRITICAL,
         ),

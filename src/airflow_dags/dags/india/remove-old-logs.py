@@ -1,4 +1,5 @@
 """DAG to clean up airflow logs."""
+
 import datetime as dt
 import logging
 from datetime import timedelta
@@ -21,6 +22,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
+
 # Define the DAG, e.g., runs daily at 3 AM
 @dag(
     dag_id="india-manage-clean-up-logs",
@@ -36,6 +38,7 @@ def clean_up_logs_dag() -> None:
         task_id="cleanup_airflow_logs",
         python_callable=cleanup_logs,
     )
+
 
 # Register both DAGs
 clean_up_logs_dag()
