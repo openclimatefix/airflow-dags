@@ -29,6 +29,7 @@ and handles the deployment process.
 
 General 
 - Add type checks for airflow-dags
+- Add trigger for CI tests to be run for PR from forks
 
 UK 
 - Upgrade of `check_forecast_status`, split this function by urgency for simplicity. 
