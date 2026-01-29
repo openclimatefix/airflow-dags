@@ -225,15 +225,9 @@ def gsp_forecast_pvnet_dag() -> None:
         ),
     )
 
-    (
-        latest_only_op
-        >> forecast_gsps_op
-        >> [
-            blend_forecasts_op,
-            check_subcritical_op >> check_critical_op,
-        ]
-    )
-
+    latest_only_op >> forecast_gsps_op
+    forecast_gsps_op >> blend_forecasts_op
+    forecast_gsps_op >> check_subcritical_op >> check_critical_op
 
 @dag(
     dag_id="uk-forecast-national",
