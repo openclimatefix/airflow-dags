@@ -24,6 +24,22 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+  <h3>1.32 - 2026-01-29</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+General 
+- Add type checks for airflow-dags
+
+UK 
+- Upgrade of `check_forecast_status`, split this function by urgency for simplicity. 
+
+NL
+- Add HF token secret for NL forecaster
+
+
+</details>
+
+<details><summary><a>
   <h3>1.31 - 2026-01-22</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
