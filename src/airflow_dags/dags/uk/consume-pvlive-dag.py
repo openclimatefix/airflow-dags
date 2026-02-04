@@ -34,10 +34,10 @@ default_args = {
 pvlive_consumer = ContainerDefinition(
     name="pvlive-consumer",
     container_image="docker.io/openclimatefix/pvliveconsumer",
-    container_tag="1.3.3",
+    container_tag="1.3.2",
     container_env={
         "LOGLEVEL": "INFO",
-        "PVLIVE_DOMAIN_URL": "api0.solar.sheffield.ac.uk",
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
@@ -53,9 +53,9 @@ pvlive_consumer_data_platform = ContainerDefinition(
     container_tag="1.4.15",
     container_env={
         "LOGURU_LEVEL": "INFO",
-        "PVLIVE_DOMAIN_URL": "api0.solar.sheffield.ac.uk",
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
         "SAVE_METHOD": "data-platform",
-        "UK_PVLIVE_N_GSPS": "348",
+        "UK_PVLIVE_N_GSPS": "342",
         "UK_PVLIVE_REGIME": "in-day",
         "UK_PVLIVE_BACKFILL_HOURS": "12",
         "COUNTRY": "gb",
@@ -84,7 +84,7 @@ def pvlive_intraday_consumer_dag() -> None:
         airflow_task_id="pvlive-intraday-consumer-gsps",
         container_def=pvlive_consumer,
         env_overrides={
-            "N_GSPS": "348",
+            "N_GSPS": "342",
             "REGIME": "in-day",
             "BACKFILL_HOURS": "12",
         },
@@ -142,7 +142,7 @@ def pvlive_dayafter_consumer_dag() -> None:
         airflow_task_id="consume-pvlive-dayafter-gsps",
         container_def=pvlive_consumer,
         env_overrides={
-            "N_GSPS": "348",
+            "N_GSPS": "342",
             "REGIME": "day-after",
         },
         on_failure_callback=get_slack_message_callback(
