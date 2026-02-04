@@ -37,7 +37,7 @@ pvlive_consumer = ContainerDefinition(
     container_tag="1.3.3",
     container_env={
         "LOGLEVEL": "INFO",
-        "PVLIVE_DOMAIN_URL": "api.solar.sheffield.ac.uk",
+        "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
