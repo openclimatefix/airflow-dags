@@ -180,11 +180,11 @@ class ContainerDefinition:
         """Perform some validation on inputs."""
         allowed_sizes: dict[int, list[int]] = {
             256: [512, 1024, 2048],
-            512:  [1024 * i for i in range(1, 5)],        # 1–4 GB
-            1024: [1024 * i for i in range(2, 9)],        # 2–8 GB
-            2048: [1024 * i for i in range(4, 17)],       # 4–16 GB
-            4096: [1024 * i for i in range(8, 31)],       # 8–30 GB
-            8192: [1024 * i for i in range(16, 61, 4)],   # 16–60 GB
+            512: [1024 * i for i in range(1, 5)],  # 1–4 GB
+            1024: [1024 * i for i in range(2, 9)],  # 2–8 GB
+            2048: [1024 * i for i in range(4, 17)],  # 4–16 GB
+            4096: [1024 * i for i in range(8, 31)],  # 8–30 GB
+            8192: [1024 * i for i in range(16, 61, 4)],  # 16–60 GB
         }
 
         if self.container_cpu not in allowed_sizes:
