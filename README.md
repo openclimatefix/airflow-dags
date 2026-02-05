@@ -24,6 +24,19 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+    <h3>1.33 - 2026-02-05</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+- Upgraded uk-pvnet-app to version 2.7.20
+- Updated pvlive-consumer to 1.3.3 and increased number of gsps from 342 to 348
+
+NL
+- Upgraded site-forecast-app from 1.2.0 to 1.2.3
+
+</details>
+
+<details><summary><a>
   <h3>1.32 - 2026-01-29</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
