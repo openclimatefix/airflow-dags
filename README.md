@@ -23,6 +23,13 @@ and handles the deployment process.
 
 ## Releases
 
+<details><summary><a> <h3>1.34 - 2026-02-17</h3> <small>[ Click to expand ]</small> </a></summary>
+
+UK
+- PVLive consumer updated from `1.4.15` to `1.4.20`
+
+</details>
+
 <details><summary><a> <h3>1.33 - 2026-02-05</h3> <small>[ Click to expand ]</small> </a></summary>
 
 UK
