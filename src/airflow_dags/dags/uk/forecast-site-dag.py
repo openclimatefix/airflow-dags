@@ -62,7 +62,7 @@ sitedb_cleaner = ContainerDefinition(
 @dag(
     dag_id="uk-forecast-site",
     description=__doc__,
-    schedule="*/15 * * * *",
+    schedule="*/30 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     catchup=False,
     default_args=default_args,
