@@ -20,9 +20,9 @@ default_args = {
     "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     "retries": 2,
     "retry_delay": dt.timedelta(minutes=5),
-    "max_active_runs": 10,
-    "concurrency": 10,
-    "max_active_tasks": 10,
+    "max_active_runs": 2,
+    "concurrency": 2,
+    "max_active_tasks": 2,
 }
 
 site_forecaster = ContainerDefinition(
