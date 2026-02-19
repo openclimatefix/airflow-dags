@@ -368,7 +368,7 @@ def check_gsp_pvlive_one_day_after(access_token: str) -> None:
 
 
 @dag(
-    dag_id="uk-quartz-api-national-gsp-check",
+    dag_id="uk-api-quartz-national-gsp-check",
     description=__doc__,
     schedule="0 * * * *",
     start_date=dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
