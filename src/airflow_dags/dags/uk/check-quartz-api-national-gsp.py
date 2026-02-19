@@ -3,6 +3,7 @@
 import datetime as dt
 import logging
 import os
+from typing import Any
 
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
@@ -38,6 +39,28 @@ default_args = {
 }
 
 
+def check_type(data: list[dict[str, Any]] | dict[str, Any], expected_type: type) -> None:
+    """Check the type of the data."""
+    if not isinstance(data, expected_type):
+        raise ValueError(f"Data is not of type {expected_type}. The data is {data}.")
+
+
+def call_api_return_list(url: str, access_token: str) -> list[Any]:
+    """Call the API and return the response as a list."""
+    response = call_api(url=url, access_token=access_token)
+    if not isinstance(response, list):
+        raise ValueError(f"Data is not of type list. The data is {response}.")
+    return response
+
+
+def call_api_return_dict(url: str, access_token: str) -> dict[str, Any]:
+    """Call the API and return the response as a dict."""
+    response = call_api(url=url, access_token=access_token)
+    if not isinstance(response, dict):
+        raise ValueError(f"Data is not of type dict. The data is {response}.")
+    return response
+
+
 def check_api_is_up() -> None:
     """Check the api is up."""
     full_url = f"{base_url}/docs"
@@ -55,7 +78,7 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
     full_url = f"{base_url}/v0/solar/GB/national/forecast?"
     if horizon_minutes:
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
@@ -72,13 +95,16 @@ def check_national_forecast_include_metadata(
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
     if horizon_minutes:
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_dict(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data["forecastValues"], 2 * 24 * 2 + 30 * 2)
-    check_key_in_data(data["forecastValues"][0], "targetTime")
-    check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
+    check_key_in_data(data, "forecastValues")
+    forecast_values = data["forecastValues"]
+    check_type(forecast_values, list)
+    check_len_ge(forecast_values, 2 * 24 * 2 + 30 * 2)
+    check_key_in_data(forecast_values[0], "targetTime")
+    check_key_in_data(forecast_values[0], "expectedPowerGenerationMegawatts")
 
 
 def check_national_forecast_metadata_true_and_false(
@@ -89,17 +115,17 @@ def check_national_forecast_metadata_true_and_false(
     Make sure both routes gives back the same values
     """
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
-    data_true = call_api(url=full_url, access_token=access_token)
+    data_true = call_api_return_dict(url=full_url, access_token=access_token)
 
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=false"
-    data_false = call_api(url=full_url, access_token=access_token)
+    data_false = call_api_return_list(url=full_url, access_token=access_token)
 
     values_true = data_true["forecastValues"]
-    values_false = data_false
+    check_type(values_true, list)
 
     # create dict of target times and power
     values_true = {v["targetTime"]: v["expectedPowerGenerationMegawatts"] for v in values_true}
-    values_false = {v["targetTime"]: v["expectedPowerGenerationMegawatts"] for v in values_false}
+    values_false = {v["targetTime"]: v["expectedPowerGenerationMegawatts"] for v in data_false}
 
     diff_values = []
     for k, v in values_true.items():
@@ -123,7 +149,7 @@ def check_national_forecast_metadata_true_and_false(
 def check_national_pvlive(access_token: str) -> None:
     """Check the national pvlive."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # We could get more precise with this check
@@ -135,7 +161,7 @@ def check_national_pvlive(access_token: str) -> None:
 def check_national_pvlive_day_after(access_token: str) -> None:
     """Check the national pvlive with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/national/pvlive?regime=day-after"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for more than 12 hours in the past,
     # This is because the data is delayed
@@ -153,7 +179,7 @@ def check_national_forecast_quantiles_order(access_token: str) -> None:
     For values where all quantiles are below 100 MW, the check is skipped entirely.
     """
     full_url = f"{base_url}/v0/solar/GB/national/forecast?include_metadata=true"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_dict(url=full_url, access_token=access_token)
 
     # Check that we have forecast values
     check_key_in_data(data, "forecastValues")
@@ -223,7 +249,7 @@ def check_national_forecast_quantiles_order(access_token: str) -> None:
 def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     """Check the GSP forecast all with compact=false."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # One timestamp, with dfor 3 gsps
     check_len_equal(data[0]["forecastValues"], 3)
@@ -232,7 +258,7 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
 def check_gsp_forecast_all(access_token: str) -> None:
     """Check the GSP forecast all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # One timestamp
     check_len_ge(data, 1)
@@ -252,7 +278,7 @@ def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
         f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
         f"&start_datetime_utc={start_datetime_str}"
     )
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # 1 timestamp
     check_len_ge(data, 1)
@@ -276,7 +302,7 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
     full_url = f"{base_url}/v0/solar/GB/gsp/1/forecast/"
     if horizon_minutes:
         full_url += f"?forecast_horizon_minutes={horizon_minutes}"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # 2 days in the past + 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
@@ -288,7 +314,7 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
 def check_gsp_pvlive_all(access_token: str) -> None:
     """Check the GSP pvlive all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # date is in 30 min intervals
@@ -303,7 +329,7 @@ def check_gsp_pvlive_all(access_token: str) -> None:
 def check_gsp_pvlive_all_compact(access_token: str) -> None:
     """Check the GSP pvlive all."""
     full_url = f"{base_url}/v0/solar/GB/gsp/pvlive/all/?compact=true"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # date is in 30 min intervals
@@ -317,7 +343,7 @@ def check_gsp_pvlive_all_compact(access_token: str) -> None:
 def check_gsp_pvlive_one(access_token: str) -> None:
     """Check the GSP pvlive one."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive/"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for 2 days in the past, maybe the last one isnt in yet
     # date is in 30 min intervals
@@ -330,11 +356,12 @@ def check_gsp_pvlive_one(access_token: str) -> None:
 def check_gsp_pvlive_one_day_after(access_token: str) -> None:
     """Check the GSP pvlive one with regime=day-after."""
     full_url = f"{base_url}/v0/solar/GB/gsp/1/pvlive?regime=day-after"
-    data = call_api(url=full_url, access_token=access_token)
+    data = call_api_return_list(url=full_url, access_token=access_token)
 
     # should have data point for more than 12 hours in the past,
     # This is because the data is delayed
     N = 12 * 2
+    check_type(data, list)
     check_len_ge(data, N)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "solarGenerationKw")
