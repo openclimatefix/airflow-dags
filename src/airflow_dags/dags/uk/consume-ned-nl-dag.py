@@ -43,6 +43,25 @@ ned_nl_consumer = ContainerDefinition(
     container_memory=512,
 )
 
+ned_nl_data_platform = ContainerDefinition(
+    name="ned-nl-consumer-data-platform",
+    container_image="ghcr.io/openclimatefix/solar-consumer",
+    container_tag="1.4.22",
+    container_env={
+        "LOGURU_LEVEL": "INFO",
+        "SAVE_METHOD": "data-platform",
+        "COUNTRY": "nl",
+        "DATA_PLATFORM_HOST": os.getenv("DATA_PLATFORM_HOST", "127.0.0.1"),
+    },
+    container_secret_env={
+        f"{env}/rds/forecast/": ["DB_URL"],
+        f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
+    },
+    domain="nl",
+    container_cpu=256,
+    container_memory=512,
+)
+
 
 @dag(
     dag_id="nl-consume-ned-nl",
@@ -63,6 +82,16 @@ def ned_nl_consumer_dag() -> None:
             urgency=Urgency.SUBCRITICAL,
         ),
     )
+
+    if env == "development":
+        EcsAutoRegisterRunTaskOperator(
+            airflow_task_id="nl-consume-ned-nl-generation-dp",
+            container_def=ned_nl_data_platform,
+            on_failure_callback=get_slack_message_callback(
+                country="nl",
+                urgency=Urgency.SUBCRITICAL,
+            ),
+        )
 
 
 @dag(
