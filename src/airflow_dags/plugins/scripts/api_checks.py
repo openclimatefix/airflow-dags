@@ -16,14 +16,16 @@ audience = os.getenv("AUTH0_AUDIENCE")
 
 logger = logging.getLogger(__name__)
 
+DataType = dict[str, Any] | list[Any]
 
-def check_len_ge(data: list[Any], min_len: int) -> None:
+
+def check_len_ge(data: DataType, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
         raise ValueError(f"Data length {len(data)} is less than {min_len}.The data is {data}.")
 
 
-def check_len_equal(data: list[Any], equal_len: int) -> None:
+def check_len_equal(data: DataType, equal_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) != equal_len:
         raise ValueError(
@@ -31,7 +33,7 @@ def check_len_equal(data: list[Any], equal_len: int) -> None:
         )
 
 
-def check_key_in_data(data: dict[str, Any], key: str) -> None:
+def check_key_in_data(data: DataType, key: str) -> None:
     """Check the key is in the data."""
     if key not in data:
         raise ValueError(f"Key {key} not in data {data}.")
@@ -61,7 +63,7 @@ def get_bearer_token_from_auth0() -> str:
     return access_token
 
 
-def call_api(url: str, access_token: str | None = None) -> dict[str, Any] | list[Any]:
+def call_api(url: str, access_token: str | None = None) -> DataType:
     """General function to call the API."""
     logger.info(f"Checking: {url}")
 
@@ -78,6 +80,6 @@ def call_api(url: str, access_token: str | None = None) -> dict[str, Any] | list
             f" message {response.text}",
         )
 
-    resp: dict[str, Any] | list[Any] = response.json()
+    resp: DataType = response.json()
 
     return resp
