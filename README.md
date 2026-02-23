@@ -510,8 +510,9 @@ for README changes.
 - When merging this PR, add `#minor` to the PR `Extended description` under `Commit message`. 
 - Merge the PR to `main` and delete the branch, this will create the tag `X.Y`. 
 - Under Actions, go to `Deploy DAGs`, click on `Run workflow` and select the `X.Y` tag. This will then need to be approved.
-- Write on `#tech-ops-discussion` that youve made a deployment and what the changes were. 
-- Go to airflow and check that the changes dont cause any problems
+- Write on `#tech-ops-discussion` that youve made a deployment and you are checking everything is running ok. 
+- Go to airflow and check that the changes dont cause any problems.
+- Once everything has run ok, confirm this on `#tech-ops-discussion`.
 
 ## Installation
 
