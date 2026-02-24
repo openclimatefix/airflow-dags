@@ -50,7 +50,7 @@ pvlive_consumer = ContainerDefinition(
 pvlive_consumer_data_platform = ContainerDefinition(
     name="pvlive-consumer-data-platform",
     container_image="ghcr.io/openclimatefix/solar-consumer",
-    container_tag="1.4.20",
+    container_tag="1.4.23",
     container_env={
         "LOGURU_LEVEL": "INFO",
         "PVLIVE_DOMAIN_URL": "api.pvlive.uk",
