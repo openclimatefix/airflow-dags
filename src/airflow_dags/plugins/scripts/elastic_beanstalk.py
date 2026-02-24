@@ -38,7 +38,7 @@ def terminate_any_old_instances(name: str, days_limit: int = 2, sleep_seconds: i
             ec2 = boto3.client("ec2")
             ec2.terminate_instances(InstanceIds=[instance["Id"]])
             logger.info(
-                f"Instance {instance['Id']} terminated, ",
+                f"Instance {instance['Id']} terminated, " + \
                 f"now sleeping for {sleep_seconds} seconds to allow for new instance to start.",
             )
             time.sleep(sleep_seconds)
