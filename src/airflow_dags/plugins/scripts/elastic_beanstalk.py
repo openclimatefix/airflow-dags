@@ -9,7 +9,7 @@ import boto3
 logger = logging.getLogger(__name__)
 
 
-def terminate_any_old_instances(name: str, days_limit: int = 3, sleep_seconds: int = 300) -> None:
+def terminate_any_old_instances(name: str, days_limit: int = 2, sleep_seconds: int = 300) -> None:
     """Terminate any old instances in an elastic beanstalk environment.
 
     Note when an instance in terminate in ELB, the ELB will automatically start a new one up
