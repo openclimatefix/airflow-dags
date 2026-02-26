@@ -105,13 +105,12 @@ def pvlive_intraday_consumer_dag() -> None:
 
     consume_pvlive_gsps >> update_api_last_gsp_data
 
-    if env == "development":
-        consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
-            airflow_task_id="pvlive-intraday-consumer-data-platform",
-            container_def=pvlive_consumer_data_platform,
-        )
+    consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="pvlive-intraday-consumer-data-platform",
+        container_def=pvlive_consumer_data_platform,
+    )
 
-        consume_pvlive_gsps_data_platform  # noqa: B018
+    consume_pvlive_gsps_data_platform  # noqa: B018
 
 
 @dag(
