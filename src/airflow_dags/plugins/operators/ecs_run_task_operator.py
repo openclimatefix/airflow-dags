@@ -180,12 +180,13 @@ class ContainerDefinition:
         """Perform some validation on inputs."""
         allowed_sizes: dict[int, list[int]] = {
             256: [512, 1024, 2048],
-            512: list(range(1024, 4096, 1024)),
-            1024: list(range(2048, 9216, 1024)),
-            2048: list(range(4096, 16384, 1024)),
-            4096: list(range(8192, 30720, 1024)),
-            8192: list(range(16384, 61440, 4096)),
+            512: [1024 * i for i in range(1, 5)],  # 1-4 GB
+            1024: [1024 * i for i in range(2, 9)],  # 2-8 GB
+            2048: [1024 * i for i in range(4, 17)],  # 4-16 GB
+            4096: [1024 * i for i in range(8, 31)],  # 8-30 GB
+            8192: [1024 * i for i in range(16, 61, 4)],  # 16-60 GB
         }
+
         if self.container_cpu not in allowed_sizes:
             raise ValueError(f"CPU must be one of {allowed_sizes.keys()}, got {self.container_cpu}")
         if self.container_memory not in allowed_sizes[self.container_cpu]:
