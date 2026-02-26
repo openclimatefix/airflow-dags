@@ -82,7 +82,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
         f"{env}/forecast/site": ["GCLOUD_SERVICE_ACCOUNT_JSON"],
     },
     container_cpu=1024,
-    container_memory=3072,
+    container_memory=6144,
     domain="india",
 )
 
