@@ -22,6 +22,23 @@ This repo defines those airflow DAGs that configure, version control, and test t
 and handles the deployment process.
 
 ## Releases
+
+<details><summary><a>
+<h3>1.35 - 2026-02-26</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+General
+
+* Update deployment instructions in README to include Slack communication and Airflow verification steps
+
+UK
+
+* Reduce Elastic Beanstalk EC2 instance termination age limit from 3 days to 2 days
+* Solar consumer (`pvlive-consumer-data-platform`) updated from `1.4.20` to `1.4.23`
+* Enable saving PVLive values to the Data Platform in production environments (removed dev-only restrictions)
+
+</details>
+
 <details><summary><a> <h3>1.34 - 2026-02-23</h3> <small>[ Click to expand ]</small> </a></summary> 
  
 UK
@@ -34,8 +51,6 @@ UK
 NL
 - Change forecast-site to run only 2 concurrently
 - Forecast-site Tag change from 1.2.3 - 1.2.5 (Improved the sql query for adjuster)
-
-
 
 </details>
 
