@@ -136,7 +136,7 @@ def api_site_check() -> None:
     access_token_str = "{{ task_instance.xcom_pull(task_ids='check-api-get-bearer-token') }}"  # noqa: S105
     sites = PythonOperator(
         task_id="check-sites",
-        python_callable=check_forecast,
+        python_callable=check_sites,
         op_kwargs={"access_token": access_token_str},
     )
 
@@ -148,7 +148,7 @@ def api_site_check() -> None:
 
     generation = PythonOperator(
         task_id="check-generation",
-        python_callable=check_forecast,
+        python_callable=check_generation,
         op_kwargs={"access_token": access_token_str},
     )
 
