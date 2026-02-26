@@ -74,7 +74,7 @@ national_forecaster = ContainerDefinition(
 forecast_blender = ContainerDefinition(
     name="forecast-blend",
     container_image="ghcr.io/openclimatefix/uk-pv-forecast-blend",
-    container_tag="1.2.2",
+    container_tag="1.2.3",
     container_env={"LOGLEVEL": "INFO"},
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],

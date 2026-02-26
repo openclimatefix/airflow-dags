@@ -20,15 +20,15 @@ default_args = {
     "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     "retries": 1,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 10,
-    "concurrency": 10,
-    "max_active_tasks": 10,
+    "max_active_runs": 2,
+    "concurrency": 2,
+    "max_active_tasks": 2,
 }
 
 site_forecaster = ContainerDefinition(
     name="forecast-site-nl",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.2.3",
+    container_tag="1.2.5",
     container_env={
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",

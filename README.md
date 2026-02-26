@@ -22,6 +22,23 @@ This repo defines those airflow DAGs that configure, version control, and test t
 and handles the deployment process.
 
 ## Releases
+<details><summary><a> <h3>1.34 - 2026-02-23</h3> <small>[ Click to expand ]</small> </a></summary> 
+ 
+UK
+- New API Checks for new quartz api
+- PV live consumer updated from 1.4.15 - 1.4.20
+- Updated forecast-blend from 1.2.2 - 1.2.3 (Removed creation time filter)
+- Change forecast-site to run only 2 concurrently
+- Reset API's on elastic beanstalk from every 5 days to 3 Days 
+
+NL
+- Change forecast-site to run only 2 concurrently
+- Forecast-site Tag change from 1.2.3 - 1.2.5 (Improved the sql query for adjuster)
+
+
+
+</details>
+
 
 <details><summary><a> <h3>1.33 - 2026-02-05</h3> <small>[ Click to expand ]</small> </a></summary>
 
@@ -492,7 +509,10 @@ Once we are ready to release to production we follow the next steps
 for README changes.
 - When merging this PR, add `#minor` to the PR `Extended description` under `Commit message`. 
 - Merge the PR to `main` and delete the branch, this will create the tag `X.Y`. 
-- Under Actions, go to `Deploy DAGs`, click on `Run workflow` and select the `X.Y` tag. This will then need to be approved. 
+- Under Actions, go to `Deploy DAGs`, click on `Run workflow` and select the `X.Y` tag. This will then need to be approved.
+- Write on `#tech-ops-discussion` that youve made a deployment and you are checking everything is running ok. 
+- Go to airflow and check that the changes dont cause any problems.
+- Once everything has run ok, confirm this on `#tech-ops-discussion`.
 
 ## Installation
 
