@@ -37,6 +37,7 @@ default_args = {
     "max_active_tasks": 10,
 }
 
+min_forecast_length_hours = 33.5
 
 def check_api_is_up() -> None:
     """Check the api is up."""
@@ -229,7 +230,7 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     # date is in 30 min intervals
     check_len_equal(data["forecasts"], 3)
     check_key_in_data(data["forecasts"][0], "forecastValues")
-    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * 30)
+    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * min_forecast_length_hours)
 
 
 def check_gsp_forecast_all(access_token: str) -> None:
@@ -239,7 +240,7 @@ def check_gsp_forecast_all(access_token: str) -> None:
 
     # 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 30)
+    check_len_ge(data, 2 * min_forecast_length_hours)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
@@ -334,7 +335,7 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
 
     # 2 days in the past + 36 hours in the future, but just look at 30 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 2 * 30)
+    check_len_ge(data, 2 * 24 * 2 + 2 * min_forecast_length_hours)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
