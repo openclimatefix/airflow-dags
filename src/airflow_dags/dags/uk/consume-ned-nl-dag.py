@@ -51,11 +51,11 @@ ned_nl_data_platform = ContainerDefinition(
         "LOGURU_LEVEL": "INFO",
         "SAVE_METHOD": "data-platform",
         "COUNTRY": "nl",
-        "DATA_PLATFORM_HOST": os.getenv("DATA_PLATFORM_HOST", "127.0.0.1"),
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     domain="nl",
     container_cpu=256,
