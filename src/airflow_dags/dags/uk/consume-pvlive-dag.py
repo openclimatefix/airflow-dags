@@ -24,7 +24,7 @@ url: str = "http://api-dev.quartz.solar" if env == "development" else "http://ap
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "retries": 1,
+    "retries": 2,
     "retry_delay": timedelta(minutes=1),
     "max_active_runs": 10,
     "concurrency": 10,
@@ -152,16 +152,15 @@ def pvlive_dayafter_consumer_dag() -> None:
 
     consume_pvlive_national >> consume_pvlive_gsps
 
-    if env == "development":
-        consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
-            airflow_task_id="pvlive-dayafter-consumer-data-platform",
-            container_def=pvlive_consumer_data_platform,
-            env_overrides={
-                "UK_PVLIVE_REGIME": "day-after",
-            },
-        )
+    consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="pvlive-dayafter-consumer-data-platform",
+        container_def=pvlive_consumer_data_platform,
+        env_overrides={
+            "UK_PVLIVE_REGIME": "day-after",
+        },
+    )
 
-        consume_pvlive_gsps_data_platform  # noqa: B018
+    consume_pvlive_gsps_data_platform  # noqa: B018
 
 
 pvlive_intraday_consumer_dag()
