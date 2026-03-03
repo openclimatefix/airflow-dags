@@ -1,5 +1,4 @@
 """General checks on Quartz API - Uk National/GSP."""
-
 import datetime as dt
 import logging
 import os
@@ -8,6 +7,7 @@ from typing import Any
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 
+from airflow_dags.dags.uk.check_api_national_gsp import MIN_FORECAST_LENGTH_HOURS
 from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
     call_api,
@@ -80,9 +80,9 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_list(url=full_url, access_token=access_token)
 
-    # should have data point for 2 days in the past + 36 hours in the future
+    # should have data point for 2 days in the past + at least 33.5 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 30 * 2)
+    check_len_ge(data, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
@@ -97,12 +97,12 @@ def check_national_forecast_include_metadata(
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_dict(url=full_url, access_token=access_token)
 
-    # should have data point for 2 days in the past + 36 hours in the future
+    # should have data point for 2 days in the past + at least 33.5 hours in the future
     # date is in 30 min intervals
     check_key_in_data(data, "forecastValues")
     forecast_values = data["forecastValues"]
     check_type(forecast_values, list)
-    check_len_ge(forecast_values, 2 * 24 * 2 + 30 * 2)
+    check_len_ge(forecast_values, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(forecast_values[0], "targetTime")
     check_key_in_data(forecast_values[0], "expectedPowerGenerationMegawatts")
 
@@ -304,9 +304,9 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
         full_url += f"?forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_list(url=full_url, access_token=access_token)
 
-    # 2 days in the past + 36 hours in the future, but just look at 30 hours
+    # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 2 * 30)
+    check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
