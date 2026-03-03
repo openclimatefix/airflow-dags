@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 DataType = dict[str, Any] | list[Any]
 
+MIN_FORECAST_LENGTH_HOURS = 33.5
+
 
 def check_len_ge(data: DataType, min_len: int) -> None:
     """Check the length of the data is greater than or equal to min_len."""

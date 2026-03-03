@@ -7,9 +7,9 @@ from typing import Any
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 
-from airflow_dags.dags.uk.check_api_national_gsp import MIN_FORECAST_LENGTH_HOURS
 from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
+    MIN_FORECAST_LENGTH_HOURS,
     call_api,
     check_key_in_data,
     check_len_equal,

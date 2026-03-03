@@ -13,6 +13,7 @@ from airflow.operators.python import PythonOperator
 
 from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
+    MIN_FORECAST_LENGTH_HOURS,
     call_api,
     check_key_in_data,
     check_len_equal,
@@ -37,7 +38,6 @@ default_args = {
     "max_active_tasks": 10,
 }
 
-MIN_FORECAST_LENGTH_HOURS = 33.5
 
 def check_api_is_up() -> None:
     """Check the api is up."""
