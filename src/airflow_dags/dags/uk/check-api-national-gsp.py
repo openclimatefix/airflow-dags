@@ -60,7 +60,7 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + int(MIN_FORECAST_LENGTH_HOURS * 2))
+    check_len_ge(data, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
@@ -77,7 +77,7 @@ def check_national_forecast_include_metadata(
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data["forecastValues"], 2 * 24 * 2 + int(MIN_FORECAST_LENGTH_HOURS * 2))
+    check_len_ge(data["forecastValues"], 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data["forecastValues"][0], "targetTime")
     check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
 
@@ -230,7 +230,7 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     # date is in 30 min intervals
     check_len_equal(data["forecasts"], 3)
     check_key_in_data(data["forecasts"][0], "forecastValues")
-    check_len_ge(data["forecasts"][0]["forecastValues"], int(2 * MIN_FORECAST_LENGTH_HOURS))
+    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * MIN_FORECAST_LENGTH_HOURS)
 
 
 def check_gsp_forecast_all(access_token: str) -> None:
@@ -240,7 +240,7 @@ def check_gsp_forecast_all(access_token: str) -> None:
 
     # Forecast are 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, int(2 * MIN_FORECAST_LENGTH_HOURS))
+    check_len_ge(data, 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
@@ -335,7 +335,7 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
 
     # Forecast are 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + int(2 * MIN_FORECAST_LENGTH_HOURS))
+    check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 

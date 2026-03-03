@@ -82,7 +82,7 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
 
     # should have data point for 2 days in the past + at least 33.5 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + int(MIN_FORECAST_LENGTH_HOURS * 2))
+    check_len_ge(data, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
@@ -102,7 +102,7 @@ def check_national_forecast_include_metadata(
     check_key_in_data(data, "forecastValues")
     forecast_values = data["forecastValues"]
     check_type(forecast_values, list)
-    check_len_ge(forecast_values, 2 * 24 * 2 + int(MIN_FORECAST_LENGTH_HOURS * 2))
+    check_len_ge(forecast_values, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(forecast_values[0], "targetTime")
     check_key_in_data(forecast_values[0], "expectedPowerGenerationMegawatts")
 
@@ -306,7 +306,7 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
 
     # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + int(2 * MIN_FORECAST_LENGTH_HOURS))
+    check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 

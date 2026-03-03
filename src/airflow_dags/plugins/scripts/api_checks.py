@@ -21,7 +21,7 @@ DataType = dict[str, Any] | list[Any]
 MIN_FORECAST_LENGTH_HOURS = 33.5
 
 
-def check_len_ge(data: DataType, min_len: int) -> None:
+def check_len_ge(data: DataType, min_len: int | float) -> None:
     """Check the length of the data is greater than or equal to min_len."""
     if len(data) < min_len:
         raise ValueError(f"Data length {len(data)} is less than {min_len}.The data is {data}.")
