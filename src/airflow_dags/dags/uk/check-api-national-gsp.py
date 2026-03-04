@@ -13,6 +13,7 @@ from airflow.operators.python import PythonOperator
 
 from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
+    MIN_FORECAST_LENGTH_HOURS,
     call_api,
     check_key_in_data,
     check_len_equal,
@@ -59,7 +60,7 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 30 * 2)
+    check_len_ge(data, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
@@ -76,7 +77,7 @@ def check_national_forecast_include_metadata(
 
     # should have data point for 2 days in the past + 36 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data["forecastValues"], 2 * 24 * 2 + 30 * 2)
+    check_len_ge(data["forecastValues"], 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data["forecastValues"][0], "targetTime")
     check_key_in_data(data["forecastValues"][0], "expectedPowerGenerationMegawatts")
 
@@ -225,11 +226,11 @@ def check_gsp_forecast_all_compact_false(access_token: str) -> None:
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=false&gsp_ids=1,2,3"
     data = call_api(url=full_url, access_token=access_token)
 
-    # 36 hours in the future, but just look at 30 hours
+    # Forecast are 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
     check_len_equal(data["forecasts"], 3)
     check_key_in_data(data["forecasts"][0], "forecastValues")
-    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * 30)
+    check_len_ge(data["forecasts"][0]["forecastValues"], 2 * MIN_FORECAST_LENGTH_HOURS)
 
 
 def check_gsp_forecast_all(access_token: str) -> None:
@@ -237,9 +238,9 @@ def check_gsp_forecast_all(access_token: str) -> None:
     full_url = f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
     data = call_api(url=full_url, access_token=access_token)
 
-    # 36 hours in the future, but just look at 30 hours
+    # Forecast are 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 30)
+    check_len_ge(data, 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "forecastValues")
     check_len_ge(data[0]["forecastValues"], 317)
@@ -332,9 +333,9 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
         full_url += f"?forecast_horizon_minutes={horizon_minutes}"
     data = call_api(url=full_url, access_token=access_token)
 
-    # 2 days in the past + 36 hours in the future, but just look at 30 hours
+    # Forecast are 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 2 * 30)
+    check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
