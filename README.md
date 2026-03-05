@@ -24,6 +24,28 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+<h3>1.36 - 2026-03-06</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+
+* Update uk-pvnet-app from `2.7.21` to `2.7.22`
+* Update blend app from `1.2.3` to `1.2.5`
+* Update forecast length check for quartz apis in airflow dags
+
+NL
+
+* Update site-forecast-app from `1.2.6` to `1.2.10`
+* Get the site-forecast-app saving to data platform
+
+India
+
+* Deploy site-forecast-app `1.2.11` for RUVNL wind
+
+
+</details>
+
+<details><summary><a>
 <h3>1.35 - 2026-02-26</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
