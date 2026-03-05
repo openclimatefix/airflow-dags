@@ -34,10 +34,12 @@ site_forecaster = ContainerDefinition(
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_BACKUP_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "SATELLITE_SCALE_FACTOR": "1",
+        "DATA_PLATFORM_SAVE": "True",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     container_cpu=1024,
     container_memory=6144,
