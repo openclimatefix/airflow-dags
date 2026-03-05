@@ -272,7 +272,7 @@ def check_gsp_forecast_all_start(access_token: str) -> None:
     # -2 days to now
     now = dt.datetime.now(tz=dt.UTC)
     start_datetime = now - dt.timedelta(days=2)
-    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:00:%00")
+    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:00:00Z")
 
     full_url = (
         f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
