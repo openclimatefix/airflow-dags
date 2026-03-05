@@ -267,12 +267,12 @@ def check_gsp_forecast_all(access_token: str) -> None:
     check_len_ge(data[0]["forecastValues"], 317)
 
 
-def check_gsp_forecast_all_start_and_end(access_token: str) -> None:
+def check_gsp_forecast_all_start(access_token: str) -> None:
     """Check the GSP forecast all with start and end datetime."""
     # -2 days to now
     now = dt.datetime.now(tz=dt.UTC)
     start_datetime = now - dt.timedelta(days=2)
-    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:00:%00")
 
     full_url = (
         f"{base_url}/v0/solar/GB/gsp/forecast/all/?compact=true"
@@ -437,8 +437,8 @@ def quartz_api_national_gsp_check() -> None:
     )
 
     gsp_forecast_all_start_and_end = PythonOperator(
-        task_id="check-api-gsp-forecast-all-start-and-end",
-        python_callable=check_gsp_forecast_all_start_and_end,
+        task_id="check-api-gsp-forecast-all-start",
+        python_callable=check_gsp_forecast_all_start,
         op_kwargs={"access_token": access_token_str},
     )
 
