@@ -66,7 +66,7 @@ ad_forecaster = ContainerDefinition(
 ruvnl_forecaster_v2 = ContainerDefinition(
     name="forecast-ruvnl-v2",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.2.8",
+    container_tag="1.2.11",
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
