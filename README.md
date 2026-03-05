@@ -27,14 +27,11 @@ and handles the deployment process.
 <h3>1.36 - 2026-03-06</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
-General
-
-* Update forecast length check for UK national in airflow dags
-
 UK
 
 * Update uk-pvnet-app from `2.7.21` to `2.7.22`
 * Update blend app from `1.2.3` to `1.2.5`
+* Update forecast length check for quartz apis in airflow dags
 
 NL
 
