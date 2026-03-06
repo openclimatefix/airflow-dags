@@ -24,7 +24,7 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
-<h3>1.36 - 2026-03-06</h3> <small>[ Click to expand ]</small>
+<h3>1.37 - 2026-03-06</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
 UK
@@ -41,6 +41,20 @@ NL
 India
 
 * Deploy site-forecast-app `1.2.11` for RUVNL wind
+
+
+</details>
+
+<details><summary><a>
+<h3>1.36 - 2026-03-02</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+
+* uk pvlive consumer dag: increase retries and allow data platform integration to go to prod
+
+NL
+* Change site-forecast-app version from `1.2.5` to `1.2.6`
 
 
 </details>
