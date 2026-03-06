@@ -23,6 +23,7 @@ default_args = {
     "max_active_runs": 2,
     "concurrency": 2,
     "max_active_tasks": 2,
+    "max_active_tis_per_dag": 2
 }
 
 site_forecaster = ContainerDefinition(
