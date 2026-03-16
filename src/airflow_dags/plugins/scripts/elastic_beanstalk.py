@@ -36,7 +36,7 @@ def terminate_any_old_instances(name: str, sleep_seconds: int = 300) -> None:
         launch_datetimes[instance["Id"]] = launch_datetime
 
     # Find the youngest instance
-    youngest_instance_id = max(launch_datetimes, key=launch_datetimes.get)
+    youngest_instance_id = max(launch_datetimes, key=lambda k: launch_datetimes[k])
     logger.info(f"Youngest instance is {youngest_instance_id} "
                 f"launched at {launch_datetimes[youngest_instance_id]}")
 
