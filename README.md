@@ -24,6 +24,29 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+<h3>1.38 - 2026-03-16</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+
+* Update default args `max_active_tis_per_dag` to 2 in pv-site-production
+
+NL
+
+* Update forecast-site-app from tag from `1.2.10` to `1.2.12`
+* Update default_args `max_active_tis_per_dag` to 2 in site-forecast-app
+
+India
+
+* Update site-forecast-app container tag from `1.2.0` to `1.2.1`
+
+OCF Bot
+
+* Added a bot to reply to internal issue comment
+
+</details>
+
+<details><summary><a>
 <h3>1.37 - 2026-03-06</h3> <small>[ Click to expand ]</small>
 </a></summary>
 
