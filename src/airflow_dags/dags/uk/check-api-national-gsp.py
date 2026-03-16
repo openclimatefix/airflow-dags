@@ -457,6 +457,12 @@ def api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    national_forecast_quantiles_order_use_cache = PythonOperator(
+        task_id="check-api-national-forecast-quantiles-order-use-cache",
+        python_callable=check_national_forecast_quantiles_order,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     gsp_forecast_all = PythonOperator(
         task_id="check-api-gsp-forecast-all",
         python_callable=check_gsp_forecast_all,
@@ -550,7 +556,7 @@ def api_national_gsp_check() -> None:
         get_bearer_token
         >> national_generation
         >> national_generation_day_after
-        >> national_forecast_quantiles_order
+        >> national_forecast_quantiles_order >> national_forecast_quantiles_order_use_cache
     )
     (
         get_bearer_token
@@ -570,6 +576,7 @@ def api_national_gsp_check() -> None:
         national_forecast_2_hour,
         national_forecast_include_metadata,
         national_forecast_quantiles_order,
+        national_forecast_quantiles_order_use_cache,
         national_generation,
         national_generation_day_after,
         gsp_forecast_all,
