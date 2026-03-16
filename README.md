@@ -23,6 +23,18 @@ and handles the deployment process.
 
 ## Releases
 
+
+<details><summary><a>
+<h3>1.39 - 2026-03-16</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+
+* Reset (terminate) oldest EC2 instances in Elastic Beanstalk management DAG
+* Add ACTIVE check to site forecast app to not predict inactive sites
+
+</details>
+
 <details><summary><a>
 <h3>1.38 - 2026-03-16</h3> <small>[ Click to expand ]</small>
 </a></summary>
