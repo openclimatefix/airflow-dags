@@ -40,9 +40,6 @@ India
 
 * Update site-forecast-app container tag from `1.2.0` to `1.2.1`
 
-OCF Bot
-
-* Added a bot to reply to internal issue comment
 
 </details>
 
