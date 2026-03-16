@@ -53,7 +53,8 @@ def terminate_any_old_instances(name: str, sleep_seconds: int = 300) -> None:
             )
             time.sleep(sleep_seconds)
         else:
-            logger.info(f"Instance {instance['Id']} is the youngest instance, skipping termination.")
+            logger.info(f"Instance {instance['Id']} is the youngest, skipping termination.")
+
 
 
 def scale_elastic_beanstalk_instance(
