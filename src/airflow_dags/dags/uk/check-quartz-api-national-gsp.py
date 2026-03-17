@@ -310,8 +310,9 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
-def check_gsp_forecast_all_one_by_one(access_token: str, horizon_minutes: int | None = None) -> None:
-    """Check the GSP forecast one, and loop over all"""
+def check_gsp_forecast_all_one_by_one(
+        access_token: str, horizon_minutes: int | None = None) -> None:
+    """Check the GSP forecast one, and loop over all."""
     for gsp_id in range(0,318):
         full_url = f"{base_url}/v0/solar/GB/gsp/{gsp_id}/forecast/"
         if horizon_minutes:
