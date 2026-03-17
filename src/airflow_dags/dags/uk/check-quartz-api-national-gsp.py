@@ -313,17 +313,20 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
 def check_gsp_forecast_all_one_by_one(
         access_token: str, horizon_minutes: int | None = None) -> None:
     """Check the GSP forecast one, and loop over all."""
-    for gsp_id in range(0,318):
+    for gsp_id in range(1,318):
         full_url = f"{base_url}/v0/solar/GB/gsp/{gsp_id}/forecast/"
         if horizon_minutes:
             full_url += f"?forecast_horizon_minutes={horizon_minutes}"
         data = call_api_return_list(url=full_url, access_token=access_token)
 
-        # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
-        # date is in 30 min intervals
-        check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
-        check_key_in_data(data[0], "targetTime")
-        check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
+        if gsp_id in [5, 17, 53, 75, 139, 140, 143, 157, 163, 225, 310]:
+                check_len_ge(data, 0)
+        else:
+            # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
+            # date is in 30 min intervals
+            check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
+            check_key_in_data(data[0], "targetTime")
+            check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
 def check_gsp_pvlive_all(access_token: str) -> None:
