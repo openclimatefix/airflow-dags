@@ -41,18 +41,16 @@ ruvnl_consumer_dp = ContainerDefinition(
     name="ruvnl-consumer-to-dp",
     container_image="docker.io/openclimatefix/solar_consumer_app",
     container_tag="1.4.25",
-    container_command=["--write-to-db"],
     container_env={
         "LOGURU_LEVEL": "INFO",
         "SAVE_METHOD": "data-platform",
         "COUNTRY": "ind_rajasthan",
     },
     container_secret_env={
-        f"{env}/rds/indiadb": ["DB_URL"],
         f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
-    container_cpu=256,
-    container_memory=512,
+    container_cpu=128,
+    container_memory=128,
     domain="india",
 )
 
