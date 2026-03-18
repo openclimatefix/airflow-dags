@@ -51,7 +51,7 @@ def elb_reset_dag() -> None:
         number_of_instances = 2 if name == f"uk-{env}-nowcasting-api" else 1
 
         elb_2 = PythonOperator(
-            task_id=f"scale_elb_2_{name}",
+            task_id=f"scale_elb_{number_of_instances+1}_{name}",
             python_callable=scale_elastic_beanstalk_instance,
             op_kwargs={
                 "name": name,
@@ -66,9 +66,9 @@ def elb_reset_dag() -> None:
         )
 
         elb_1 = PythonOperator(
-            task_id=f"scale_elb_1_{name}",
+            task_id=f"scale_elb_{number_of_instances}_{name}",
             python_callable=scale_elastic_beanstalk_instance,
-            op_kwargs={"name": name, "number_of_instances": number_of_instances, "days_limit": 3},
+            op_kwargs={"name": name, "number_of_instances": number_of_instances, "days_limit": 2},
             max_active_tis_per_dag=2,
             on_failure_callback=get_slack_message_callback(
                 additional_message_context=elb_error_message,
@@ -83,6 +83,7 @@ def elb_reset_dag() -> None:
                 op_kwargs={
                     "name": name,
                     "sleep_seconds": 60 * 5,
+                    "days_limit": 2,
                 },
                 max_active_tis_per_dag=2,
                 on_failure_callback=get_slack_message_callback(

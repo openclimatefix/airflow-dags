@@ -23,12 +23,13 @@ default_args = {
     "max_active_runs": 2,
     "concurrency": 2,
     "max_active_tasks": 2,
+    "max_active_tis_per_dag": 2,
 }
 
 site_forecaster = ContainerDefinition(
     name="forecast-site",
     container_image="ghcr.io/openclimatefix/pv-site-production",
-    container_tag="1.1.3",
+    container_tag="1.1.4",
     container_env={
         "LOGLEVEL": "INFO",
         "NWP_ZARR_PATH": f"s3://nowcasting-nwp-{env}/data-metoffice/latest.zarr",

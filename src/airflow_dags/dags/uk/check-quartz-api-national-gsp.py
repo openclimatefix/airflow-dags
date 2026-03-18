@@ -1,5 +1,4 @@
 """General checks on Quartz API - Uk National/GSP."""
-
 import datetime as dt
 import logging
 import os
@@ -10,6 +9,7 @@ from airflow.operators.python import PythonOperator
 
 from airflow_dags.plugins.callbacks.slack import Urgency, get_slack_message_callback
 from airflow_dags.plugins.scripts.api_checks import (
+    MIN_FORECAST_LENGTH_HOURS,
     call_api,
     check_key_in_data,
     check_len_equal,
@@ -80,9 +80,9 @@ def check_national_forecast(access_token: str, horizon_minutes: int | None = Non
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_list(url=full_url, access_token=access_token)
 
-    # should have data point for 2 days in the past + 36 hours in the future
+    # should have data point for 2 days in the past + at least 33.5 hours in the future
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 30 * 2)
+    check_len_ge(data, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
@@ -97,12 +97,12 @@ def check_national_forecast_include_metadata(
         full_url += f"forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_dict(url=full_url, access_token=access_token)
 
-    # should have data point for 2 days in the past + 36 hours in the future
+    # should have data point for 2 days in the past + at least 33.5 hours in the future
     # date is in 30 min intervals
     check_key_in_data(data, "forecastValues")
     forecast_values = data["forecastValues"]
     check_type(forecast_values, list)
-    check_len_ge(forecast_values, 2 * 24 * 2 + 30 * 2)
+    check_len_ge(forecast_values, 2 * 24 * 2 + MIN_FORECAST_LENGTH_HOURS * 2)
     check_key_in_data(forecast_values[0], "targetTime")
     check_key_in_data(forecast_values[0], "expectedPowerGenerationMegawatts")
 
@@ -304,11 +304,29 @@ def check_gsp_forecast_one(access_token: str, horizon_minutes: int | None = None
         full_url += f"?forecast_horizon_minutes={horizon_minutes}"
     data = call_api_return_list(url=full_url, access_token=access_token)
 
-    # 2 days in the past + 36 hours in the future, but just look at 30 hours
+    # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
     # date is in 30 min intervals
-    check_len_ge(data, 2 * 24 * 2 + 2 * 30)
+    check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
     check_key_in_data(data[0], "targetTime")
     check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
+
+def check_gsp_forecast_all_one_by_one(
+        access_token: str, horizon_minutes: int | None = None) -> None:
+    """Check the GSP forecast one, and loop over all."""
+    for gsp_id in range(1,318):
+        full_url = f"{base_url}/v0/solar/GB/gsp/{gsp_id}/forecast/"
+        if horizon_minutes:
+            full_url += f"?forecast_horizon_minutes={horizon_minutes}"
+        data = call_api_return_list(url=full_url, access_token=access_token)
+
+        if gsp_id in [5, 17, 53, 75, 139, 140, 143, 157, 163, 225, 310]:
+                check_len_ge(data, 0)
+        else:
+            # 2 days in the past + 36 hours in the future, but just look at 33.5 hours
+            # date is in 30 min intervals
+            check_len_ge(data, 2 * 24 * 2 + 2 * MIN_FORECAST_LENGTH_HOURS)
+            check_key_in_data(data[0], "targetTime")
+            check_key_in_data(data[0], "expectedPowerGenerationMegawatts")
 
 
 def check_gsp_pvlive_all(access_token: str) -> None:
@@ -442,6 +460,12 @@ def quartz_api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str},
     )
 
+    gsp_forecast_all_one_by_one = PythonOperator(
+        task_id="check-api-gsp-forecast-all-one-by-one",
+        python_callable=check_gsp_forecast_all_one_by_one,
+        op_kwargs={"access_token": access_token_str},
+    )
+
     gsp_forecast_one = PythonOperator(
         task_id="check-api-gsp-forecast-one",
         python_callable=check_gsp_forecast_one,
@@ -516,7 +540,7 @@ def quartz_api_national_gsp_check() -> None:
             gsp_forecast_all_compact_false,
         ]
     )
-    get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour
+    get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour >> gsp_forecast_all_one_by_one
     get_bearer_token >> gsp_pvlive_all_compact
     get_bearer_token >> gsp_pvlive_one >> gsp_pvlive_one_day_after
 
@@ -532,6 +556,7 @@ def quartz_api_national_gsp_check() -> None:
         gsp_forecast_all_start_and_end,
         gsp_forecast_one,
         gsp_forecast_one_2_hour,
+        gsp_forecast_all_one_by_one,
         gsp_pvlive_one,
         gsp_pvlive_one_day_after,
     ] >> if_any_task_failed

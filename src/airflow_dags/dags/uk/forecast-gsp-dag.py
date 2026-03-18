@@ -33,7 +33,7 @@ default_args = {
 gsp_forecaster = ContainerDefinition(
     name="forecast-pvnet",
     container_image="ghcr.io/openclimatefix/uk-pvnet-app",
-    container_tag="2.7.21",
+    container_tag="2.7.22",
     container_env={
         "LOGLEVEL": "INFO",
         "RAISE_MODEL_FAILURE": "critical",
@@ -45,10 +45,10 @@ gsp_forecaster = ContainerDefinition(
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_15_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "CLOUDCASTING_ZARR_PATH": f"s3://nowcasting-sat-{env}/cloudcasting_forecast/latest.zarr",
-        "DATA_PLATFORM_HOST": os.getenv("DATA_PLATFORM_HOST", "127.0.0.1"),
     },
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     domain="uk",
     container_cpu=2048,
@@ -74,14 +74,12 @@ national_forecaster = ContainerDefinition(
 forecast_blender = ContainerDefinition(
     name="forecast-blend",
     container_image="ghcr.io/openclimatefix/uk-pv-forecast-blend",
-    container_tag="1.2.3",
+    container_tag="1.2.5",
     container_env={"LOGLEVEL": "INFO"},
     container_secret_env={
         f"{env}/rds/forecast/": ["DB_URL"],
         f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
-    }
-    if env == "development"
-    else {f"{env}/rds/forecast/": ["DB_URL"]},
+    },
     container_cpu=512,
     container_memory=1024,
 )

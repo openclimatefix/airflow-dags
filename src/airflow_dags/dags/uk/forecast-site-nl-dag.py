@@ -20,24 +20,27 @@ default_args = {
     "start_date": dt.datetime(2025, 1, 1, tzinfo=dt.UTC),
     "retries": 1,
     "retry_delay": dt.timedelta(minutes=1),
-    "max_active_runs": 10,
-    "concurrency": 10,
-    "max_active_tasks": 10,
+    "max_active_runs": 2,
+    "concurrency": 2,
+    "max_active_tasks": 2,
+    "max_active_tis_per_dag": 2,
 }
 
 site_forecaster = ContainerDefinition(
     name="forecast-site-nl",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.2.3",
+    container_tag="1.2.12",
     container_env={
         "NWP_ECMWF_ZARR_PATH": f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr",
         "SATELLITE_ZARR_PATH": f"s3://nowcasting-sat-{env}/rss/data/latest.zarr.zip",
         "SATELLITE_BACKUP_ZARR_PATH": f"s3://nowcasting-sat-{env}/odegree/data/latest.zarr.zip",
         "SATELLITE_SCALE_FACTOR": "1",
+        "SAVE_TO_DATA_PLATFORM": "True",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/huggingface/token": ["HUGGINGFACE_TOKEN"],
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     container_cpu=1024,
     container_memory=6144,
