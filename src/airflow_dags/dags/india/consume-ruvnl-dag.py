@@ -39,7 +39,7 @@ ruvnl_consumer = ContainerDefinition(
 
 ruvnl_consumer_dp = ContainerDefinition(
     name="ruvnl-consumer-to-dp",
-    container_image="docker.io/openclimatefix/solar_consumer_app",
+    container_image="ghcr.io/openclimatefix/solar-consumer",
     container_tag="1.4.25",
     container_env={
         "LOGURU_LEVEL": "INFO",
