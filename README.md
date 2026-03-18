@@ -30,10 +30,13 @@ and handles the deployment process.
 India
 
 * Minor fixes and version bumps in forecasting pipelines improving stability
+* Update forecast-site-app from tag from `1.2.11` to `1.2.13`
+* Added Dataplatform to solar consumer for RUVNL
 
 UK
 
 * Small DAG improvements including retry, validation, and monitoring enhancements
+* Update forecast-site-app from tag from `1.2.23` to `1.2.25`
 
 
 </details>
