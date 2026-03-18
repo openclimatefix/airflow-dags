@@ -23,6 +23,25 @@ and handles the deployment process.
 
 ## Releases
 
+<details><summary><a>
+<h3>1.40 - 2026-03-18</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+India
+
+* Minor fixes and version bumps in forecasting pipelines improving stability
+
+UK
+
+* Small DAG improvements including retry, validation, and monitoring enhancements
+
+
+</details>
+
+<details><summary><a>
+<h3>1.38 - 2026-03-16</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
 
 <details><summary><a>
 <h3>1.39 - 2026-03-16</h3> <small>[ Click to expand ]</small>
