@@ -50,7 +50,7 @@ ruvnl_consumer_dp = ContainerDefinition(
         f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
     },
     container_cpu=256,
-    container_memory=256,
+    container_memory=512,
     domain="india",
 )
 
