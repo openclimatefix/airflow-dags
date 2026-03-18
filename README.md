@@ -36,7 +36,7 @@ India
 UK
 
 * Small DAG improvements including retry, validation, and monitoring enhancements
-* Update forecast-site-app from tag from `1.2.23` to `1.2.25`
+* Update pvlive_consumer_data_platform from tag from `1.4.23` to `1.4.25`
 
 
 </details>
