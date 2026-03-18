@@ -41,10 +41,6 @@ UK
 
 </details>
 
-<details><summary><a>
-<h3>1.38 - 2026-03-16</h3> <small>[ Click to expand ]</small>
-</a></summary>
-
 
 <details><summary><a>
 <h3>1.39 - 2026-03-16</h3> <small>[ Click to expand ]</small>
