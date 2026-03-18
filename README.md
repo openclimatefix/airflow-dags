@@ -23,6 +23,24 @@ and handles the deployment process.
 
 ## Releases
 
+<details><summary><a>
+<h3>1.40 - 2026-03-18</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+India
+
+* Minor fixes and version bumps in forecasting pipelines improving stability
+* Update forecast-site-app from tag from `1.2.11` to `1.2.13`
+* Added Dataplatform to solar consumer for RUVNL
+
+UK
+
+* Small DAG improvements including retry, validation, and monitoring enhancements
+* Update pvlive_consumer_data_platform from tag from `1.4.23` to `1.4.25`
+
+
+</details>
+
 
 <details><summary><a>
 <h3>1.39 - 2026-03-16</h3> <small>[ Click to expand ]</small>
