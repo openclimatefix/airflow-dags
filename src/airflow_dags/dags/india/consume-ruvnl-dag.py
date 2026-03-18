@@ -37,6 +37,23 @@ ruvnl_consumer = ContainerDefinition(
     domain="india",
 )
 
+ruvnl_consumer_dp = ContainerDefinition(
+    name="ruvnl-consumer-to-dp",
+    container_image="ghcr.io/openclimatefix/solar-consumer",
+    container_tag="1.4.25",
+    container_env={
+        "LOGURU_LEVEL": "INFO",
+        "SAVE_METHOD": "data-platform",
+        "COUNTRY": "ind_rajasthan",
+    },
+    container_secret_env={
+        f"{env}/rds/dataplatform": ["DATA_PLATFORM_HOST"],
+    },
+    container_cpu=256,
+    container_memory=512,
+    domain="india",
+)
+
 
 @dag(
     dag_id="india-consume-ruvnl",
@@ -56,7 +73,14 @@ def ruvnl_consumer_dag() -> None:
         max_active_tis_per_dag=10,
     )
 
+    consume_ruvnl_op_dp = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-ruvnl-dp",
+        container_def=ruvnl_consumer_dp,
+        max_active_tis_per_dag=10,
+    )
+
     latest_only_op >> consume_ruvnl_op
+    latest_only_op >> consume_ruvnl_op_dp
 
 
 ruvnl_consumer_dag()
