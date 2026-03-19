@@ -53,7 +53,7 @@ def update_operator(provider: str) -> BashOperator:
         file = f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr/.zattrs"
     else:
         file = f"s3://nowcasting-nwp-{env}/{provider}-nl/data/latest.zarr/.zattrs"
-        
+
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=nwp&file={file}"'
     return BashOperator(
@@ -122,7 +122,7 @@ def nl_nwp_consumer_dag() -> None:
     call_api_update_metoffice_op = update_operator(provider="metoffice")
 
     latest_only_op >> [consume_ecmwf_op, consume_metoffice_op]
-    
+
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
     consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
 
