@@ -390,7 +390,7 @@ def check_system_gsp(access_token: str) -> None:
     data = call_api_return_list(url=full_url, access_token=access_token)
 
     check_len_ge(data, 300)
-    check_type(data[0], dict)       
+    check_type(data[0], dict)
     check_key_in_data(data[0], "label")
     check_key_in_data(data[0], "gspId")
     check_key_in_data(data[0], "gspName")
@@ -405,7 +405,7 @@ def check_system_gsp_one(access_token: str) -> None:
     data = call_api_return_list(url=full_url, access_token=access_token)
 
     check_len_ge(data, 1)
-    check_type(data[0], dict)       
+    check_type(data[0], dict)
     check_key_in_data(data[0], "label")
     check_key_in_data(data[0], "gspId")
     check_key_in_data(data[0], "gspName")
@@ -537,13 +537,13 @@ def quartz_api_national_gsp_check() -> None:
         task_id="check-api-gsp-system",
         python_callable=check_system_gsp,
         op_kwargs={"access_token": access_token_str},
-    )   
+    )
 
     gsp_system_one = PythonOperator(
         task_id="check-api-gsp-system-one",
         python_callable=check_system_gsp_one,
         op_kwargs={"access_token": access_token_str},
-    )   
+    )
 
     if_any_task_failed = PythonOperator(
         task_id="api-uk-national-gsp-check-if-any-task-failed",
