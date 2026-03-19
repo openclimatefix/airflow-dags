@@ -24,6 +24,25 @@ and handles the deployment process.
 ## Releases
 
 <details><summary><a>
+<h3>1.41 - 2026-03-19</h3> <small>[ Click to expand ]</small>
+</a></summary>
+
+UK
+
+* Update solar consumer to `1.4.27` for pvlive consumer (from `1.4.26`)
+
+NL
+
+* Update solar consumer to `1.4.27` for ned-nl consumer (from `1.4.24`)
+
+India
+
+* Update solar consumer to `1.4.27` for RUVNL consumer (from `1.4.25`)
+
+</details>
+
+
+<details><summary><a>
 <h3>1.40 - 2026-03-18</h3> <small>[ Click to expand ]</small>
 </a></summary>
 

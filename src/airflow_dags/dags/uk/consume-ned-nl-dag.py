@@ -27,7 +27,7 @@ default_args = {
 ned_nl_consumer = ContainerDefinition(
     name="ned-nl-consumer",
     container_image="ghcr.io/openclimatefix/solar-consumer",
-    container_tag="1.4.24",
+    container_tag="1.4.27",
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
         f"{env}/consumer/nednl": ["APIKEY_NEDNL"],
@@ -46,7 +46,7 @@ ned_nl_consumer = ContainerDefinition(
 ned_nl_data_platform = ContainerDefinition(
     name="ned-nl-consumer-data-platform",
     container_image="ghcr.io/openclimatefix/solar-consumer",
-    container_tag="1.4.24",
+    container_tag="1.4.27",
     container_env={
         "LOGURU_LEVEL": "INFO",
         "SAVE_METHOD": "data-platform",
