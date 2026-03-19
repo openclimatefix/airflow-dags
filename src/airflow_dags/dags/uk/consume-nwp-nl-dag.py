@@ -1,4 +1,4 @@
-"""DAG to download and process NWP data from ECMWF NL."""
+"""DAG to download and process NWP data from ECMWF and Met Office NL."""
 
 import datetime as dt
 import os
@@ -38,6 +38,7 @@ nwp_consumer = ContainerDefinition(
         f"{env}/data/nwp-consumer": [
             "ECMWF_REALTIME_S3_ACCESS_KEY",
             "ECMWF_REALTIME_S3_ACCESS_SECRET",
+            "METOFFICE_API_KEY",
         ],
     },
     container_command=["consume"],
@@ -48,9 +49,11 @@ nwp_consumer = ContainerDefinition(
 
 def update_operator(provider: str) -> BashOperator:
     """BashOperator to update the API with the latest downloaded data."""
-    file: str = f"s3://nowcasting-nwp-{env}/ecmwf-nl/latest.zarr/.zattrs"
     if provider == "ecmwf":
         file = f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr/.zattrs"
+    else:
+        file = f"s3://nowcasting-nwp-{env}/{provider}-nl/data/latest.zarr/.zattrs"
+        
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=nwp&file={file}"'
     return BashOperator(
@@ -97,8 +100,31 @@ def nl_nwp_consumer_dag() -> None:
 
     call_api_update_ecmwf_op = update_operator(provider="ecmwf")
 
-    latest_only_op >> consume_ecmwf_op
+    consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-metoffice-nwp-nl",
+        container_def=nwp_consumer,
+        max_active_tis_per_dag=1,
+        env_overrides={
+            "MODEL_REPOSITORY": "metoffice",
+            "MODEL": "uk-v",
+            "ZARRDIR": f"s3://nowcasting-nwp-{env}/metoffice-nl/data",
+        },
+        on_failure_callback=get_slack_message_callback(
+            country="nl",
+            additional_message_context="Met Office NL data consumption failed.",
+        ),
+    )
+
+    rename_zarr_metoffice_op = determine_latest_zarr.override(
+        task_id="rename-latest-metoffice-data-nl",
+    )(bucket=f"nowcasting-nwp-{env}", prefix="metoffice-nl/data")
+
+    call_api_update_metoffice_op = update_operator(provider="metoffice")
+
+    latest_only_op >> [consume_ecmwf_op, consume_metoffice_op]
+    
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
+    consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
 
 
 nl_nwp_consumer_dag()
