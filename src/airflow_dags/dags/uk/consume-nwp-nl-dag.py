@@ -100,14 +100,14 @@ def nl_nwp_consumer_dag() -> None:
 
     call_api_update_ecmwf_op = update_operator(provider="ecmwf")
 
-    consume_metoffice_op = EcsAutoRegisterRunTaskOperator(
-        airflow_task_id="consume-metoffice-nwp-nl",
+    consume_mo_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-mo-nwp-nl",
         container_def=nwp_consumer,
         max_active_tis_per_dag=1,
         env_overrides={
-            "MODEL_REPOSITORY": "metoffice",
+            "MODEL_REPOSITORY": "mo",
             "MODEL": "uk-v",
-            "ZARRDIR": f"s3://nowcasting-nwp-{env}/metoffice-nl/data",
+            "ZARRDIR": f"s3://nowcasting-nwp-{env}/mo-nl/data",
         },
         on_failure_callback=get_slack_message_callback(
             country="nl",
@@ -115,16 +115,16 @@ def nl_nwp_consumer_dag() -> None:
         ),
     )
 
-    rename_zarr_metoffice_op = determine_latest_zarr.override(
-        task_id="rename-latest-metoffice-data-nl",
-    )(bucket=f"nowcasting-nwp-{env}", prefix="metoffice-nl/data")
+    rename_zarr_mo_op = determine_latest_zarr.override(
+        task_id="rename-latest-mo-data-nl",
+    )(bucket=f"nowcasting-nwp-{env}", prefix="mo-nl/data")
 
-    call_api_update_metoffice_op = update_operator(provider="metoffice")
+    call_api_update_mo_op = update_operator(provider="mo")
 
-    latest_only_op >> [consume_ecmwf_op, consume_metoffice_op]
+    latest_only_op >> [consume_ecmwf_op, consume_mo_op]
 
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
-    consume_metoffice_op >> rename_zarr_metoffice_op >> call_api_update_metoffice_op
+    consume_mo_op >> rename_zarr_mo_op >> call_api_update_mo_op
 
 
 nl_nwp_consumer_dag()
