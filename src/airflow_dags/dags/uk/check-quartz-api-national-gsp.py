@@ -384,6 +384,35 @@ def check_gsp_pvlive_one_day_after(access_token: str) -> None:
     check_key_in_data(data[0], "datetimeUtc")
     check_key_in_data(data[0], "solarGenerationKw")
 
+def check_system_gsp(access_token: str) -> None:
+    """Check the system GSP."""
+    full_url = f"{base_url}/v0/system/GB/gsp/"
+    data = call_api_return_list(url=full_url, access_token=access_token)
+
+    check_len_ge(data, 300)
+    check_type(data[0], dict)       
+    check_key_in_data(data[0], "label")
+    check_key_in_data(data[0], "gspId")
+    check_key_in_data(data[0], "gspName")
+    check_key_in_data(data[0], "gspGroup")
+    check_key_in_data(data[0], "regionName")
+    check_key_in_data(data[0], "installedCapacityMw")
+
+
+def check_system_gsp_one(access_token: str) -> None:
+    """Check the system GSP."""
+    full_url = f"{base_url}/0/system/GB/gsp/?gsp_id=1"
+    data = call_api_return_list(url=full_url, access_token=access_token)
+
+    check_len_ge(data, 1)
+    check_type(data[0], dict)       
+    check_key_in_data(data[0], "label")
+    check_key_in_data(data[0], "gspId")
+    check_key_in_data(data[0], "gspName")
+    check_key_in_data(data[0], "gspGroup")
+    check_key_in_data(data[0], "regionName")
+    check_key_in_data(data[0], "installedCapacityMw")
+
 
 @dag(
     dag_id="uk-api-quartz-national-gsp-check",
@@ -503,6 +532,19 @@ def quartz_api_national_gsp_check() -> None:
         op_kwargs={"access_token": access_token_str, "horizon_minutes": 120},
     )
 
+    # gsp system
+    gsp_system = PythonOperator(
+        task_id="check-api-gsp-system",
+        python_callable=check_system_gsp,
+        op_kwargs={"access_token": access_token_str},
+    )   
+
+    gsp_system_one = PythonOperator(
+        task_id="check-api-gsp-system-one",
+        python_callable=check_system_gsp_one,
+        op_kwargs={"access_token": access_token_str},
+    )   
+
     if_any_task_failed = PythonOperator(
         task_id="api-uk-national-gsp-check-if-any-task-failed",
         python_callable=lambda: None,
@@ -543,6 +585,7 @@ def quartz_api_national_gsp_check() -> None:
     get_bearer_token >> gsp_forecast_one >> gsp_forecast_one_2_hour >> gsp_forecast_all_one_by_one
     get_bearer_token >> gsp_pvlive_all_compact
     get_bearer_token >> gsp_pvlive_one >> gsp_pvlive_one_day_after
+    get_bearer_token >> gsp_system >> gsp_system_one
 
     [
         national_forecast,
@@ -559,6 +602,8 @@ def quartz_api_national_gsp_check() -> None:
         gsp_forecast_all_one_by_one,
         gsp_pvlive_one,
         gsp_pvlive_one_day_after,
+        gsp_system,
+        gsp_system_one,
     ] >> if_any_task_failed
 
 
