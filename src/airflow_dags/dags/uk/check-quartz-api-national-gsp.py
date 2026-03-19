@@ -401,7 +401,7 @@ def check_system_gsp(access_token: str) -> None:
 
 def check_system_gsp_one(access_token: str) -> None:
     """Check the system GSP."""
-    full_url = f"{base_url}/0/system/GB/gsp/?gsp_id=1"
+    full_url = f"{base_url}/v0/system/GB/gsp/?gsp_id=1"
     data = call_api_return_list(url=full_url, access_token=access_token)
 
     check_len_ge(data, 1)
