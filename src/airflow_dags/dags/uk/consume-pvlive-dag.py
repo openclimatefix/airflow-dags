@@ -108,6 +108,14 @@ def pvlive_intraday_consumer_dag() -> None:
     consume_pvlive_gsps_data_platform = EcsAutoRegisterRunTaskOperator(
         airflow_task_id="pvlive-intraday-consumer-data-platform",
         container_def=pvlive_consumer_data_platform,
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context=(
+                "This is needed for the adjuster in the Data Platform Forecast."
+                "Its good to check <https://www.solar.sheffield.ac.uk/pvlive/|PV Live> "
+                "to see if it's working. "
+            ),
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
     consume_pvlive_gsps_data_platform  # noqa: B018
@@ -158,6 +166,10 @@ def pvlive_dayafter_consumer_dag() -> None:
         env_overrides={
             "UK_PVLIVE_REGIME": "day-after",
         },
+        on_failure_callback=get_slack_message_callback(
+            additional_message_context="This task is not critical for data platform live services",
+            urgency=Urgency.SUBCRITICAL,
+        ),
     )
 
     consume_pvlive_gsps_data_platform  # noqa: B018
