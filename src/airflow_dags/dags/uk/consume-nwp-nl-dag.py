@@ -51,8 +51,10 @@ def update_operator(provider: str) -> BashOperator:
     """BashOperator to update the API with the latest downloaded data."""
     if provider == "ecmwf":
         file = f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr/.zattrs"
-    else:
+    elif provider == "mo":
         file = f"s3://nowcasting-nwp-{env}/mo-nl/data/latest.zarr/.zattrs"
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=nwp&file={file}"'
