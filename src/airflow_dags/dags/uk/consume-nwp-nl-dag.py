@@ -1,4 +1,4 @@
-"""DAG to download and process NWP data from ECMWF NL."""
+"""DAG to download and process NWP data from ECMWF and Met Office NL."""
 
 import datetime as dt
 import os
@@ -29,7 +29,7 @@ env = os.getenv("ENVIRONMENT", "development")
 nwp_consumer = ContainerDefinition(
     name="nwp-consumer-nl",
     container_image="ghcr.io/openclimatefix/nwp-consumer",
-    container_tag="1.1.33",
+    container_tag="1.1.34",
     container_env={
         "CONCURRENCY": "false",
         "LOGLEVEL": "DEBUG",
@@ -38,6 +38,7 @@ nwp_consumer = ContainerDefinition(
         f"{env}/data/nwp-consumer": [
             "ECMWF_REALTIME_S3_ACCESS_KEY",
             "ECMWF_REALTIME_S3_ACCESS_SECRET",
+            "METOFFICE_API_KEY",
         ],
     },
     container_command=["consume"],
@@ -48,9 +49,13 @@ nwp_consumer = ContainerDefinition(
 
 def update_operator(provider: str) -> BashOperator:
     """BashOperator to update the API with the latest downloaded data."""
-    file: str = f"s3://nowcasting-nwp-{env}/ecmwf-nl/latest.zarr/.zattrs"
     if provider == "ecmwf":
         file = f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr/.zattrs"
+    elif provider == "mo":
+        file = f"s3://nowcasting-nwp-{env}/mo-nl/data/latest.zarr/.zattrs"
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=nwp&file={file}"'
     return BashOperator(
@@ -97,8 +102,32 @@ def nl_nwp_consumer_dag() -> None:
 
     call_api_update_ecmwf_op = update_operator(provider="ecmwf")
 
-    latest_only_op >> consume_ecmwf_op
+    consume_mo_op = EcsAutoRegisterRunTaskOperator(
+        airflow_task_id="consume-mo-nwp-nl",
+        container_def=nwp_consumer,
+        max_active_tis_per_dag=1,
+        env_overrides={
+            "MODEL_REPOSITORY": "mo",
+            "MODEL": "um-global-10km-nl",
+            "METOFFICE_ORDER_ID": "nl-12params-32steps",
+            "ZARRDIR": f"s3://nowcasting-nwp-{env}/mo-nl/data",
+        },
+        on_failure_callback=get_slack_message_callback(
+            country="nl",
+            additional_message_context="Met Office NL data consumption failed.",
+        ),
+    )
+
+    rename_zarr_mo_op = determine_latest_zarr.override(
+        task_id="rename-latest-mo-data-nl",
+    )(bucket=f"nowcasting-nwp-{env}", prefix="mo-nl/data")
+
+    call_api_update_mo_op = update_operator(provider="mo")
+
+    latest_only_op >> [consume_ecmwf_op, consume_mo_op]
+
     consume_ecmwf_op >> rename_zarr_ecmwf_op >> call_api_update_ecmwf_op
+    consume_mo_op >> rename_zarr_mo_op >> call_api_update_mo_op
 
 
 nl_nwp_consumer_dag()
