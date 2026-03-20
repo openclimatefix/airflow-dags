@@ -75,7 +75,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
         "NWP_GENCAST_ZARR_PATH": "/tmp/nwp_gencast_out.zarr",  # noqa: S108
         "CLIENT_NAME": "ruvnl",
         "COUNTRY": "india",
-        "OBSERVER_NAME": "india"
+        "OBSERVER_NAME": "india",
     },
     container_secret_env={
         f"{env}/rds/indiadb": ["DB_URL"],

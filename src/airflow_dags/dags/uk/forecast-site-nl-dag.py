@@ -37,7 +37,7 @@ site_forecaster = ContainerDefinition(
         "SATELLITE_SCALE_FACTOR": "1",
         "SAVE_TO_DATA_PLATFORM": "True",
         "USE_ADJUSTER_DATABASE": "False",
-        "OBSERVER_NAME": "nednl"
+        "OBSERVER_NAME": "nednl",
     },
     container_secret_env={
         f"{env}/rds/pvsite": ["DB_URL"],
