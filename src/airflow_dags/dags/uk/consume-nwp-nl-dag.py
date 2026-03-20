@@ -52,7 +52,7 @@ def update_operator(provider: str) -> BashOperator:
     if provider == "ecmwf":
         file = f"s3://nowcasting-nwp-{env}/ecmwf-nl/data/latest.zarr/.zattrs"
     else:
-        file = f"s3://nowcasting-nwp-{env}/{provider}-nl/data/latest.zarr/.zattrs"
+        file = f"s3://nowcasting-nwp-{env}/mo-nl/data/latest.zarr/.zattrs"
 
     url: str = "http://api-dev.quartz.solar" if env == "development" else "http://api.quartz.solar"
     command: str = f'curl -X GET "{url}/v0/solar/GB/update_last_data?component=nwp&file={file}"'
