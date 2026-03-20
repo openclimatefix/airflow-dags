@@ -106,7 +106,7 @@ def nl_nwp_consumer_dag() -> None:
         max_active_tis_per_dag=1,
         env_overrides={
             "MODEL_REPOSITORY": "mo",
-            "MODEL": "uk-v",
+            "MODEL": "um-global-10km-nl",
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/mo-nl/data",
         },
         on_failure_callback=get_slack_message_callback(
