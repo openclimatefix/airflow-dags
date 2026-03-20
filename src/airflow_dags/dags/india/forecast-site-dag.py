@@ -66,7 +66,7 @@ ad_forecaster = ContainerDefinition(
 ruvnl_forecaster_v2 = ContainerDefinition(
     name="forecast-ruvnl-v2",
     container_image="ghcr.io/openclimatefix/site-forecast-app",
-    container_tag="1.2.13",
+    container_tag="1.2.15",
     container_env={
         "NWP_MO_GLOBAL_ZARR_PATH": f"s3://india-nwp-{env}/metoffice/data/latest.zarr",
         "NWP_ECMWF_ZARR_PATH": f"s3://india-nwp-{env}/ecmwf/data/latest.zarr",
@@ -75,6 +75,7 @@ ruvnl_forecaster_v2 = ContainerDefinition(
         "NWP_GENCAST_ZARR_PATH": "/tmp/nwp_gencast_out.zarr",  # noqa: S108
         "CLIENT_NAME": "ruvnl",
         "COUNTRY": "india",
+        "OBSERVER_NAME": "india",
     },
     container_secret_env={
         f"{env}/rds/indiadb": ["DB_URL"],
