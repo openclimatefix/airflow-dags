@@ -107,6 +107,7 @@ def nl_nwp_consumer_dag() -> None:
         env_overrides={
             "MODEL_REPOSITORY": "mo",
             "MODEL": "um-global-10km-nl",
+            "METOFFICE_ORDER_ID": "nl-12params-32steps",
             "ZARRDIR": f"s3://nowcasting-nwp-{env}/mo-nl/data",
         },
         on_failure_callback=get_slack_message_callback(
